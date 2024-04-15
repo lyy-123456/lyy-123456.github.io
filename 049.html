@@ -1,0 +1,903 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="landery">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="SeaBIOS调用 vTPM启动过程要了解可信启动的过程，不能单单在“边启动，边度量”，都说CRTM是信任源头，但是它又是BIOS的一部分，那么他们之间是怎么度量的呢？度量哪儿呢？度量日志放在哪儿呢？ 首先是POST阶段的mianinit函数-&gt;platform_hardware_setup-&gt;tpm_setup() tpm_setup对于tpm_setup，用于初始化可信计算模块。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SeaBIOS调用 vTPM启动过程">
+<meta property="og:url" content="http://example.com/049.html">
+<meta property="og:site_name" content="landery小站">
+<meta property="og:description" content="SeaBIOS调用 vTPM启动过程要了解可信启动的过程，不能单单在“边启动，边度量”，都说CRTM是信任源头，但是它又是BIOS的一部分，那么他们之间是怎么度量的呢？度量哪儿呢？度量日志放在哪儿呢？ 首先是POST阶段的mianinit函数-&gt;platform_hardware_setup-&gt;tpm_setup() tpm_setup对于tpm_setup，用于初始化可信计算模块。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/wp-content/uploads/2023/06/image-1686642236974.png">
+<meta property="og:image" content="http://example.com/wp-content/uploads/2023/06/image-1686642248131.png">
+<meta property="article:published_time" content="2023-06-13T07:37:11.000Z">
+<meta property="article:modified_time" content="2024-04-15T10:04:08.817Z">
+<meta property="article:author" content="landery">
+<meta property="article:tag" content="BIOS">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://example.com/wp-content/uploads/2023/06/image-1686642236974.png">
+  
+  
+  
+  <title>SeaBIOS调用 vTPM启动过程 - landery小站</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/scroll.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"GK4nuH8jdXDcw4IJIVShjMtA-gzGzoHsz","app_key":"7P0B0kJFdaLY6eDQ93Lhcv8J","server_url":"https://api.landery.cn","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>landery 小站</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/links/" target="_self">
+                <i class="iconfont icon-link-fill"></i>
+                <span>友链</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/remark/" target="_self">
+                <i class="iconfont icon-twitch-fill"></i>
+                <span>留言板</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/image/bg/001.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="SeaBIOS调用 vTPM启动过程"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2023-06-13 15:37" pubdate>
+          2023年6月13日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          3.8k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          32 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">SeaBIOS调用 vTPM启动过程</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="SeaBIOS调用-vTPM启动过程"><a href="#SeaBIOS调用-vTPM启动过程" class="headerlink" title="SeaBIOS调用 vTPM启动过程"></a>SeaBIOS调用 vTPM启动过程</h1><p>要了解可信启动的过程，不能单单在“边启动，边度量”，都说CRTM是信任源头，但是它又是BIOS的一部分，那么他们之间是怎么度量的呢？度量哪儿呢？度量日志放在哪儿呢？ 首先是POST阶段的mianinit函数-&gt;platform_hardware_setup-&gt;tpm_setup()</p>
+<h2 id="tpm-setup"><a href="#tpm-setup" class="headerlink" title="tpm_setup"></a>tpm_setup</h2><p>对于tpm_setup，用于初始化可信计算模块。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">void</span><br><span class="hljs-title function_">tpm_setup</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span><br>&#123;<br>    <span class="hljs-keyword">if</span> (!CONFIG_TCGBIOS)<br>        <span class="hljs-keyword">return</span>;<br><br>    <span class="hljs-comment">//探测tpm2设备</span><br>    <span class="hljs-type">int</span> ret = tpm_tpm2_probe();<br>    <span class="hljs-keyword">if</span> (ret) &#123;<br>        <span class="hljs-comment">//探测tpm1.2设备</span><br>        ret = tpm_tcpa_probe();<br>        <span class="hljs-keyword">if</span> (ret)<br>            <span class="hljs-keyword">return</span>;<br>    &#125;<br><br>    <span class="hljs-comment">//获取TPM版本 u8 TPM_version 并且调用相应驱动的init方法，tis_init或者crb_init</span><br>    TPM_version = tpmhw_probe();<br>    <span class="hljs-keyword">if</span> (TPM_version == TPM_VERSION_NONE)<br>        <span class="hljs-keyword">return</span>;<br><br>    dprintf(DEBUG_tcg,<br>            <span class="hljs-string">&quot;TCGBIOS: Detected a TPM %s.\n&quot;</span>,<br>             (TPM_version == TPM_VERSION_1_2) ? <span class="hljs-string">&quot;1.2&quot;</span> : <span class="hljs-string">&quot;2&quot;</span>);<br><br>    TPM_working = <span class="hljs-number">1</span>;<br><br>    <span class="hljs-keyword">if</span> (runningOnXen())<br>        <span class="hljs-keyword">return</span>;<br><br>    <span class="hljs-comment">//初始化TPM</span><br>    ret = tpm_startup();<br>    <span class="hljs-keyword">if</span> (ret)<br>        <span class="hljs-keyword">return</span>;<br><br>    <span class="hljs-comment">//度量smbios</span><br>    tpm_smbios_measure();<br>    <span class="hljs-comment">//度量EV_ACTION事件，扩展进入PCR 2寄存器</span><br>    tpm_add_action(<span class="hljs-number">2</span>, <span class="hljs-string">&quot;Start Option ROM Scan&quot;</span>);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>可以看到，他先获取了平台上的TPM版本，然后在进行TPM初始化，接着度量smbios添加度量日志。我们看一下细节，它是怎样获取到TPM版本的？以TPM2为例。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs C"><span class="hljs-type">static</span> <span class="hljs-type">int</span><br><span class="hljs-title function_">tpm_tpm2_probe</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span><br>&#123;<br>    <span class="hljs-comment">//从acpi表中获取标识符</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">tpm2_descriptor_rev2</span> *<span class="hljs-title">tpm2</span> =</span> find_acpi_table(TPM2_SIGNATURE);<br>    <span class="hljs-keyword">if</span> (!tpm2)<br>        <span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>;<br><br>    <span class="hljs-keyword">if</span> (tpm2-&gt;length &lt; <span class="hljs-number">76</span>)<br>        <span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>;<br><br>    dprintf(DEBUG_tcg, <span class="hljs-string">&quot;TCGBIOS: TPM2: LASA = %p, LAML = %u\n&quot;</span>,<br>            (u8 *)(<span class="hljs-type">long</span>)tpm2-&gt;log_area_start_address,<br>            tpm2-&gt;log_area_minimum_length);<br><br>    <span class="hljs-comment">//设置日志区域</span><br>    <span class="hljs-keyword">return</span> tpm_set_log_area((u8*)(<span class="hljs-type">long</span>)tpm2-&gt;log_area_start_address,<br>                            tpm2-&gt;log_area_minimum_length);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>可以看到，从acpi表中获取TPM2_SIGNATURE标识的TPM2描述符，找到之后就判断长度是否符合要求，然后就调用<code>tpm_set_log_area</code>函数，该函数将设置TPM的日志区域并返回0以表示成功。</p>
+<h2 id="tpmhw-probe"><a href="#tpmhw-probe" class="headerlink" title="tpmhw_probe"></a>tpmhw_probe</h2><p>该函数获取TPM版本 TPM_version 并且调用相应驱动的init方法，tis_init或者crb_init。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs c">TPMVersion<br><span class="hljs-title function_">tpmhw_probe</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span><br>&#123;<br>    <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> i;<br>    <span class="hljs-keyword">for</span> (i = <span class="hljs-number">0</span>; i &lt; TPM_NUM_DRIVERS; i++) &#123;<br>        <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">tpm_driver</span> *<span class="hljs-title">td</span> =</span> &amp;tpm_drivers[i];<br>        <span class="hljs-comment">//调用相应的probe方法</span><br>        <span class="hljs-keyword">if</span> (td-&gt;probe() != <span class="hljs-number">0</span>) &#123;<br>            <span class="hljs-comment">//调用相应的tis_init或者crb_init方法</span><br>            td-&gt;init();<br>            TPMHW_driver_to_use = i;<br>            <span class="hljs-keyword">return</span> td-&gt;get_tpm_version();<br>        &#125;<br>    &#125;<br>    <span class="hljs-keyword">return</span> TPM_VERSION_NONE;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>在qemu-tpm-2.12中，所有的与driver相关的代码，在seaBIOS中的<code>src/hw/tpm_drivers.c</code>之中。给出tpm_drivers的定义，可以看到tpm驱动分为tis和crb，crb只支持2.0。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">tpm_driver</span> <span class="hljs-title">tpm_drivers</span>[<span class="hljs-title">TPM_NUM_DRIVERS</span>] =</span> &#123;<br>    [TIS_DRIVER_IDX] =<br>        &#123;<br>            .timeouts      = <span class="hljs-literal">NULL</span>,<br>            .durations     = <span class="hljs-literal">NULL</span>,<br>            .set_timeouts  = set_timeouts,<br>            .probe         = tis_probe,<br>            .get_tpm_version = tis_get_tpm_version,<br>            .init          = tis_init,<br>            .activate      = tis_activate,<br>            .ready         = tis_ready,<br>            .senddata      = tis_senddata,<br>            .readresp      = tis_readresp,<br>            .waitdatavalid = tis_waitdatavalid,<br>            .waitrespready = tis_waitrespready,<br>        &#125;,<br>    [CRB_DRIVER_IDX] =<br>        &#123;<br>            .timeouts      = <span class="hljs-literal">NULL</span>,<br>            .durations     = <span class="hljs-literal">NULL</span>,<br>            .set_timeouts  = set_timeouts,<br>            .probe         = crb_probe,<br>            .get_tpm_version = crb_get_tpm_version,<br>            .init          = crb_init,<br>            .activate      = crb_activate,<br>            .ready         = crb_ready,<br>            .senddata      = crb_senddata,<br>            .readresp      = crb_readresp,<br>            .waitdatavalid = crb_waitdatavalid,<br>            .waitrespready = crb_waitrespready,<br>        &#125;,<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<h2 id="tpm-startup"><a href="#tpm-startup" class="headerlink" title="tpm_startup"></a>tpm_startup</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> <span class="hljs-type">int</span><br><span class="hljs-title function_">tpm_startup</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span><br>&#123;<br>    <span class="hljs-keyword">switch</span> (TPM_version) &#123;<br>    <span class="hljs-keyword">case</span> TPM_VERSION_1_2:<br>        <span class="hljs-keyword">return</span> tpm12_startup();<br>    <span class="hljs-keyword">case</span> TPM_VERSION_2:<br>        <span class="hljs-keyword">return</span> tpm20_startup();<br>    &#125;<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>我们都以TPM2.0为例，在确认TPM版本之后，初始化TPM。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> <span class="hljs-type">int</span><br><span class="hljs-title function_">tpm20_startup</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span><br>&#123;<br>    <span class="hljs-comment">//设置超时时间</span><br>    tpm20_set_timeouts();<br><br>    <span class="hljs-comment">//发送TPM2_CC_Startup命令，以清除TPM设备并返回一个结果，该结果存储在ret变量中</span><br>    <span class="hljs-type">int</span> ret = tpm_simple_cmd(<span class="hljs-number">0</span>, TPM2_CC_Startup,<br>                             <span class="hljs-number">2</span>, TPM2_SU_CLEAR, TPM_DURATION_TYPE_SHORT);<br><br>    dprintf(DEBUG_tcg, <span class="hljs-string">&quot;TCGBIOS: Return value from sending TPM2_CC_Startup(SU_CLEAR) = 0x%08x\n&quot;</span>,<br>            ret);<br><br>    <span class="hljs-comment">//在coreboot已经启用的情况下，但是我们没有使用这里不用看</span><br>    <span class="hljs-keyword">if</span> (CONFIG_COREBOOT &amp;&amp; ret == TPM2_RC_INITIALIZE)<br>        <span class="hljs-comment">/* with other firmware on the system the TPM may already have been</span><br><span class="hljs-comment">         * initialized</span><br><span class="hljs-comment">         */</span><br>        ret = <span class="hljs-number">0</span>;<br><br>    <span class="hljs-keyword">if</span> (ret)<br>        <span class="hljs-keyword">goto</span> err_exit;<br><br>    <span class="hljs-comment">//发送TPM自检命令</span><br>    ret = tpm_simple_cmd(<span class="hljs-number">0</span>, TPM2_CC_SelfTest,<br>                         <span class="hljs-number">1</span>, TPM2_YES, TPM_DURATION_TYPE_LONG);<br><br>    dprintf(DEBUG_tcg, <span class="hljs-string">&quot;TCGBIOS: Return value from sending TPM2_CC_SelfTest = 0x%08x\n&quot;</span>,<br>            ret);<br><br>    <span class="hljs-keyword">if</span> (ret)<br>        <span class="hljs-keyword">goto</span> err_exit;<br><br>    <span class="hljs-comment">//获取相应的pcrbanks</span><br>    ret = tpm20_get_pcrbanks();<br>    <span class="hljs-keyword">if</span> (ret)<br>        <span class="hljs-keyword">goto</span> err_exit;<br><br>    <span class="hljs-comment">//写入相应的efi事件结构</span><br>    ret = tpm20_write_EfiSpecIdEventStruct();<br>    <span class="hljs-keyword">if</span> (ret)<br>        <span class="hljs-keyword">goto</span> err_exit;<br><br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br><br><span class="hljs-comment">//失败处理    </span><br>err_exit:<br>    dprintf(DEBUG_tcg, <span class="hljs-string">&quot;TCGBIOS: TPM malfunctioning (line %d).\n&quot;</span>, __LINE__);<br><br>    tpm_set_failure();<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="tpm-simple-cmd"><a href="#tpm-simple-cmd" class="headerlink" title="tpm_simple_cmd"></a>tpm_simple_cmd</h3><p>发送简单的TPM命令，如果使用swtpm作为TPM那么会通过qemu后端驱动发送出去。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> <span class="hljs-type">int</span><br><span class="hljs-title function_">tpm_simple_cmd</span><span class="hljs-params">(u8 locty, u32 ordinal</span><br><span class="hljs-params">               , <span class="hljs-type">int</span> param_size, u16 param, <span class="hljs-keyword">enum</span> tpmDurationType <span class="hljs-type">to_t</span>)</span><br>&#123;<br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> &#123;</span><br>        <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">tpm_req_header</span> <span class="hljs-title">trqh</span>;</span><br>        u16 param;<br>    &#125; PACKED req = &#123;<br>        .trqh.totlen = cpu_to_be32(<span class="hljs-keyword">sizeof</span>(req.trqh) + param_size),<br>        .trqh.ordinal = cpu_to_be32(ordinal),<br>        .param = param_size == <span class="hljs-number">2</span> ? cpu_to_be16(param) : param,<br>    &#125;;<br>    <span class="hljs-keyword">switch</span> (TPM_version) &#123;<br>    <span class="hljs-keyword">case</span> TPM_VERSION_1_2:<br>        req.trqh.tag = cpu_to_be16(TPM_TAG_RQU_CMD);<br>        <span class="hljs-keyword">break</span>;<br>    <span class="hljs-keyword">case</span> TPM_VERSION_2:<br>        req.trqh.tag = cpu_to_be16(TPM2_ST_NO_SESSIONS);<br>        <span class="hljs-keyword">break</span>;<br>    &#125;<br><br>    u8 obuffer[<span class="hljs-number">64</span>];<br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">tpm_rsp_header</span> *<span class="hljs-title">trsh</span> =</span> (<span class="hljs-type">void</span>*)obuffer;<br>    u32 obuffer_len = <span class="hljs-keyword">sizeof</span>(obuffer);<br>    <span class="hljs-built_in">memset</span>(obuffer, <span class="hljs-number">0x0</span>, <span class="hljs-keyword">sizeof</span>(obuffer));<br><br>    <span class="hljs-comment">//组装好请求后，发送请求。</span><br>    <span class="hljs-type">int</span> ret = tpmhw_transmit(locty, &amp;req.trqh, obuffer, &amp;obuffer_len, <span class="hljs-type">to_t</span>);<br>    ret = ret ? <span class="hljs-number">-1</span> : be32_to_cpu(trsh-&gt;errcode);<br>    dprintf(DEBUG_tcg, <span class="hljs-string">&quot;Return from tpm_simple_cmd(%x, %x) = %x\n&quot;</span>,<br>            ordinal, param, ret);<br>    <span class="hljs-keyword">return</span> ret;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>可看到tpmhw_transmit方法才是发送命令的关键。</p>
+<h4 id="tpmhw-transmit"><a href="#tpmhw-transmit" class="headerlink" title="tpmhw_transmit"></a>tpmhw_transmit</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">int</span><br><span class="hljs-title function_">tpmhw_transmit</span><span class="hljs-params">(u8 locty, <span class="hljs-keyword">struct</span> tpm_req_header *req,</span><br><span class="hljs-params">               <span class="hljs-type">void</span> *respbuffer, u32 *respbufferlen,</span><br><span class="hljs-params">               <span class="hljs-keyword">enum</span> tpmDurationType <span class="hljs-type">to_t</span>)</span><br>&#123;<br>    <span class="hljs-keyword">if</span> (TPMHW_driver_to_use == TPM_INVALID_DRIVER)<br>        <span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>;<br><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">tpm_driver</span> *<span class="hljs-title">td</span> =</span> &amp;tpm_drivers[TPMHW_driver_to_use];<br><br>    <span class="hljs-comment">//函数用于激活TPM设备的TIS接口，请求并等待访问权限，如果访问权限已被获取，则该函数返回0，否则返回非零结果表示激活失败。</span><br>    u32 irc = td-&gt;activate(locty);<br>    <span class="hljs-keyword">if</span> (irc != <span class="hljs-number">0</span>) &#123;<br>        <span class="hljs-comment">/* tpm could not be activated */</span><br>        <span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>;<br>    &#125;<br><br>    <span class="hljs-comment">//发送数据</span><br>    irc = td-&gt;senddata((<span class="hljs-type">void</span>*)req, be32_to_cpu(req-&gt;totlen));<br>    <span class="hljs-keyword">if</span> (irc != <span class="hljs-number">0</span>)<br>        <span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>;<br><br>    <span class="hljs-comment">//在超时时间内等待状态寄存器值被设置，等待返回数据</span><br>    irc = td-&gt;waitdatavalid();<br>    <span class="hljs-keyword">if</span> (irc != <span class="hljs-number">0</span>)<br>        <span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>;<br><br>    <span class="hljs-comment">//在超时时间内等待数据寄存器值被设置，可以读取数据</span><br>    irc = td-&gt;waitrespready(<span class="hljs-type">to_t</span>);<br>    <span class="hljs-keyword">if</span> (irc != <span class="hljs-number">0</span>)<br>        <span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>;<br><br>    <span class="hljs-comment">//读取返回响应数据</span><br>    irc = td-&gt;readresp(respbuffer, respbufferlen);<br>    <span class="hljs-keyword">if</span> (irc != <span class="hljs-number">0</span> <br>        *respbufferlen &lt; <span class="hljs-keyword">sizeof</span>(<span class="hljs-keyword">struct</span> tpm_rsp_header))<br>        <span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>;<br><br>    td-&gt;ready();<br><br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>可以看到发送命令分为6个主要函数,activate、senddata、waitdatavalid、waitrespready、readresp以及ready。</p>
+<h5 id="tis-activate"><a href="#tis-activate" class="headerlink" title="tis_activate"></a>tis_activate</h5><blockquote>
+<p>TPM（Trusted Platform Module）是一个专门的安全硬件模块，它用于在计算设备中提供硬件级别的安全功能，例如密钥生成、加密、解密和数字签名。TPM通常用于确保计算平台的完整性和认证。</p>
+<p>TPM的Localities是一种访问控制机制，用于在TPM内部区分不同安全级别的访问权限。Localities的概念是为了支持多种安全执行环境（例如BIOS、操作系统、虚拟化平台等）共享TPM资源，同时确保这些环境之间的隔离和安全性。</p>
+<p>TPM中有五个不同的Localities，编号为0到4。它们的安全级别是递增的，即Localities 0具有最低的安全级别，而Localities 4具有最高的安全级别。这些不同的Localities可以用于控制对TPM资源的访问。例如，某些敏感操作可能只允许在具有较高Localities级别的环境中执行。</p>
+<p>总结一下，TPM的Localities是一种区分不同安全级别访问权限的机制，用于支持多种安全执行环境共享TPM资源，同时保证环境之间的隔离和安全性。</p>
+</blockquote>
+<p>主要作用就是激活对应的locality</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><code class="hljs C"><span class="hljs-comment">//u8类型的locty，表示要激活的locality编号（0到4之间的整数）</span><br><span class="hljs-type">static</span> u32 <span class="hljs-title function_">tis_activate</span><span class="hljs-params">(u8 locty)</span><br>&#123;<br>    <span class="hljs-keyword">if</span> (!CONFIG_TCGBIOS)<br>        <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br><br>    u32 rc = <span class="hljs-number">0</span>;<br>    u8 acc;<br>    <span class="hljs-type">int</span> l;<br>    u32 timeout_a = tpm_drivers[TIS_DRIVER_IDX].timeouts[TIS_TIMEOUT_TYPE_A];<br><br>    <span class="hljs-comment">//函数检查当前locality（locty）是否已被激活。如果没有被激活，它将释放所有正在使用的locality（从4到0），以便将当前locality设置为活动状态。</span><br>    <span class="hljs-keyword">if</span> (!(readb(TIS_REG(locty, TIS_REG_ACCESS)) &amp;<br>          TIS_ACCESS_ACTIVE_LOCALITY)) &#123;<br>        <span class="hljs-comment">/* release locality in use top-downwards */</span><br>        <span class="hljs-keyword">for</span> (l = <span class="hljs-number">4</span>; l &gt;= <span class="hljs-number">0</span>; l--)<br>            writeb(TIS_REG(l, TIS_REG_ACCESS),<br>                   TIS_ACCESS_ACTIVE_LOCALITY);<br>    &#125;<br><br>    <span class="hljs-comment">/* request access to locality */</span><br>    <span class="hljs-comment">//请求访问指定的locality（locty），通过向TIS_REG_ACCESS寄存器写入TIS_ACCESS_REQUEST_USE值</span><br>    writeb(TIS_REG(locty, TIS_REG_ACCESS), TIS_ACCESS_REQUEST_USE);<br><br>    <span class="hljs-comment">//函数读取TIS_REG_ACCESS寄存器的值，检查已请求的locality是否已激活。</span><br>    <span class="hljs-comment">//如果成功激活，函数将TIS_REG_STS寄存器设置为TIS_STS_COMMAND_READY，并调用tis_wait_sts函数等待状态寄存器的状态变为TIS_STS_COMMAND_READY。</span><br>    acc = readb(TIS_REG(locty, TIS_REG_ACCESS));<br>    <span class="hljs-keyword">if</span> ((acc &amp; TIS_ACCESS_ACTIVE_LOCALITY)) &#123;<br>        writeb(TIS_REG(locty, TIS_REG_STS), TIS_STS_COMMAND_READY);<br>        rc = tis_wait_sts(locty, timeout_a,<br>                          TIS_STS_COMMAND_READY, TIS_STS_COMMAND_READY);<br>    &#125;<br><br>    <span class="hljs-keyword">return</span> rc;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h5 id="tis-senddata"><a href="#tis-senddata" class="headerlink" title="tis-senddata"></a>tis-senddata</h5><p>tis驱动的主要发送函数，我们看一下是如何实现的？</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> u32 <span class="hljs-title function_">tis_senddata</span><span class="hljs-params">(<span class="hljs-type">const</span> u8 *<span class="hljs-type">const</span> data, u32 len)</span><br>&#123;<br>    <span class="hljs-keyword">if</span> (!CONFIG_TCGBIOS)<br>        <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br><br>    u32 rc = <span class="hljs-number">0</span>;<br>    u32 offset = <span class="hljs-number">0</span>;<br>    u32 end_loop = <span class="hljs-number">0</span>;<br>    u16 burst = <span class="hljs-number">0</span>;<br>    u8 locty = tis_find_active_locality();<br>    u32 timeout_d = tpm_drivers[TIS_DRIVER_IDX].timeouts[TIS_TIMEOUT_TYPE_D];<br>    u32 end = timer_calc_usec(timeout_d);<br><br>    <span class="hljs-keyword">do</span> &#123;<br>        <span class="hljs-keyword">while</span> (burst == <span class="hljs-number">0</span>) &#123;<br>            <span class="hljs-comment">//循环从TIS_REG_STS读取要发送的字节数</span><br>               burst = readl(TIS_REG(locty, TIS_REG_STS)) &gt;&gt; <span class="hljs-number">8</span>;<br>            <span class="hljs-keyword">if</span> (burst == <span class="hljs-number">0</span>) &#123;<br>                <span class="hljs-keyword">if</span> (timer_check(end)) &#123;<br>                    warn_timeout();<br>                    <span class="hljs-keyword">break</span>;<br>                &#125;<br>                yield();<br>            &#125;<br>        &#125;<br><br>        <span class="hljs-keyword">if</span> (burst == <span class="hljs-number">0</span>) &#123;<br>            rc = TCG_RESPONSE_TIMEOUT;<br>            <span class="hljs-keyword">break</span>;<br>        &#125;<br><br>        <span class="hljs-keyword">while</span> (<span class="hljs-number">1</span>) &#123;<br>            <span class="hljs-comment">//循环向TIS_REG_DATA_FIFO中写入数据相应的数据</span><br>            writeb(TIS_REG(locty, TIS_REG_DATA_FIFO), data[offset++]);<br>            burst--;<br><br>            <span class="hljs-keyword">if</span> (burst == <span class="hljs-number">0</span>  offset == len)<br>                <span class="hljs-keyword">break</span>;<br>        &#125;<br><br>        <span class="hljs-keyword">if</span> (offset == len)<br>            end_loop = <span class="hljs-number">1</span>;<br>    &#125; <span class="hljs-keyword">while</span> (end_loop == <span class="hljs-number">0</span>);<br><br>    <span class="hljs-keyword">return</span> rc;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>总结：就是从TIS_REG_STS中获取要发送的字节数，然后将数据写入TIS_REG_DATA_FIFO之中。</p>
+<h5 id="tis-waitdatavalid"><a href="#tis-waitdatavalid" class="headerlink" title="tis_waitdatavalid"></a>tis_waitdatavalid</h5><p>这个函数在超时时间内，等待返回数据，如果状态为没有被重新设置就会返回错误。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> u32 <span class="hljs-title function_">tis_waitdatavalid</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span><br>&#123;<br>    <span class="hljs-keyword">if</span> (!CONFIG_TCGBIOS)<br>        <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br><br>    u32 rc = <span class="hljs-number">0</span>;<br>    u8 locty = tis_find_active_locality();<br>    u32 timeout_c = tpm_drivers[TIS_DRIVER_IDX].timeouts[TIS_TIMEOUT_TYPE_C];<br><br>    <span class="hljs-comment">//tis_wait_sts() 函数等待 TPM 状态寄存器中指定的状态位（在本例中为 TIS_STS_VALID）被设置为可用，在指定的超时期限内设置状态位时返回 0。</span><br>    <span class="hljs-keyword">if</span> (tis_wait_sts(locty, timeout_c, TIS_STS_VALID, TIS_STS_VALID) != <span class="hljs-number">0</span>)<br>        rc = <span class="hljs-number">1</span>;<br><br>    <span class="hljs-keyword">return</span> rc;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h5 id="tis-waitrespready"><a href="#tis-waitrespready" class="headerlink" title="tis_waitrespready"></a>tis_waitrespready</h5><p>在TIS_REG_STS被设置可用之后，将其设置为TIS_STS_TPM_GO，在超时期限内，<code>tis_wait_sts()</code> 函数等待 TPM 状态寄存器中指定的状态位（在本例中为 <code>TIS_STS_DATA_AVAILABLE</code>）被设置，在指定的超时期限内设置状态位时返回 0。如果在超时期限内状态位未被设置，则 <code>tis_wait_sts()</code> 返回非零的错误代码。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> u32 <span class="hljs-title function_">tis_waitrespready</span><span class="hljs-params">(<span class="hljs-keyword">enum</span> tpmDurationType <span class="hljs-type">to_t</span>)</span><br>&#123;<br>    <span class="hljs-keyword">if</span> (!CONFIG_TCGBIOS)<br>        <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br><br>    u32 rc = <span class="hljs-number">0</span>;<br>    u8 locty = tis_find_active_locality();<br>    u32 timeout = tpm_drivers[TIS_DRIVER_IDX].durations[<span class="hljs-type">to_t</span>];<br><br>    writeb(TIS_REG(locty ,TIS_REG_STS), TIS_STS_TPM_GO);<br><br>    <span class="hljs-comment">//超时期限内等待TIS_STS_DATA_AVAILABLE为数据可用</span><br>    <span class="hljs-keyword">if</span> (tis_wait_sts(locty, timeout,<br>                     TIS_STS_DATA_AVAILABLE, TIS_STS_DATA_AVAILABLE) != <span class="hljs-number">0</span>)<br>        rc = <span class="hljs-number">1</span>;<br><br>    <span class="hljs-keyword">return</span> rc;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h5 id="tis-readresp"><a href="#tis-readresp" class="headerlink" title="tis_readresp"></a>tis_readresp</h5><p>就是从TIS_REG_DATA_FIFO中读取数据。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><code class="hljs C"><span class="hljs-type">static</span> u32 <span class="hljs-title function_">tis_readresp</span><span class="hljs-params">(u8 *buffer, u32 *len)</span><br>&#123;<br>    <span class="hljs-keyword">if</span> (!CONFIG_TCGBIOS)<br>        <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br><br>    u32 rc = <span class="hljs-number">0</span>;<br>    u32 offset = <span class="hljs-number">0</span>;<br>    u32 sts;<br>    u8 locty = tis_find_active_locality();<br><br>    <span class="hljs-keyword">while</span> (offset &lt; *len) &#123;<br>        <span class="hljs-comment">//读取数据TIS_REG_DATA_FIFO</span><br>        buffer[offset] = readb(TIS_REG(locty, TIS_REG_DATA_FIFO));<br>        offset++;<br>        sts = readb(TIS_REG(locty, TIS_REG_STS));<br>        <span class="hljs-comment">/* data left ? */</span><br>        <span class="hljs-keyword">if</span> ((sts &amp; TIS_STS_DATA_AVAILABLE) == <span class="hljs-number">0</span>)<br>            <span class="hljs-keyword">break</span>;<br>    &#125;<br><br>    *len = offset;<br><br>    <span class="hljs-keyword">return</span> rc;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h5 id="tis-ready"><a href="#tis-ready" class="headerlink" title="tis_ready"></a>tis_ready</h5><p>将locty设置为activate之后的状态。这样就不用下次继续activate了。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> u32 <span class="hljs-title function_">tis_ready</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span><br>&#123;<br>    <span class="hljs-keyword">if</span> (!CONFIG_TCGBIOS)<br>        <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br><br>    u32 rc = <span class="hljs-number">0</span>;<br>    u8 locty = tis_find_active_locality();<br>    u32 timeout_b = tpm_drivers[TIS_DRIVER_IDX].timeouts[TIS_TIMEOUT_TYPE_B];<br><br>    <span class="hljs-comment">//恢复TIS_REG_STS寄存器值为TIS_STS_COMMAND_READY，代表命令准备好了</span><br>    writeb(TIS_REG(locty, TIS_REG_STS), TIS_STS_COMMAND_READY);<br>    rc = tis_wait_sts(locty, timeout_b,<br>                      TIS_STS_COMMAND_READY, TIS_STS_COMMAND_READY);<br><br>    <span class="hljs-keyword">return</span> rc;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="tpm20-get-pcrbanks"><a href="#tpm20-get-pcrbanks" class="headerlink" title="tpm20_get_pcrbanks"></a>tpm20_get_pcrbanks</h3><p>该函数定义了一个名为<code>buffer</code>的<code>u8</code>类型数组，长度为128，用于存储从TPM获取到的数据。其次调用tpm20_getcapability获取PCR信息，TCG官方解释如下：</p>
+<blockquote>
+<p><code>TPM_CAP_PCRS</code>是TPM（Trusted Platform Module，可信平台模块）的一种Capability（能力），用于返回当前分配给PCR（Platform Configuration Registers）的信息。该命令的参数<code>property</code>应为零。当TPM收到此命令时，它将始终返回完整的PCR分配，并将<code>moreData</code>设置为<code>NO</code>。</p>
+<p>返回的信息是一个<code>TPML_PCR_SELECTION</code>结构体，其中包含了每个PCR bank中已分配的PCR的信息。对于每个已实现的PCR bank，该结果中必须包含一个<code>TPMS_PCR_SELECTION</code>结构体。对于每个已实现的哈希算法，该结果中也可以包含一个<code>TPMS_PCR_SELECTION</code>结构体。</p>
+<p>通过使用<code>TPM_CAP_PCRS</code>命令，可以查询当前的PCR分配情况，以便在系统中进行更有效的安全策略实施。</p>
+</blockquote>
+<p><img src="/wp-content/uploads/2023/06/image-1686642236974.png" srcset="/img/loading.gif" lazyload alt="file"></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">tpm2_res_getcapability</span> &#123;</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">tpm_rsp_header</span> <span class="hljs-title">hdr</span>;</span><br>    u8 moreData;<br>    u32 capability;<br>    u8 data[<span class="hljs-number">0</span>]; <span class="hljs-comment">/* capability dependent data */</span><br>&#125; PACKED;<br><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">tpms_pcr_selection</span> &#123;</span><br>    u16 hashAlg;<br>    u8 sizeOfSelect;<br>    u8 pcrSelect[<span class="hljs-number">0</span>];<br>&#125; PACKED;<br><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">tpml_pcr_selection</span> &#123;</span><br>    u32 count;<br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">tpms_pcr_selection</span> <span class="hljs-title">selections</span>[0];</span><br>&#125; PACKED;<br><br><span class="hljs-type">static</span> <span class="hljs-type">int</span><br><span class="hljs-title function_">tpm20_get_pcrbanks</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span><br>&#123;<br>    <span class="hljs-comment">//用于存储从TPM获取到的数据</span><br>    u8 buffer[<span class="hljs-number">128</span>];<br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">tpm2_res_getcapability</span> *<span class="hljs-title">trg</span> =</span><br>      (<span class="hljs-keyword">struct</span> tpm2_res_getcapability *)&amp;buffer;<br><br>    <span class="hljs-comment">//获取PCR，参数property应为零，TPM收到此命令时，它将始终返回完整的PCR分配，并将moreData设置为NO</span><br>    <span class="hljs-type">int</span> ret = tpm20_getcapability(TPM2_CAP_PCRS, <span class="hljs-number">0</span>, <span class="hljs-number">8</span>, &amp;trg-&gt;hdr,<br>                                  <span class="hljs-keyword">sizeof</span>(buffer));<br>    <span class="hljs-keyword">if</span> (ret)<br>        <span class="hljs-keyword">return</span> ret;<br><br>    <span class="hljs-comment">/* defend against (broken) TPM sending packets that are too short */</span><br>    u32 resplen = be32_to_cpu(trg-&gt;hdr.totlen);<br>    <span class="hljs-keyword">if</span> (resplen &lt;= offsetof(<span class="hljs-keyword">struct</span> tpm2_res_getcapability, data))<br>        <span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>;<br><br>    u32 size = resplen - offsetof(<span class="hljs-keyword">struct</span> tpm2_res_getcapability, data);<br>    <span class="hljs-comment">/* we need a valid tpml_pcr_selection up to and including sizeOfSelect */</span><br>    <span class="hljs-keyword">if</span> (size &lt; offsetof(<span class="hljs-keyword">struct</span> tpml_pcr_selection, selections) +<br>               offsetof(<span class="hljs-keyword">struct</span> tpms_pcr_selection, pcrSelect))<br>        <span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>;<br><br>    <span class="hljs-comment">//全局变量，存放PCR bank</span><br>    tpm20_pcr_selection = malloc_high(size);<br>    <span class="hljs-keyword">if</span> (tpm20_pcr_selection) &#123;<br>        <span class="hljs-comment">//返回TPML_PCR_SELECTION结构体</span><br>        <span class="hljs-built_in">memcpy</span>(tpm20_pcr_selection, &amp;trg-&gt;data, size);<br>        tpm20_pcr_selection_size = size;<br>    &#125; <span class="hljs-keyword">else</span> &#123;<br>        warn_noalloc();<br>        ret = <span class="hljs-number">-1</span>;<br>    &#125;<br><br>    <span class="hljs-keyword">return</span> ret;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h4 id="tpm20-getcapability"><a href="#tpm20-getcapability" class="headerlink" title="tpm20_getcapability"></a>tpm20_getcapability</h4><p>向TPM发送TPM2_CC_GetCapability请求，返回当前TPM的能力描述信息。上面调用的就是返回对应的PCR属性以及对应的数量。下图时TCG规范中的可以使用TPM2_CC_GetCapability获取信息的命令。</p>
+<p><img src="/wp-content/uploads/2023/06/image-1686642248131.png" srcset="/img/loading.gif" lazyload alt="file"></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><code class="hljs C"><span class="hljs-type">static</span> <span class="hljs-type">int</span><br><span class="hljs-title function_">tpm20_getcapability</span><span class="hljs-params">(u32 capability, u32 property, u32 count,</span><br><span class="hljs-params">                    <span class="hljs-keyword">struct</span> tpm_rsp_header *rsp, u32 rsize)</span><br>&#123;<br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">tpm2_req_getcapability</span> <span class="hljs-title">trg</span> =</span> &#123;<br>        .hdr.tag = cpu_to_be16(TPM2_ST_NO_SESSIONS),<br>        .hdr.totlen = cpu_to_be32(<span class="hljs-keyword">sizeof</span>(trg)),<br>        .hdr.ordinal = cpu_to_be32(TPM2_CC_GetCapability),<br>        .capability = cpu_to_be32(capability),<br>        .property = cpu_to_be32(property),<br>        .propertycount = cpu_to_be32(count),<br>    &#125;;<br><br>    u32 resp_size = rsize;<br>    <span class="hljs-type">int</span> ret = tpmhw_transmit(<span class="hljs-number">0</span>, &amp;trg.hdr, rsp, &amp;resp_size,<br>                             TPM_DURATION_TYPE_SHORT);<br>    ret = (ret <br>           rsize &lt; be32_to_cpu(rsp-&gt;totlen)) ? <span class="hljs-number">-1</span> : be32_to_cpu(rsp-&gt;errcode);<br><br>    dprintf(DEBUG_tcg, <span class="hljs-string">&quot;TCGBIOS: Return value from sending TPM2_CC_GetCapability = 0x%08x\n&quot;</span>,<br>            ret);<br><br>    <span class="hljs-keyword">return</span> ret;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="tpm20-write-EfiSpecIdEventStruct"><a href="#tpm20-write-EfiSpecIdEventStruct" class="headerlink" title="tpm20_write_EfiSpecIdEventStruct"></a>tpm20_write_EfiSpecIdEventStruct</h3><p>该函数用于添加在描述摘要格式的日志开头添加一条，该日志添加到了ACPI日志中，这个事件包含了TPM所支持的所有hash算法的列表,以及每个hash算法对应的hash大小。</p>
+<ol>
+<li>检查tpm20_pcr_selection,这是TPM返回的PCR选择结构,包含了所选PCR及对应的hash算法信息。如果这个结构不存在或格式错误,函数返回失败。</li>
+<li>填充EfiSpecIdEventStruct事件结构。这个结构包含hash算法列表和大小信息。</li>
+<li>计算EfiSpecIdEventStruct事件结构的总大小,包括大小字段本身和 DigestSizes数组。</li>
+<li>创建一个tpm_log_event结构,设置事件类型为EV_NO_ACTION。</li>
+<li>调用tpm_log_event函数,将EfiSpecIdEventStruct事件记录到ACPI日志中。</li>
+</ol>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><code class="hljs C"><span class="hljs-type">static</span> <span class="hljs-type">int</span><br><span class="hljs-title function_">tpm20_write_EfiSpecIdEventStruct</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span><br>&#123;<br>    <span class="hljs-keyword">if</span> (!tpm20_pcr_selection)<br>        <span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>;<br><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">tpms_pcr_selection</span> *<span class="hljs-title">sel</span> =</span> tpm20_pcr_selection-&gt;selections;<br>    <span class="hljs-type">void</span> *nsel, *end = (<span class="hljs-type">void</span>*)tpm20_pcr_selection + tpm20_pcr_selection_size;<br><br>    u32 count;<br>    <span class="hljs-keyword">for</span> (count = <span class="hljs-number">0</span>; count &lt; be32_to_cpu(tpm20_pcr_selection-&gt;count); count++) &#123;<br>        u8 sizeOfSelect = sel-&gt;sizeOfSelect;<br><br>        nsel = (<span class="hljs-type">void</span>*)sel + <span class="hljs-keyword">sizeof</span>(*sel) + sizeOfSelect;<br>        <span class="hljs-keyword">if</span> (nsel &gt; end)<br>            <span class="hljs-keyword">break</span>;<br><br>        <span class="hljs-type">int</span> hsize = tpm20_get_hash_buffersize(be16_to_cpu(sel-&gt;hashAlg));<br>        <span class="hljs-keyword">if</span> (hsize &lt; <span class="hljs-number">0</span>) &#123;<br>            dprintf(DEBUG_tcg, <span class="hljs-string">&quot;TPM is using an unsupported hash: %d\n&quot;</span>,<br>                    be16_to_cpu(sel-&gt;hashAlg));<br>            <span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>;<br>        &#125;<br><br>        event.hdr.digestSizes[count].algorithmId = be16_to_cpu(sel-&gt;hashAlg);<br>        event.hdr.digestSizes[count].digestSize = hsize;<br><br>        sel = nsel;<br>    &#125;<br><br>    <span class="hljs-keyword">if</span> (sel != end) &#123;<br>        dprintf(DEBUG_tcg, <span class="hljs-string">&quot;Malformed pcr selection structure fron TPM\n&quot;</span>);<br>        <span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>;<br>    &#125;<br><br>    event.hdr.numberOfAlgorithms = count;<br>    <span class="hljs-type">int</span> event_size = offsetof(<span class="hljs-keyword">struct</span> TCG_EfiSpecIdEventStruct<br>                              , digestSizes[count]);<br>    u32 *vendorInfoSize = (<span class="hljs-type">void</span>*)&amp;event + event_size;<br>    *vendorInfoSize = <span class="hljs-number">0</span>;<br>    event_size += <span class="hljs-keyword">sizeof</span>(*vendorInfoSize);<br><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">tpm_log_entry</span> <span class="hljs-title">le</span> =</span> &#123;<br>        .hdr.eventtype = EV_NO_ACTION,<br>    &#125;;<br>    <span class="hljs-keyword">return</span> tpm_log_event(&amp;le.hdr, SHA1_BUFSIZE, &amp;event, event_size);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h2 id="tpm-smbios-measure"><a href="#tpm-smbios-measure" class="headerlink" title="tpm_smbios_measure"></a>tpm_smbios_measure</h2><p>这个函数的目的是度量SMBIOS表，并记录相应的日志信息。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><code class="hljs C"><span class="hljs-type">static</span> <span class="hljs-type">void</span><br><span class="hljs-title function_">tpm_smbios_measure</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span><br>&#123;<br>    <span class="hljs-comment">//使用SHA1作为默认Hash算法</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">pcctes</span> <span class="hljs-title">pcctes</span> =</span> &#123;<br>        .eventid = <span class="hljs-number">1</span>,<br>        .eventdatasize = SHA1_BUFSIZE,<br>    &#125;;<br>    <span class="hljs-comment">//SMBiosAddr地址在maininit过程中platform_hardware_setup中qemu_platform_setup已经被赋值了</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">smbios_entry_point</span> *<span class="hljs-title">sep</span> =</span> SMBiosAddr;<br><br>    dprintf(DEBUG_tcg, <span class="hljs-string">&quot;TCGBIOS: SMBIOS at %p\n&quot;</span>, sep);<br><br>    <span class="hljs-keyword">if</span> (!sep)<br>        <span class="hljs-keyword">return</span>;<br><br>    sha1((<span class="hljs-type">const</span> u8 *)sep-&gt;structure_table_address,<br>         sep-&gt;structure_table_length, pcctes.digest);<br>    <span class="hljs-comment">//将SMBIOS表的度量值扩展进入对应PCR 1寄存器中，并记录日志。</span><br>    tpm_add_measurement_to_log(<span class="hljs-number">1</span>,<br>                               EV_EVENT_TAG,<br>                               (<span class="hljs-type">const</span> <span class="hljs-type">char</span> *)&amp;pcctes, <span class="hljs-keyword">sizeof</span>(pcctes),<br>                               (u8 *)&amp;pcctes, <span class="hljs-keyword">sizeof</span>(pcctes));<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="tpm-add-measurement-to-log"><a href="#tpm-add-measurement-to-log" class="headerlink" title="tpm_add_measurement_to_log"></a>tpm_add_measurement_to_log</h3><p>在函数中，完成对相应PCR的扩展，并记录日志到ACPI日志中。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><code class="hljs C"><span class="hljs-comment">/*</span><br><span class="hljs-comment"> * Add a measurement to the log; the data at data_seg:data/length are</span><br><span class="hljs-comment"> * appended to the TCG_PCClientPCREventStruct</span><br><span class="hljs-comment"> *</span><br><span class="hljs-comment"> * Input parameters:</span><br><span class="hljs-comment"> *  pcrindex   : which PCR to extend</span><br><span class="hljs-comment"> *  event_type : type of event; specs section on &#x27;Event Types&#x27;</span><br><span class="hljs-comment"> *  event       : pointer to info (e.g., string) to be added to log as-is</span><br><span class="hljs-comment"> *  event_length: length of the event</span><br><span class="hljs-comment"> *  hashdata    : pointer to the data to be hashed</span><br><span class="hljs-comment"> *  hashdata_length: length of the data to be hashed</span><br><span class="hljs-comment"> */</span><br><span class="hljs-type">static</span> <span class="hljs-type">void</span><br><span class="hljs-title function_">tpm_add_measurement_to_log</span><span class="hljs-params">(u32 pcrindex, u32 event_type,</span><br><span class="hljs-params">                           <span class="hljs-type">const</span> <span class="hljs-type">char</span> *event, u32 event_length,</span><br><span class="hljs-params">                           <span class="hljs-type">const</span> u8 *hashdata, u32 hashdata_length)</span><br>&#123;<br>    <span class="hljs-keyword">if</span> (!tpm_is_working())<br>        <span class="hljs-keyword">return</span>;<br><br>    u8 hash[SHA1_BUFSIZE];<br>    sha1(hashdata, hashdata_length, hash);<br><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">tpm_log_entry</span> <span class="hljs-title">le</span> =</span> &#123;<br>        .hdr.pcrindex = pcrindex,<br>        .hdr.eventtype = event_type,<br>    &#125;;<br>    <span class="hljs-type">int</span> digest_len = tpm_build_digest(&amp;le, hash, <span class="hljs-number">1</span>);<br>    <span class="hljs-keyword">if</span> (digest_len &lt; <span class="hljs-number">0</span>)<br>        <span class="hljs-keyword">return</span>;<br>    <span class="hljs-comment">//进行TPM扩展</span><br>    <span class="hljs-type">int</span> ret = tpm_extend(&amp;le, digest_len);<br>    <span class="hljs-keyword">if</span> (ret) &#123;<br>        tpm_set_failure();<br>        <span class="hljs-keyword">return</span>;<br>    &#125;<br>    tpm_build_digest(&amp;le, hash, <span class="hljs-number">0</span>);<br>    <span class="hljs-comment">//记录日志</span><br>    tpm_log_event(&amp;le.hdr, digest_len, event, event_length);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="tpm-extend"><a href="#tpm-extend" class="headerlink" title="tpm_extend"></a>tpm_extend</h3><p>就是调用tpmhw_transmit进行TPM扩展命令的发送，进行TPM扩展。</p>
+<h2 id="tpm-add-action"><a href="#tpm-add-action" class="headerlink" title="tpm_add_action"></a>tpm_add_action</h2><p>调用放：<code>tpm_add_action(2, &quot;Start Option ROM Scan&quot;);</code></p>
+<p>我们看一下该函数：添加了对EV_ACTION事件的度量。并将它扩展到PCR 2寄存器。其实底层也是调用tpm_add_measurement_to_log方法。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs C"><span class="hljs-comment">// Add an EV_ACTION measurement to the list of measurements</span><br><span class="hljs-type">static</span> <span class="hljs-type">void</span><br><span class="hljs-title function_">tpm_add_action</span><span class="hljs-params">(u32 pcrIndex, <span class="hljs-type">const</span> <span class="hljs-type">char</span> *<span class="hljs-built_in">string</span>)</span><br>&#123;<br>    u32 len = <span class="hljs-built_in">strlen</span>(<span class="hljs-built_in">string</span>);<br>    tpm_add_measurement_to_log(pcrIndex, EV_ACTION,<br>                               <span class="hljs-built_in">string</span>, len, (u8 *)<span class="hljs-built_in">string</span>, len);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h2 id="tpm-menu"><a href="#tpm-menu" class="headerlink" title="tpm_menu"></a>tpm_menu</h2><p>接着TPM相关的操作是，在post阶段-&gt;maininit-&gt;interactiva_bootmenu，显示TPM配置菜单，包括两个操作，clear TPM和改变PCR banks。</p>
+<h2 id="tpm-prepboot"><a href="#tpm-prepboot" class="headerlink" title="tpm_prepboot"></a>tpm_prepboot</h2><p>这个函数是接着要执行的，post阶段-&gt;prepareboot()-&gt;tpm_prepboot()，准备要进入boot阶段了执行的，获取授权认证密钥。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs C"><span class="hljs-type">void</span><br><span class="hljs-title function_">tpm_prepboot</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span><br>&#123;<br>    <span class="hljs-keyword">if</span> (!CONFIG_TCGBIOS)<br>        <span class="hljs-keyword">return</span>;<br><br>    <span class="hljs-keyword">switch</span> (TPM_version) &#123;<br>    <span class="hljs-keyword">case</span> TPM_VERSION_1_2:<br>        <span class="hljs-keyword">if</span> (TPM_has_physical_presence)<br>            tpm_simple_cmd(<span class="hljs-number">0</span>, TPM_ORD_PhysicalPresence,<br>                           <span class="hljs-number">2</span>, TPM_PP_NOT_PRESENT_LOCK, TPM_DURATION_TYPE_SHORT);<br>        <span class="hljs-keyword">break</span>;<br>    <span class="hljs-keyword">case</span> TPM_VERSION_2:<br>        tpm20_prepboot();<br>        <span class="hljs-keyword">break</span>;<br>    &#125;<br><br>    tpm_add_action(<span class="hljs-number">4</span>, <span class="hljs-string">&quot;Calling INT 19h&quot;</span>);<br>    tpm_add_event_separators();<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>tpm20_prepboot如下：先获取随机数，然后获取授权密钥。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><code class="hljs C"><span class="hljs-type">static</span> <span class="hljs-type">void</span><br><span class="hljs-title function_">tpm20_prepboot</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span><br>&#123;<br>    <span class="hljs-type">int</span> ret = tpm20_stirrandom();<br>    <span class="hljs-keyword">if</span> (ret)<br>         <span class="hljs-keyword">goto</span> err_exit;<br><br>    u8 auth[<span class="hljs-number">20</span>];<br>    <span class="hljs-comment">//获取随机数</span><br>    ret = tpm20_getrandom(&amp;auth[<span class="hljs-number">0</span>], <span class="hljs-keyword">sizeof</span>(auth));<br>    <span class="hljs-keyword">if</span> (ret)<br>        <span class="hljs-keyword">goto</span> err_exit;<br><br>    <span class="hljs-comment">//获取授权密钥</span><br>    ret = tpm20_hierarchychangeauth(auth);<br>    <span class="hljs-keyword">if</span> (ret)<br>        <span class="hljs-keyword">goto</span> err_exit;<br><br>    <span class="hljs-keyword">return</span>;<br><br>err_exit:<br>    dprintf(DEBUG_tcg, <span class="hljs-string">&quot;TCGBIOS: TPM malfunctioning (line %d).\n&quot;</span>, __LINE__);<br><br>    tpm_set_failure();<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="tpm-add-event-separators"><a href="#tpm-add-event-separators" class="headerlink" title="tpm_add_event_separators"></a>tpm_add_event_separators</h3><p>向PCRS0-7中添加事件分隔符，以便记录系统启动过程中的事件。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs C"><span class="hljs-comment">/*</span><br><span class="hljs-comment"> * Add event separators for PCRs 0 to 7; specs on &#x27;Measuring Boot Events&#x27;</span><br><span class="hljs-comment"> */</span><br><span class="hljs-type">static</span> <span class="hljs-type">void</span><br><span class="hljs-title function_">tpm_add_event_separators</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span><br>&#123;<br>    <span class="hljs-type">static</span> <span class="hljs-type">const</span> u8 evt_separator[] = &#123;<span class="hljs-number">0xff</span>,<span class="hljs-number">0xff</span>,<span class="hljs-number">0xff</span>,<span class="hljs-number">0xff</span>&#125;;<br>    u32 pcrIndex;<br>    <span class="hljs-keyword">for</span> (pcrIndex = <span class="hljs-number">0</span>; pcrIndex &lt;= <span class="hljs-number">7</span>; pcrIndex++)<br>        <span class="hljs-comment">//tpm_add_measurement_to_log函数会计算事件的哈希值，并将其添加到PCR寄存器中。</span><br>        tpm_add_measurement_to_log(pcrIndex, EV_SEPARATOR,<br>                                   <span class="hljs-literal">NULL</span>, <span class="hljs-number">0</span>,<br>                                   evt_separator,<br>                                   <span class="hljs-keyword">sizeof</span>(evt_separator));<br></code></pre></td></tr></table></figure>
+
+<h2 id="tpm-add-bcv"><a href="#tpm-add-bcv" class="headerlink" title="tpm_add_bcv"></a>tpm_add_bcv</h2><p>在boot阶段，调用13号中断将磁盘数据读入内存后，调用TPM设备对MBR进行度量。调用流程：boot阶段，do_boot-&gt;boot_disk-&gt;tpm_add_bcv；</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs C"><span class="hljs-comment">//MBR结构</span><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">mbr_s</span> &#123;</span><br>    u8 code[<span class="hljs-number">440</span>];<br>    <span class="hljs-comment">// 0x01b8</span><br>    u32 diskseg;<br>    <span class="hljs-comment">// 0x01bc</span><br>    u16 null;<br>    <span class="hljs-comment">// 0x01be</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">partition_s</span> <span class="hljs-title">partitions</span>[4];</span><br>    <span class="hljs-comment">// 0x01fe</span><br>    u16 signature;<br>&#125; PACKED; <br><br>tpm_add_bcv(bootdrv, MAKE_FLATPTR(bootseg, <span class="hljs-number">0</span>), <span class="hljs-number">512</span>);<br></code></pre></td></tr></table></figure>
+
+<p>看看度量代码：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><code class="hljs C"><span class="hljs-type">void</span><br><span class="hljs-title function_">tpm_add_bcv</span><span class="hljs-params">(u32 bootdrv, <span class="hljs-type">const</span> u8 *addr, u32 length)</span><br>&#123;<br>    <span class="hljs-keyword">if</span> (!tpm_is_working())<br>        <span class="hljs-keyword">return</span>;<br><br>    <span class="hljs-comment">//如果小于512字节，直接返回MBR一般都是第一个扇区512字节，前440字节一般是代码</span><br>    <span class="hljs-keyword">if</span> (length &lt; <span class="hljs-number">0x200</span>)<br>        <span class="hljs-keyword">return</span>;<br><br>    <span class="hljs-type">const</span> <span class="hljs-type">char</span> *<span class="hljs-built_in">string</span> = <span class="hljs-string">&quot;Booting BCV device 00h (Floppy)&quot;</span>;<br>    <span class="hljs-keyword">if</span> (bootdrv == <span class="hljs-number">0x80</span>)<br>        <span class="hljs-built_in">string</span> = <span class="hljs-string">&quot;Booting BCV device 80h (HDD)&quot;</span>;<br>    <span class="hljs-comment">//添加事件度量，往PCR 4中扩展</span><br>    tpm_add_action(<span class="hljs-number">4</span>, <span class="hljs-built_in">string</span>);<br><br>    <span class="hljs-comment">/* specs: see section &#x27;Hard Disk Device or Hard Disk-Like Devices&#x27; */</span><br>    <span class="hljs-comment">/* equivalent to: dd if=/dev/hda ibs=1 count=440  sha1sum */</span><br>    <span class="hljs-built_in">string</span> = <span class="hljs-string">&quot;MBR&quot;</span>;<br>    <span class="hljs-comment">// MBR放在了PCR 寄存器4中</span><br>    tpm_add_measurement_to_log(<span class="hljs-number">4</span>, EV_IPL,<br>                               <span class="hljs-built_in">string</span>, <span class="hljs-built_in">strlen</span>(<span class="hljs-built_in">string</span>),<br>                               addr, <span class="hljs-number">0x1b8</span>);<br><br>    <span class="hljs-comment">/* equivalent to: dd if=/dev/hda ibs=1 count=72 skip=440  sha1sum */</span><br>    <span class="hljs-comment">//512字节的后面72字节分区表，放在了PCR 5寄存器中</span><br>    <span class="hljs-built_in">string</span> = <span class="hljs-string">&quot;MBR PARTITION_TABLE&quot;</span>;<br>    tpm_add_measurement_to_log(<span class="hljs-number">5</span>, EV_IPL_PARTITION_DATA,<br>                               <span class="hljs-built_in">string</span>, <span class="hljs-built_in">strlen</span>(<span class="hljs-built_in">string</span>),<br>                               addr + <span class="hljs-number">0x1b8</span>, <span class="hljs-number">0x48</span>);<br>&#125;<br></code></pre></td></tr></table></figure>
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%8F%AF%E4%BF%A1%E8%AE%A1%E7%AE%97/" class="category-chain-item">可信计算</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/BIOS/" class="print-no-link">#BIOS</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>SeaBIOS调用 vTPM启动过程</div>
+      <div>http://example.com/049.html</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>landery</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2023年6月13日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/052.html" title="wordpress lolimeow主题去掉阴影">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">wordpress lolimeow主题去掉阴影</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/0031.html" title="home目录过大，根目录空间却很小，根目录扩容">
+                        <span class="hidden-mobile">home目录过大，根目录空间却很小，根目录扩容</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"GK4nuH8jdXDcw4IJIVShjMtA-gzGzoHsz","appKey":"7P0B0kJFdaLY6eDQ93Lhcv8J","path":"window.location.pathname","placeholder":"建议使用QQ邮箱，评论头像采用QQ头像","avatar":"retro","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":true,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":true,"bg":null,"count":true},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+    <!-- 备案信息 ICP for China -->
+    <div class="beian">
+  <span>
+    <a href="http://beian.miit.gov.cn/" target="_blank" rel="nofollow noopener">
+      蜀ICP备2022011502号
+    </a>
+  </span>
+  
+    
+      <span>
+        <a
+          href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=51012202001227"
+          rel="nofollow noopener"
+          class="beian-police"
+          target="_blank"
+        >
+          
+            <span style="visibility: hidden; width: 0">|</span>
+            <img src="/img/police_beian.png" srcset="/img/loading.gif" lazyload alt="police-icon"/>
+          
+          <span>川公网安备51012202001227号</span>
+        </a>
+      </span>
+    
+  
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/DynamicRibbon.min.js"></script>
+<script src="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/love.min.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

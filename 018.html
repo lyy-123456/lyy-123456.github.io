@@ -1,0 +1,902 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="landery">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="title: 可信计算_Qemu04 采用virsh创建Qemu&#x2F;KVM虚拟机 date: 2022-07-11 18:38:10.702 updated: 2022-07-12 10:56:22.719 url: &#x2F;archives&#x2F;可信计算qemu04采用virsh创建qemukvm虚拟机 categories:  可信计算 tags: 可信计算 KVM   1">
+<meta property="og:type" content="article">
+<meta property="og:title" content="可信计算_Qemu04 采用virsh创建Qemu&#x2F;KVM虚拟机">
+<meta property="og:url" content="http://example.com/018.html">
+<meta property="og:site_name" content="landery小站">
+<meta property="og:description" content="title: 可信计算_Qemu04 采用virsh创建Qemu&#x2F;KVM虚拟机 date: 2022-07-11 18:38:10.702 updated: 2022-07-12 10:56:22.719 url: &#x2F;archives&#x2F;可信计算qemu04采用virsh创建qemukvm虚拟机 categories:  可信计算 tags: 可信计算 KVM   1">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1657535804199.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1657589901677.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1657594009696.png">
+<meta property="article:published_time" content="2023-03-07T13:14:20.000Z">
+<meta property="article:modified_time" content="2024-04-15T10:00:30.649Z">
+<meta property="article:author" content="landery">
+<meta property="article:tag" content="kvm">
+<meta property="article:tag" content="qemu">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1657535804199.png">
+  
+  
+  
+  <title>可信计算_Qemu04 采用virsh创建Qemu/KVM虚拟机 - landery小站</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/scroll.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"GK4nuH8jdXDcw4IJIVShjMtA-gzGzoHsz","app_key":"7P0B0kJFdaLY6eDQ93Lhcv8J","server_url":"https://api.landery.cn","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>landery 小站</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/links/" target="_self">
+                <i class="iconfont icon-link-fill"></i>
+                <span>友链</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/remark/" target="_self">
+                <i class="iconfont icon-twitch-fill"></i>
+                <span>留言板</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/image/bg/001.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="可信计算_Qemu04 采用virsh创建Qemu/KVM虚拟机"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2023-03-07 21:14" pubdate>
+          2023年3月7日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2.4k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          21 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">可信计算_Qemu04 采用virsh创建Qemu/KVM虚拟机</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <hr>
+<p>title: 可信计算_Qemu04 采用virsh创建Qemu&#x2F;KVM虚拟机 date: 2022-07-11 18:38:10.702 updated: 2022-07-12 10:56:22.719 url: &#x2F;archives&#x2F;可信计算qemu04采用virsh创建qemukvm虚拟机 categories:</p>
+<ul>
+<li>可信计算 tags:</li>
+<li>可信计算</li>
+<li>KVM</li>
+</ul>
+<hr>
+<h3 id="1-libvirt、virsh、virt-manager"><a href="#1-libvirt、virsh、virt-manager" class="headerlink" title="1. libvirt、virsh、virt-manager"></a><strong>1. libvirt、virsh、virt-manager</strong></h3><p><img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1657535804199.png" srcset="/img/loading.gif" lazyload alt="image-1657535804199"></p>
+<ul>
+<li>其中，libvirt是提供了一个方便的方式来管理虚拟机和其他虚拟化功能的软件的集合，如存储和网络接口管理。这些软件包括一个API库，一个守护进程（Libvirtd），和一个命令行实用程序（virsh）。</li>
+<li>libvirt的首要目标是能够管理多个不同的虚拟化供应商&#x2F;虚拟机管理程序提供一个单一的方式。例如，命令“virsh列表等等都可以用于任何支持现有的虚拟机管理程序列表（KVM、Xen、VMware ESX，等）不需要学习管理程序特定的工具！</li>
+<li>而virsh是命令行工具，virt-manager是GUI，带有图形界面的工具。但他们都是通过libvirt提供的接口，来进行虚拟机管理的一些操作。</li>
+</ul>
+<p>virt-manager是一个面向桌面的虚拟机管理工具，通过libvirt来进行虚拟机的管理。主要用于管理KVM，也可以管理Xen和LXC（linux containers）。 Virt-manager提供了一个窗口界面用于查看运行的虚拟机（zai libvirt配置文件中，称为domain），虚拟机的性能和资源使用情况。提供了向导用来创建新虚拟机，配置、修改虚拟机的资源分配和虚拟硬件设备。一个内置的VNC 和 SPICE 客户端提供连到虚拟机的图形接口。 virt-manager还提供了命令行的支持性工具：参照官网：<a target="_blank" rel="noopener" href="https://virt-manager.org/">https://virt-manager.org/</a></p>
+<ol>
+<li>virt-install 命令行工具，用于部署虚拟机。(安装了virt-install之后virt-clone和virt-xml就已经安装了。)</li>
+<li>virt-viewer 轻量的UI接口，VNC和SPICE协议都支持，使用libvirt来查看图形链接信息。</li>
+<li>virt-clone命令行工具，用于克隆已经存在的（关机状态）的主机。拷贝当前磁盘镜像，定义配置文件、名字、UUID、MAC地址到新磁盘镜像。</li>
+<li>virt-xml命令行工具，用于编辑domain XML。（libvirt使用XML文件定义虚拟机domain）</li>
+<li>virt-convert命令行工具，用户转换OVF和VMX 虚拟机配置以支持使用libvirt运行。</li>
+<li>virt-bootstrap 命令行工具，用于为基于libvirt的container设置root file system。</li>
+</ol>
+<blockquote>
+<p>以上工具需要单独安装 Centos 安装virt-install：<code>yum install virt-install -y</code> 之前我们已经使用过了virt-manger，所以我们就不采用virt-manager了，这次我们使用virsh来进行创建虚拟机，virsh是需要定义xml文件来进行虚拟机相关操作的，我们可以利用virt-install来进行安装虚拟机。</p>
+</blockquote>
+<h3 id="3-virsh常用命令"><a href="#3-virsh常用命令" class="headerlink" title="3 virsh常用命令"></a><strong>3 virsh常用命令</strong></h3><p>virsh常用命令：</p>
+<ul>
+<li>virsh start x                   启动名字为x的非活动虚拟机</li>
+<li>virsh list  –all                 列出虚拟机</li>
+<li>virsh create x.xml           创建虚拟机（创建后，虚拟机立即执行，成为活动主机）</li>
+<li>virsh suspend x              暂停虚拟机</li>
+<li>virsh resume x               启动暂停的虚拟机</li>
+<li>virsh shutdown x           正常关闭虚拟机</li>
+<li>virsh destroy x               强制关闭虚拟机</li>
+<li>virsh undefine x          删除虚拟机</li>
+<li>virsh dominfo x                 显示虚拟机的基本信息</li>
+<li>virsh domname 2               显示id号为2的虚拟机名</li>
+<li>virsh domid x                    显示虚拟机id号</li>
+<li>virsh domuuid x                 显示虚拟机的uuid</li>
+<li>virsh domstate x                显示虚拟机的当前状态</li>
+<li>virsh dumpxml x                 显示虚拟机的当前配置文件（可能和定义虚拟机时的配置不同，因为当虚拟机启动时，需要给虚拟机分配id号、uuid、vnc端口号等等）</li>
+<li>virsh setmem x 512000       给不活动虚拟机设置内存大小</li>
+<li>virsh edit x                        编辑配置文件（一般是在刚定义完虚拟机之后）</li>
+</ul>
+<h3 id="2-安装虚拟机"><a href="#2-安装虚拟机" class="headerlink" title="2 安装虚拟机"></a><strong>2 安装虚拟机</strong></h3><p>同样的创建磁盘： <code>qemu-img create -f qcow2 centos7-02.qcow2 10G</code> 使用virt-install安装虚拟机</p>
+<figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs apache"><span class="hljs-attribute">virt</span>-install -n centos7-<span class="hljs-number">02</span> -r <span class="hljs-number">2048</span> --vcpu=<span class="hljs-number">2</span> --disk path=centos7-<span class="hljs-number">02</span>.qcow2 --cdrom CentOS-<span class="hljs-number">7</span>-x86_64-DVD-<span class="hljs-number">2009</span>.iso<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>-n –name　指定虚拟机名称</li>
+<li>-r –ram　指定虚拟机内存</li>
+<li>--vcpu　指定虚拟CPU个数</li>
+<li>--disk　指定磁盘文件</li>
+<li>--cdrom　指定通过iso镜像文件启动</li>
+</ul>
+<p>报错：</p>
+<figure class="highlight subunit"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs subunit">[root@centos7 devsdb]# virt-install -n centos7<span class="hljs-string">-02</span> -r 2048 --vcpu=2 --disk path=centos7<span class="hljs-string">-02</span>.qcow2 --cdrom CentOS<span class="hljs-string">-7</span>-x86_64-DVD<span class="hljs-string">-2009</span>.iso<br>WARNING  No operating system detected, VM performance may suffer. Specify an OS with --os-variant for optimal results.<br><br>Starting install...<br><span class="hljs-keyword">ERROR    </span>不支持的配置：vmport is not available with this QEMU binary<br>Domain installation does not appear to have been successful.<br>If it was, you can restart your domain by running:<br>  virsh --connect qemu:///system start centos7<span class="hljs-string">-02</span><br>otherwise, please restart your installation.<br><br></code></pre></td></tr></table></figure>
+
+<p>应该是Qemu版本与libvirt版本不兼容导致的，我的qemu版本是7.0.0 ，我们通过命令查看libvirt的版本：<code>virsh version</code></p>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs powershell">[<span class="hljs-type">root</span>@<span class="hljs-type">centos7</span> <span class="hljs-type">devsdb</span>]<span class="hljs-comment"># virsh version</span><br>Compiled against library: libvirt <span class="hljs-number">4.5</span>.<span class="hljs-number">0</span><br><span class="hljs-keyword">Using</span> library: libvirt 4.5.0<br><span class="hljs-keyword">Using</span> API: QEMU 4.5.0<br>Running hypervisor: QEMU <span class="hljs-number">7.0</span>.<span class="hljs-number">0</span><br></code></pre></td></tr></table></figure>
+
+<p>可以看到它使用的Qemu 4.5.0的API，而我们使用的是Qemu7.0.0版本的，所以出现以上问题。 需要降低Qemu版本，因为我们尝试升级libvirt失败：<code>yum update libvirtd</code> 显示：</p>
+<figure class="highlight stata"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs stata">[root@centos7 devsdb]# yum <span class="hljs-keyword">update</span> libvirtd<br>Loaded plugins: fastestmirror<br>Loading mirror speeds from cached hostfile<br><span class="hljs-comment"> * base: mirrors.njupt.edu.cn</span><br><span class="hljs-comment"> * extras: mirrors.cqu.edu.cn</span><br><span class="hljs-comment"> * updates: mirrors.cqu.edu.cn</span><br>qemu-firmware-jenkins                                                                                                                                                   3.0 kB  00:00:00<br><span class="hljs-keyword">No</span> Match <span class="hljs-keyword">for</span> argument: libvirtd<br><span class="hljs-keyword">No</span> package libvirtd available.<br><span class="hljs-keyword">No</span> packages marked <span class="hljs-keyword">for</span> <span class="hljs-keyword">update</span><br></code></pre></td></tr></table></figure>
+
+<p>在安装的过程中，忘记记录了，他报了一些错误，我们换了一台机器，安装命令如下：</p>
+<ol>
+<li><p>先配置网卡连接：</p>
+<figure class="highlight mipsasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs mipsasm">virsh iface-<span class="hljs-keyword">bridge </span>eth0 <span class="hljs-keyword">br0 </span><span class="hljs-comment">#eth0根据自己的机器修改</span><br></code></pre></td></tr></table></figure>
+</li>
+<li><p>安装命令：</p>
+<figure class="highlight jboss-cli"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs jboss-cli">virt-install <span class="hljs-params">--connect</span>  qemu:<span class="hljs-string">///system</span> <span class="hljs-params">--virt-type</span> kvm <span class="hljs-params">--name</span> rhel6 <span class="hljs-params">--ram=1024</span>  <span class="hljs-params">--disk</span> path=<span class="hljs-string">/root/centos7-02.qcow2</span> <span class="hljs-params">--os-variant=centos7</span>.0 <span class="hljs-params">--accelerate</span> -c CentOS-7-x86_64-DVD-2009.iso <span class="hljs-params">--network</span> bridge=br0,model=virtio <span class="hljs-params">--vnc</span>  <span class="hljs-params">--vncport=5991</span> <span class="hljs-params">--vnclisten=0</span>.0.0.0 <span class="hljs-params">--force</span><br></code></pre></td></tr></table></figure></li>
+</ol>
+<p>需要安装vncserver，这个我们之前也介绍过，还需要修改libvirtd中qemu的权限，<code>/etc/libvirt/qemu.conf</code> ，之前也介绍过。 <img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1657589901677.png" srcset="/img/loading.gif" lazyload alt="image-1657589901677">可以看到，已经安装好机器，只是弹出来的virt-view是乱码，解决一下。 解决方法:<a target="_blank" rel="noopener" href="https://www.landery.cn/archives/bao-cuo-ji-lu-virt-view-he-vncviewer-xian-shi-fang-kuai-luan-ma-deng-wen-ti">https://www.landery.cn/archives/bao-cuo-ji-lu-virt-view-he-vncviewer-xian-shi-fang-kuai-luan-ma-deng-wen-ti</a></p>
+<figure class="highlight asciidoc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs asciidoc">[root@centos7 ~]# virsh list --all<br><span class="hljs-section"> Id    Name                           State</span><br><span class="hljs-section">----------------------------------------------------</span><br><span class="hljs-code"> -     rhel6                          shut off</span><br><br>[root@centos7 ~]# virsh start rhel6<br>Domain rhel6 started<br><br>[root@centos7 ~]# virsh list --all<br><span class="hljs-section"> Id    Name                           State</span><br><span class="hljs-section">----------------------------------------------------</span><br><span class="hljs-code"> 5     rhel6                          running</span><br><br>[root@centos7 ~]# virt-viewer rhel6<br></code></pre></td></tr></table></figure>
+
+<p>结果如下：启动成功。<img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1657594009696.png" srcset="/img/loading.gif" lazyload alt="image-1657594009696"></p>
+<h3 id="导出xml文件"><a href="#导出xml文件" class="headerlink" title="导出xml文件"></a><strong>导出xml文件</strong></h3><p><code>virsh dumpxml rhel6 &gt; rhel6.xml</code> 查看生成的文件rhel6.xml：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br></pre></td><td class="code"><pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">domain</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&#x27;kvm&#x27;</span>&gt;</span><br>  <span class="hljs-tag">&lt;<span class="hljs-name">name</span>&gt;</span>rhel6<span class="hljs-tag">&lt;/<span class="hljs-name">name</span>&gt;</span><br>  <span class="hljs-tag">&lt;<span class="hljs-name">uuid</span>&gt;</span>968cdfe5-eee2-44db-a3ce-9a9782dc3075<span class="hljs-tag">&lt;/<span class="hljs-name">uuid</span>&gt;</span><br>  <span class="hljs-tag">&lt;<span class="hljs-name">memory</span> <span class="hljs-attr">unit</span>=<span class="hljs-string">&#x27;KiB&#x27;</span>&gt;</span>1048576<span class="hljs-tag">&lt;/<span class="hljs-name">memory</span>&gt;</span><br>  <span class="hljs-tag">&lt;<span class="hljs-name">currentMemory</span> <span class="hljs-attr">unit</span>=<span class="hljs-string">&#x27;KiB&#x27;</span>&gt;</span>1048576<span class="hljs-tag">&lt;/<span class="hljs-name">currentMemory</span>&gt;</span><br>  <span class="hljs-tag">&lt;<span class="hljs-name">vcpu</span> <span class="hljs-attr">placement</span>=<span class="hljs-string">&#x27;static&#x27;</span>&gt;</span>1<span class="hljs-tag">&lt;/<span class="hljs-name">vcpu</span>&gt;</span><br>  <span class="hljs-tag">&lt;<span class="hljs-name">os</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">type</span> <span class="hljs-attr">arch</span>=<span class="hljs-string">&#x27;x86_64&#x27;</span> <span class="hljs-attr">machine</span>=<span class="hljs-string">&#x27;pc-i440fx-rhel7.0.0&#x27;</span>&gt;</span>hvm<span class="hljs-tag">&lt;/<span class="hljs-name">type</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">boot</span> <span class="hljs-attr">dev</span>=<span class="hljs-string">&#x27;hd&#x27;</span>/&gt;</span><br>  <span class="hljs-tag">&lt;/<span class="hljs-name">os</span>&gt;</span><br>  <span class="hljs-tag">&lt;<span class="hljs-name">features</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">acpi</span>/&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">apic</span>/&gt;</span><br>  <span class="hljs-tag">&lt;/<span class="hljs-name">features</span>&gt;</span><br>  <span class="hljs-tag">&lt;<span class="hljs-name">cpu</span> <span class="hljs-attr">mode</span>=<span class="hljs-string">&#x27;custom&#x27;</span> <span class="hljs-attr">match</span>=<span class="hljs-string">&#x27;exact&#x27;</span> <span class="hljs-attr">check</span>=<span class="hljs-string">&#x27;partial&#x27;</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">model</span> <span class="hljs-attr">fallback</span>=<span class="hljs-string">&#x27;allow&#x27;</span>&gt;</span>Broadwell-noTSX-IBRS<span class="hljs-tag">&lt;/<span class="hljs-name">model</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">feature</span> <span class="hljs-attr">policy</span>=<span class="hljs-string">&#x27;require&#x27;</span> <span class="hljs-attr">name</span>=<span class="hljs-string">&#x27;md-clear&#x27;</span>/&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">feature</span> <span class="hljs-attr">policy</span>=<span class="hljs-string">&#x27;require&#x27;</span> <span class="hljs-attr">name</span>=<span class="hljs-string">&#x27;spec-ctrl&#x27;</span>/&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">feature</span> <span class="hljs-attr">policy</span>=<span class="hljs-string">&#x27;require&#x27;</span> <span class="hljs-attr">name</span>=<span class="hljs-string">&#x27;ssbd&#x27;</span>/&gt;</span><br>  <span class="hljs-tag">&lt;/<span class="hljs-name">cpu</span>&gt;</span><br>  <span class="hljs-tag">&lt;<span class="hljs-name">clock</span> <span class="hljs-attr">offset</span>=<span class="hljs-string">&#x27;utc&#x27;</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">timer</span> <span class="hljs-attr">name</span>=<span class="hljs-string">&#x27;rtc&#x27;</span> <span class="hljs-attr">tickpolicy</span>=<span class="hljs-string">&#x27;catchup&#x27;</span>/&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">timer</span> <span class="hljs-attr">name</span>=<span class="hljs-string">&#x27;pit&#x27;</span> <span class="hljs-attr">tickpolicy</span>=<span class="hljs-string">&#x27;delay&#x27;</span>/&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">timer</span> <span class="hljs-attr">name</span>=<span class="hljs-string">&#x27;hpet&#x27;</span> <span class="hljs-attr">present</span>=<span class="hljs-string">&#x27;no&#x27;</span>/&gt;</span><br>  <span class="hljs-tag">&lt;/<span class="hljs-name">clock</span>&gt;</span><br>  <span class="hljs-tag">&lt;<span class="hljs-name">on_poweroff</span>&gt;</span>destroy<span class="hljs-tag">&lt;/<span class="hljs-name">on_poweroff</span>&gt;</span><br>  <span class="hljs-tag">&lt;<span class="hljs-name">on_reboot</span>&gt;</span>restart<span class="hljs-tag">&lt;/<span class="hljs-name">on_reboot</span>&gt;</span><br>  <span class="hljs-tag">&lt;<span class="hljs-name">on_crash</span>&gt;</span>destroy<span class="hljs-tag">&lt;/<span class="hljs-name">on_crash</span>&gt;</span><br>  <span class="hljs-tag">&lt;<span class="hljs-name">pm</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">suspend-to-mem</span> <span class="hljs-attr">enabled</span>=<span class="hljs-string">&#x27;no&#x27;</span>/&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">suspend-to-disk</span> <span class="hljs-attr">enabled</span>=<span class="hljs-string">&#x27;no&#x27;</span>/&gt;</span><br>  <span class="hljs-tag">&lt;/<span class="hljs-name">pm</span>&gt;</span><br>  <span class="hljs-tag">&lt;<span class="hljs-name">devices</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">emulator</span>&gt;</span>/usr/libexec/qemu-kvm<span class="hljs-tag">&lt;/<span class="hljs-name">emulator</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">disk</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&#x27;file&#x27;</span> <span class="hljs-attr">device</span>=<span class="hljs-string">&#x27;disk&#x27;</span>&gt;</span><br>      <span class="hljs-tag">&lt;<span class="hljs-name">driver</span> <span class="hljs-attr">name</span>=<span class="hljs-string">&#x27;qemu&#x27;</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&#x27;qcow2&#x27;</span>/&gt;</span><br>      <span class="hljs-tag">&lt;<span class="hljs-name">source</span> <span class="hljs-attr">file</span>=<span class="hljs-string">&#x27;/root/centos7-02.qcow2&#x27;</span>/&gt;</span><br>      <span class="hljs-tag">&lt;<span class="hljs-name">target</span> <span class="hljs-attr">dev</span>=<span class="hljs-string">&#x27;vda&#x27;</span> <span class="hljs-attr">bus</span>=<span class="hljs-string">&#x27;virtio&#x27;</span>/&gt;</span><br>      <span class="hljs-tag">&lt;<span class="hljs-name">address</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&#x27;pci&#x27;</span> <span class="hljs-attr">domain</span>=<span class="hljs-string">&#x27;0x0000&#x27;</span> <span class="hljs-attr">bus</span>=<span class="hljs-string">&#x27;0x00&#x27;</span> <span class="hljs-attr">slot</span>=<span class="hljs-string">&#x27;0x06&#x27;</span> <span class="hljs-attr">function</span>=<span class="hljs-string">&#x27;0x0&#x27;</span>/&gt;</span><br>    <span class="hljs-tag">&lt;/<span class="hljs-name">disk</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">disk</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&#x27;file&#x27;</span> <span class="hljs-attr">device</span>=<span class="hljs-string">&#x27;cdrom&#x27;</span>&gt;</span><br>      <span class="hljs-tag">&lt;<span class="hljs-name">driver</span> <span class="hljs-attr">name</span>=<span class="hljs-string">&#x27;qemu&#x27;</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&#x27;raw&#x27;</span>/&gt;</span><br>      <span class="hljs-tag">&lt;<span class="hljs-name">target</span> <span class="hljs-attr">dev</span>=<span class="hljs-string">&#x27;hda&#x27;</span> <span class="hljs-attr">bus</span>=<span class="hljs-string">&#x27;ide&#x27;</span>/&gt;</span><br>      <span class="hljs-tag">&lt;<span class="hljs-name">readonly</span>/&gt;</span><br>      <span class="hljs-tag">&lt;<span class="hljs-name">address</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&#x27;drive&#x27;</span> <span class="hljs-attr">controller</span>=<span class="hljs-string">&#x27;0&#x27;</span> <span class="hljs-attr">bus</span>=<span class="hljs-string">&#x27;0&#x27;</span> <span class="hljs-attr">target</span>=<span class="hljs-string">&#x27;0&#x27;</span> <span class="hljs-attr">unit</span>=<span class="hljs-string">&#x27;0&#x27;</span>/&gt;</span><br>    <span class="hljs-tag">&lt;/<span class="hljs-name">disk</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">controller</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&#x27;usb&#x27;</span> <span class="hljs-attr">index</span>=<span class="hljs-string">&#x27;0&#x27;</span> <span class="hljs-attr">model</span>=<span class="hljs-string">&#x27;ich9-ehci1&#x27;</span>&gt;</span><br>      <span class="hljs-tag">&lt;<span class="hljs-name">address</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&#x27;pci&#x27;</span> <span class="hljs-attr">domain</span>=<span class="hljs-string">&#x27;0x0000&#x27;</span> <span class="hljs-attr">bus</span>=<span class="hljs-string">&#x27;0x00&#x27;</span> <span class="hljs-attr">slot</span>=<span class="hljs-string">&#x27;0x04&#x27;</span> <span class="hljs-attr">function</span>=<span class="hljs-string">&#x27;0x7&#x27;</span>/&gt;</span><br>    <span class="hljs-tag">&lt;/<span class="hljs-name">controller</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">controller</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&#x27;usb&#x27;</span> <span class="hljs-attr">index</span>=<span class="hljs-string">&#x27;0&#x27;</span> <span class="hljs-attr">model</span>=<span class="hljs-string">&#x27;ich9-uhci1&#x27;</span>&gt;</span><br>      <span class="hljs-tag">&lt;<span class="hljs-name">master</span> <span class="hljs-attr">startport</span>=<span class="hljs-string">&#x27;0&#x27;</span>/&gt;</span><br>      <span class="hljs-tag">&lt;<span class="hljs-name">address</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&#x27;pci&#x27;</span> <span class="hljs-attr">domain</span>=<span class="hljs-string">&#x27;0x0000&#x27;</span> <span class="hljs-attr">bus</span>=<span class="hljs-string">&#x27;0x00&#x27;</span> <span class="hljs-attr">slot</span>=<span class="hljs-string">&#x27;0x04&#x27;</span> <span class="hljs-attr">function</span>=<span class="hljs-string">&#x27;0x0&#x27;</span> <span class="hljs-attr">multifunction</span>=<span class="hljs-string">&#x27;on&#x27;</span>/&gt;</span><br>    <span class="hljs-tag">&lt;/<span class="hljs-name">controller</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">controller</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&#x27;usb&#x27;</span> <span class="hljs-attr">index</span>=<span class="hljs-string">&#x27;0&#x27;</span> <span class="hljs-attr">model</span>=<span class="hljs-string">&#x27;ich9-uhci2&#x27;</span>&gt;</span><br>      <span class="hljs-tag">&lt;<span class="hljs-name">master</span> <span class="hljs-attr">startport</span>=<span class="hljs-string">&#x27;2&#x27;</span>/&gt;</span><br>      <span class="hljs-tag">&lt;<span class="hljs-name">address</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&#x27;pci&#x27;</span> <span class="hljs-attr">domain</span>=<span class="hljs-string">&#x27;0x0000&#x27;</span> <span class="hljs-attr">bus</span>=<span class="hljs-string">&#x27;0x00&#x27;</span> <span class="hljs-attr">slot</span>=<span class="hljs-string">&#x27;0x04&#x27;</span> <span class="hljs-attr">function</span>=<span class="hljs-string">&#x27;0x1&#x27;</span>/&gt;</span><br>    <span class="hljs-tag">&lt;/<span class="hljs-name">controller</span>&gt;</span><br><span class="hljs-tag">&lt;<span class="hljs-name">controller</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&#x27;usb&#x27;</span> <span class="hljs-attr">index</span>=<span class="hljs-string">&#x27;0&#x27;</span> <span class="hljs-attr">model</span>=<span class="hljs-string">&#x27;ich9-uhci3&#x27;</span>&gt;</span><br>      <span class="hljs-tag">&lt;<span class="hljs-name">master</span> <span class="hljs-attr">startport</span>=<span class="hljs-string">&#x27;4&#x27;</span>/&gt;</span><br>      <span class="hljs-tag">&lt;<span class="hljs-name">address</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&#x27;pci&#x27;</span> <span class="hljs-attr">domain</span>=<span class="hljs-string">&#x27;0x0000&#x27;</span> <span class="hljs-attr">bus</span>=<span class="hljs-string">&#x27;0x00&#x27;</span> <span class="hljs-attr">slot</span>=<span class="hljs-string">&#x27;0x04&#x27;</span> <span class="hljs-attr">function</span>=<span class="hljs-string">&#x27;0x2&#x27;</span>/&gt;</span><br>    <span class="hljs-tag">&lt;/<span class="hljs-name">controller</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">controller</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&#x27;pci&#x27;</span> <span class="hljs-attr">index</span>=<span class="hljs-string">&#x27;0&#x27;</span> <span class="hljs-attr">model</span>=<span class="hljs-string">&#x27;pci-root&#x27;</span>/&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">controller</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&#x27;ide&#x27;</span> <span class="hljs-attr">index</span>=<span class="hljs-string">&#x27;0&#x27;</span>&gt;</span><br>      <span class="hljs-tag">&lt;<span class="hljs-name">address</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&#x27;pci&#x27;</span> <span class="hljs-attr">domain</span>=<span class="hljs-string">&#x27;0x0000&#x27;</span> <span class="hljs-attr">bus</span>=<span class="hljs-string">&#x27;0x00&#x27;</span> <span class="hljs-attr">slot</span>=<span class="hljs-string">&#x27;0x01&#x27;</span> <span class="hljs-attr">function</span>=<span class="hljs-string">&#x27;0x1&#x27;</span>/&gt;</span><br>    <span class="hljs-tag">&lt;/<span class="hljs-name">controller</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">controller</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&#x27;virtio-serial&#x27;</span> <span class="hljs-attr">index</span>=<span class="hljs-string">&#x27;0&#x27;</span>&gt;</span><br>      <span class="hljs-tag">&lt;<span class="hljs-name">address</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&#x27;pci&#x27;</span> <span class="hljs-attr">domain</span>=<span class="hljs-string">&#x27;0x0000&#x27;</span> <span class="hljs-attr">bus</span>=<span class="hljs-string">&#x27;0x00&#x27;</span> <span class="hljs-attr">slot</span>=<span class="hljs-string">&#x27;0x05&#x27;</span> <span class="hljs-attr">function</span>=<span class="hljs-string">&#x27;0x0&#x27;</span>/&gt;</span><br>    <span class="hljs-tag">&lt;/<span class="hljs-name">controller</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">interface</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&#x27;bridge&#x27;</span>&gt;</span><br>      <span class="hljs-tag">&lt;<span class="hljs-name">mac</span> <span class="hljs-attr">address</span>=<span class="hljs-string">&#x27;52:54:00:91:eb:fb&#x27;</span>/&gt;</span><br>      <span class="hljs-tag">&lt;<span class="hljs-name">source</span> <span class="hljs-attr">bridge</span>=<span class="hljs-string">&#x27;br0&#x27;</span>/&gt;</span><br>      <span class="hljs-tag">&lt;<span class="hljs-name">model</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&#x27;virtio&#x27;</span>/&gt;</span><br>      <span class="hljs-tag">&lt;<span class="hljs-name">address</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&#x27;pci&#x27;</span> <span class="hljs-attr">domain</span>=<span class="hljs-string">&#x27;0x0000&#x27;</span> <span class="hljs-attr">bus</span>=<span class="hljs-string">&#x27;0x00&#x27;</span> <span class="hljs-attr">slot</span>=<span class="hljs-string">&#x27;0x03&#x27;</span> <span class="hljs-attr">function</span>=<span class="hljs-string">&#x27;0x0&#x27;</span>/&gt;</span><br>    <span class="hljs-tag">&lt;/<span class="hljs-name">interface</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">serial</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&#x27;pty&#x27;</span>&gt;</span><br>      <span class="hljs-tag">&lt;<span class="hljs-name">target</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&#x27;isa-serial&#x27;</span> <span class="hljs-attr">port</span>=<span class="hljs-string">&#x27;0&#x27;</span>&gt;</span><br>        <span class="hljs-tag">&lt;<span class="hljs-name">model</span> <span class="hljs-attr">name</span>=<span class="hljs-string">&#x27;isa-serial&#x27;</span>/&gt;</span><br>      <span class="hljs-tag">&lt;/<span class="hljs-name">target</span>&gt;</span><br>    <span class="hljs-tag">&lt;/<span class="hljs-name">serial</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">console</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&#x27;pty&#x27;</span>&gt;</span><br>      <span class="hljs-tag">&lt;<span class="hljs-name">target</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&#x27;serial&#x27;</span> <span class="hljs-attr">port</span>=<span class="hljs-string">&#x27;0&#x27;</span>/&gt;</span><br>    <span class="hljs-tag">&lt;/<span class="hljs-name">console</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">channel</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&#x27;unix&#x27;</span>&gt;</span><br>      <span class="hljs-tag">&lt;<span class="hljs-name">target</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&#x27;virtio&#x27;</span> <span class="hljs-attr">name</span>=<span class="hljs-string">&#x27;org.qemu.guest_agent.0&#x27;</span>/&gt;</span><br>      <span class="hljs-tag">&lt;<span class="hljs-name">address</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&#x27;virtio-serial&#x27;</span> <span class="hljs-attr">controller</span>=<span class="hljs-string">&#x27;0&#x27;</span> <span class="hljs-attr">bus</span>=<span class="hljs-string">&#x27;0&#x27;</span> <span class="hljs-attr">port</span>=<span class="hljs-string">&#x27;1&#x27;</span>/&gt;</span><br>    <span class="hljs-tag">&lt;/<span class="hljs-name">channel</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&#x27;tablet&#x27;</span> <span class="hljs-attr">bus</span>=<span class="hljs-string">&#x27;usb&#x27;</span>&gt;</span><br>      <span class="hljs-tag">&lt;<span class="hljs-name">address</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&#x27;usb&#x27;</span> <span class="hljs-attr">bus</span>=<span class="hljs-string">&#x27;0&#x27;</span> <span class="hljs-attr">port</span>=<span class="hljs-string">&#x27;1&#x27;</span>/&gt;</span><br>    <span class="hljs-tag">&lt;/<span class="hljs-name">input</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&#x27;mouse&#x27;</span> <span class="hljs-attr">bus</span>=<span class="hljs-string">&#x27;ps2&#x27;</span>/&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&#x27;keyboard&#x27;</span> <span class="hljs-attr">bus</span>=<span class="hljs-string">&#x27;ps2&#x27;</span>/&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">graphics</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&#x27;vnc&#x27;</span> <span class="hljs-attr">port</span>=<span class="hljs-string">&#x27;5991&#x27;</span> <span class="hljs-attr">autoport</span>=<span class="hljs-string">&#x27;no&#x27;</span> <span class="hljs-attr">listen</span>=<span class="hljs-string">&#x27;0.0.0.0&#x27;</span>&gt;</span><br>      <span class="hljs-tag">&lt;<span class="hljs-name">listen</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&#x27;address&#x27;</span> <span class="hljs-attr">address</span>=<span class="hljs-string">&#x27;0.0.0.0&#x27;</span>/&gt;</span><br>    <span class="hljs-tag">&lt;/<span class="hljs-name">graphics</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">video</span>&gt;</span><br>      <span class="hljs-tag">&lt;<span class="hljs-name">model</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&#x27;cirrus&#x27;</span> <span class="hljs-attr">vram</span>=<span class="hljs-string">&#x27;16384&#x27;</span> <span class="hljs-attr">heads</span>=<span class="hljs-string">&#x27;1&#x27;</span> <span class="hljs-attr">primary</span>=<span class="hljs-string">&#x27;yes&#x27;</span>/&gt;</span><br>      <span class="hljs-tag">&lt;<span class="hljs-name">address</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&#x27;pci&#x27;</span> <span class="hljs-attr">domain</span>=<span class="hljs-string">&#x27;0x0000&#x27;</span> <span class="hljs-attr">bus</span>=<span class="hljs-string">&#x27;0x00&#x27;</span> <span class="hljs-attr">slot</span>=<span class="hljs-string">&#x27;0x02&#x27;</span> <span class="hljs-attr">function</span>=<span class="hljs-string">&#x27;0x0&#x27;</span>/&gt;</span><br>    <span class="hljs-tag">&lt;/<span class="hljs-name">video</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">memballoon</span> <span class="hljs-attr">model</span>=<span class="hljs-string">&#x27;virtio&#x27;</span>&gt;</span><br>      <span class="hljs-tag">&lt;<span class="hljs-name">address</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&#x27;pci&#x27;</span> <span class="hljs-attr">domain</span>=<span class="hljs-string">&#x27;0x0000&#x27;</span> <span class="hljs-attr">bus</span>=<span class="hljs-string">&#x27;0x00&#x27;</span> <span class="hljs-attr">slot</span>=<span class="hljs-string">&#x27;0x07&#x27;</span> <span class="hljs-attr">function</span>=<span class="hljs-string">&#x27;0x0&#x27;</span>/&gt;</span><br>    <span class="hljs-tag">&lt;/<span class="hljs-name">memballoon</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">rng</span> <span class="hljs-attr">model</span>=<span class="hljs-string">&#x27;virtio&#x27;</span>&gt;</span><br>      <span class="hljs-tag">&lt;<span class="hljs-name">backend</span> <span class="hljs-attr">model</span>=<span class="hljs-string">&#x27;random&#x27;</span>&gt;</span>/dev/urandom<span class="hljs-tag">&lt;/<span class="hljs-name">backend</span>&gt;</span><br>      <span class="hljs-tag">&lt;<span class="hljs-name">address</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&#x27;pci&#x27;</span> <span class="hljs-attr">domain</span>=<span class="hljs-string">&#x27;0x0000&#x27;</span> <span class="hljs-attr">bus</span>=<span class="hljs-string">&#x27;0x00&#x27;</span> <span class="hljs-attr">slot</span>=<span class="hljs-string">&#x27;0x08&#x27;</span> <span class="hljs-attr">function</span>=<span class="hljs-string">&#x27;0x0&#x27;</span>/&gt;</span><br>    <span class="hljs-tag">&lt;/<span class="hljs-name">rng</span>&gt;</span><br>  <span class="hljs-tag">&lt;/<span class="hljs-name">devices</span>&gt;</span><br><span class="hljs-tag">&lt;/<span class="hljs-name">domain</span>&gt;</span><br><br></code></pre></td></tr></table></figure>
+
+<p>virsh可以通过这种xml文件定义、创建虚拟机，命令<code>virsh define x.xml</code> 和 <code>virsh create x.xml</code>。</p>
+<h3 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a><strong>参考文献</strong></h3><ul>
+<li><a target="_blank" rel="noopener" href="http://t.zoukankan.com/BurnovBlog-p-10875747.html">http://t.zoukankan.com/BurnovBlog-p-10875747.html</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.51cto.com/u_1364952/1964774">https://blog.51cto.com/u_1364952&#x2F;1964774</a></li>
+</ul>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%8F%AF%E4%BF%A1%E8%AE%A1%E7%AE%97/" class="category-chain-item">可信计算</a>
+  
+  
+
+      </span>
+    
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E8%99%9A%E6%8B%9F%E5%8C%96/" class="category-chain-item">虚拟化</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/kvm/" class="print-no-link">#kvm</a>
+      
+        <a href="/tags/qemu/" class="print-no-link">#qemu</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>可信计算_Qemu04 采用virsh创建Qemu/KVM虚拟机</div>
+      <div>http://example.com/018.html</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>landery</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2023年3月7日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/014.html" title="可信计算_密码学基础01_PKI、SSL、DAA、PCA">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">可信计算_密码学基础01_PKI、SSL、DAA、PCA</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/017.html" title="可信计算_Qemu03_VMWare上使用Qemu-KVM创建虚拟机">
+                        <span class="hidden-mobile">可信计算_Qemu03_VMWare上使用Qemu-KVM创建虚拟机</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"GK4nuH8jdXDcw4IJIVShjMtA-gzGzoHsz","appKey":"7P0B0kJFdaLY6eDQ93Lhcv8J","path":"window.location.pathname","placeholder":"建议使用QQ邮箱，评论头像采用QQ头像","avatar":"retro","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":true,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":true,"bg":null,"count":true},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+    <!-- 备案信息 ICP for China -->
+    <div class="beian">
+  <span>
+    <a href="http://beian.miit.gov.cn/" target="_blank" rel="nofollow noopener">
+      蜀ICP备2022011502号
+    </a>
+  </span>
+  
+    
+      <span>
+        <a
+          href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=51012202001227"
+          rel="nofollow noopener"
+          class="beian-police"
+          target="_blank"
+        >
+          
+            <span style="visibility: hidden; width: 0">|</span>
+            <img src="/img/police_beian.png" srcset="/img/loading.gif" lazyload alt="police-icon"/>
+          
+          <span>川公网安备51012202001227号</span>
+        </a>
+      </span>
+    
+  
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/DynamicRibbon.min.js"></script>
+<script src="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/love.min.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

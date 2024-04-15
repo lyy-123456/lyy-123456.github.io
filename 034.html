@@ -1,0 +1,822 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="landery">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="title: devops_jenkins_05_spring boot + vue项目前后端项目持续部署（1） date: 2022-05-04 02:03:53.0 updated: 2022-05-05 23:31:34.357 url: &#x2F;archives&#x2F;jenkins05 categories:  devops tags: jenkins devops 持续部署">
+<meta property="og:type" content="article">
+<meta property="og:title" content="devops_jenkins_05_spring boot + vue项目前后端项目持续部署（1）">
+<meta property="og:url" content="http://example.com/034.html">
+<meta property="og:site_name" content="landery小站">
+<meta property="og:description" content="title: devops_jenkins_05_spring boot + vue项目前后端项目持续部署（1） date: 2022-05-04 02:03:53.0 updated: 2022-05-05 23:31:34.357 url: &#x2F;archives&#x2F;jenkins05 categories:  devops tags: jenkins devops 持续部署">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-03-07T13:22:58.000Z">
+<meta property="article:modified_time" content="2024-04-15T10:02:21.597Z">
+<meta property="article:author" content="landery">
+<meta property="article:tag" content="devops">
+<meta property="article:tag" content="jenkins">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>devops_jenkins_05_spring boot + vue项目前后端项目持续部署（1） - landery小站</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/scroll.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"GK4nuH8jdXDcw4IJIVShjMtA-gzGzoHsz","app_key":"7P0B0kJFdaLY6eDQ93Lhcv8J","server_url":"https://api.landery.cn","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>landery 小站</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/links/" target="_self">
+                <i class="iconfont icon-link-fill"></i>
+                <span>友链</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/remark/" target="_self">
+                <i class="iconfont icon-twitch-fill"></i>
+                <span>留言板</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/image/bg/001.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="devops_jenkins_05_spring boot + vue项目前后端项目持续部署（1）"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2023-03-07 21:22" pubdate>
+          2023年3月7日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.7k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          14 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">devops_jenkins_05_spring boot + vue项目前后端项目持续部署（1）</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <hr>
+<p>title: devops_jenkins_05_spring boot + vue项目前后端项目持续部署（1） date: 2022-05-04 02:03:53.0 updated: 2022-05-05 23:31:34.357 url: &#x2F;archives&#x2F;jenkins05 categories:</p>
+<ul>
+<li>devops tags:</li>
+<li>jenkins</li>
+<li>devops</li>
+<li>持续部署</li>
+</ul>
+<hr>
+<p>​​</p>
+<h1 id="1-实现目标"><a href="#1-实现目标" class="headerlink" title="1 实现目标"></a><strong>1 实现目标</strong></h1><p>​目前拥有两台腾讯云服务器，其中一台用来运行项目（本次前后端均在一个服务器上），一台用来运行jenkins持续部署。实现从gitLab上拉取代码，并持续部署的一个效果。 主要就是分为：​</p>
+<ol>
+<li>jenkins服务器部署过程</li>
+<li>前后端项目服务器部署过程​在前面的文章我们已经安装好了jenkins，现在我们只需要进行后续的步骤即可。​</li>
+</ol>
+<h1 id="jenkins工作流程"><a href="#jenkins工作流程" class="headerlink" title="jenkins工作流程"></a><strong>jenkins工作流程</strong></h1><p>​_Jenkins的工作流程就是：_​<strong>①从版本控制器下拉代码到本地</strong> &gt; <strong>②本地编译打包</strong> &gt; <strong>③传输打包好的文件到远程服务器</strong> &gt;<strong>④在远程服务器运行脚本</strong> &gt; <strong>⑤完成项目实施</strong>​</p>
+<h1 id="1-配置java开发环境"><a href="#1-配置java开发环境" class="headerlink" title="1 配置java开发环境"></a><strong>1 配置java开发环境</strong></h1><p>​由上面的思路我们知道，两台服务器都需要java环境，一个打包一个部署运行。​这个我们就跳过了，之前已经安装过了，安装的都是1.8版本的。​</p>
+<h1 id="2-安装Git"><a href="#2-安装Git" class="headerlink" title="2 安装Git"></a><strong>2 安装Git</strong></h1><p>​<strong>在jenkins服务器上进行安装Git。</strong> 命令：​yum -y install git title: devops_jenkins_05_spring boot + vue项目前后端项目持续部署（1） date: 2022-05-04 02:03:53.0 updated: 2022-05-05 23:31:34.357 url: &#x2F;archives&#x2F;jenkins05 categories: devops tags: jenkins devops 持续部署 1 实现目标 目前拥有两台腾讯云服务器，其中一台用来运行项目（本次前后端均在一个服务器上），一台用来运行jenkins持续部署。实现从gitLab上拉取代码，并持续部署的一个效果。 主要就是分为： jenkins服务器部署过程 前后端项目服务器部署过程 在前面的文章我们已经安装好了jenkins，现在我们只需要进行后续的步骤即可。 jenkins工作流程 Jenkins的工作流程就是： ①从版本控制器下拉代码到本地 &gt; ②本地编译打包 &gt; ③传输打包好的文件到远程服务器 &gt;④在远程服务器运行脚本 &gt; ⑤完成项目实施 1 配置java开发环境 由上面的思路我们知道，两台服务器都需要java环境，一个打包一个部署运行。 这个我们就跳过了，之前已经安装过了，安装的都是1.8版本的。 2 安装Git 在jenkins服务器上进行安装Git。 命令： yum -y install git git –version image.png安装成功 3 安装maven 安装位置：jenkins服务器 在之前我们介绍过在里面安装maven，现在看一下，感觉之前做的太简单了，不太正确。这里重新装一下。这次我们安装在&#x2F;usr&#x2F;local目录下 3.1 下载安装包 首先 cd &#x2F;usr&#x2F;local 进入Linux中用户级的程序目录 wget <a target="_blank" rel="noopener" href="https://mirrors.bfsu.edu.cn/apache/maven/maven-3/3.8.5/binaries/apache-maven-3.8.5-bin.tar.gz">https://mirrors.bfsu.edu.cn/apache/maven/maven-3/3.8.5/binaries/apache-maven-3.8.5-bin.tar.gz</a> 下载安装包，可以看到我们的当前目录下多了一个名为apache-maven-3.8.1-bin.tar.gz 的文件 3.2 解压 tar -zxvf &#x2F;usr&#x2F;local&#x2F;apache-maven-3.8.5-bin.tar.gz image.png 3.3 配置maven 1）创建本地maven仓库 mkdir mavenRepo 创建maven仓库 ls 查看多了 mavenRepo 文件夹，说明创建成功 image.png 2）修改settings.xml cd apache-maven-3.8.5&#x2F;conf&#x2F; ls image.png 修改settings.xml文件 vim settings.xml 新增语句： &#x2F;usr&#x2F;local&#x2F;mavenRepo image.png 删除语句：将下面框住的部分全部删除。 image.png 然后把你项目开发过程中用到的maven配置文件打开，找出除本地仓库外不同的内容，然后将其都放入服务端maven配置文件里对应的标签内。就是开发环境配置文件和服务器端一致。 （比如我是用idea开发，其maven配置文件目录在：{idea安装目录}\plugins\maven\lib\maven3\conf） 3） Maven系统环境变量配置 vim &#x2F;etc&#x2F;profile 进入系统环境配置编辑，文件中追加以下内容： export MAVEN_HOME&#x3D;&#x2F;usr&#x2F;local&#x2F;apache-maven-3.8.5 export PATH&#x3D;${PATH}:${MAVEN_HOME}&#x2F;bin source &#x2F;etc&#x2F;profile 命令重新加载&#x2F;etc&#x2F;profile文件，使修改的内容在当前shell窗口中生效 4）验证 使用 mvn -v echo $MAVEN_HOME查看Maven是否安装配置成功image.png 4 安装Node.js 安装位置：jenkins服务器 4.1 下载Node.js 先查看我自己的电脑的node版本，npm版本，cnpm版本。 image.png 之前出现过vue因为版本的问题，出现很多前端问题，没有时间解决，所以我们尽量先统一版本。 下载最新版可进入，进入国内官网<a target="_blank" rel="noopener" href="http://nodejs.cn/download/">http://nodejs.cn/download/</a> 我们直接进入镜像站寻找我们想要的版本：CNPM Binaries Mirror (<a target="_blank" rel="noopener" href="http://npmmirror.com/">npmmirror.com</a>) 找到14.8.0的linux x86版本，复制下载地址： <a target="_blank" rel="noopener" href="https://registry.npmmirror.com/-/binary/node/v14.8.0/node-v14.8.0-linux-x64.tar.xz">https://registry.npmmirror.com/-/binary/node/v14.8.0/node-v14.8.0-linux-x64.tar.xz</a> 1） 开始下载 cd &#x2F;usr&#x2F;local 进入到我们用户级的程序目录； wget <a target="_blank" rel="noopener" href="https://registry.npmmirror.com/-/binary/node/v14.8.0/node-v14.8.0-linux-x64.tar.xz">https://registry.npmmirror.com/-/binary/node/v14.8.0/node-v14.8.0-linux-x64.tar.xz</a> 2）解压 tar -xvf node-v14.8.0-linux-x64.tar.xz lsimage.png 3） 配置Node.js环境变量 vim &#x2F;etc&#x2F;profile 编辑环境变量 在开头是 export PATH&#x3D; 后面加入 :${PATH}:&#x2F;usr&#x2F;local&#x2F;node-v14.8.0-linux-x64&#x2F;bin 注意冒号，英文冒号，node.js的根文件夹名称 。 image.png source &#x2F;etc&#x2F;profile 命令重新加载&#x2F;etc&#x2F;profile文件 4）验证 node -v 查看node版本 npm -v 查看npm版本image.png 可以看到已经成功了，接下来是配置国内淘宝的cnpm npm install -g cnpm –registry&#x3D;<a target="_blank" rel="noopener" href="https://registry.npm.taobao.org/">https://registry.npm.taobao.org</a> 安装 cnpm 。 cnpm -v 查看 cnpm 版本，如下图所示，表示安装成功。image.png由于是香港服务器，用上面的淘宝的镜像可能不太好用：用npm install -g cnpm –registry&#x3D;<a target="_blank" rel="noopener" href="http://r.cnpmjs.org/">http://r.cnpmjs.org/</a> 查看cnpm版本，7.1.1 不过问题不大，香港服务器使用npm应该不会受到限制。 image.png至此jenkins的安装就算安装完成了。 5 jenkins安装与部署 经过之前的折腾我们基本已经把jenkins安装好了。现在只要将相关的工具配置一下就可以了。之前已经配置过jdk，maven我们需要重新配置一下。 5.1 配置maven image.png 5.2 配置Git whereis git 查看git路径 image.png 我们就用第一个路径 &#x2F;usr&#x2F;bin&#x2F;git image.png 5.3 配置Node.js 同样的配置方法。 image.png 接下来我们就要开始介绍如何配置具体的项目了 参考文献 CentOS7&#x2F;8系统下，使用Jenkins实现SpringBoot+Vue前后端分离项目持续集成，一键编译打包跨设备部署，完整详细教学演示_MurrayLaw的博客-CSDN博客 idea maven配置文件设置_byxu的博客-CSDN博客_idea maven配置文件</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%90%8E%E7%AB%AF%E5%BC%80%E5%8F%91/" class="category-chain-item">后端开发</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/devops/" class="print-no-link">#devops</a>
+      
+        <a href="/tags/jenkins/" class="print-no-link">#jenkins</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>devops_jenkins_05_spring boot + vue项目前后端项目持续部署（1）</div>
+      <div>http://example.com/034.html</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>landery</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2023年3月7日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/035.html" title="devops_jenkins_06_spring boot + vue项目前后端项目持续部署（2）">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">devops_jenkins_06_spring boot + vue项目前后端项目持续部署（2）</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/033.html" title="devops_jenkins_04_常用插件安装">
+                        <span class="hidden-mobile">devops_jenkins_04_常用插件安装</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"GK4nuH8jdXDcw4IJIVShjMtA-gzGzoHsz","appKey":"7P0B0kJFdaLY6eDQ93Lhcv8J","path":"window.location.pathname","placeholder":"建议使用QQ邮箱，评论头像采用QQ头像","avatar":"retro","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":true,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":true,"bg":null,"count":true},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+    <!-- 备案信息 ICP for China -->
+    <div class="beian">
+  <span>
+    <a href="http://beian.miit.gov.cn/" target="_blank" rel="nofollow noopener">
+      蜀ICP备2022011502号
+    </a>
+  </span>
+  
+    
+      <span>
+        <a
+          href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=51012202001227"
+          rel="nofollow noopener"
+          class="beian-police"
+          target="_blank"
+        >
+          
+            <span style="visibility: hidden; width: 0">|</span>
+            <img src="/img/police_beian.png" srcset="/img/loading.gif" lazyload alt="police-icon"/>
+          
+          <span>川公网安备51012202001227号</span>
+        </a>
+      </span>
+    
+  
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/DynamicRibbon.min.js"></script>
+<script src="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/love.min.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

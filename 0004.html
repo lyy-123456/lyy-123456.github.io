@@ -1,0 +1,857 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="landery">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="title: 远程证明_04_虚拟化环境的安全认证 date: 2022-05-26 22:07:48.437 updated: 2022-05-29 23:44:45.679 url: &#x2F;archives&#x2F;远程证明04虚拟化环境的安全认证 categories:  远程证明 tags: 可信计算 远程证明   原文信息 文章标题：Secure Attestation of">
+<meta property="og:type" content="article">
+<meta property="og:title" content="远程证明_04_虚拟化环境的安全认证">
+<meta property="og:url" content="http://example.com/0004.html">
+<meta property="og:site_name" content="landery小站">
+<meta property="og:description" content="title: 远程证明_04_虚拟化环境的安全认证 date: 2022-05-26 22:07:48.437 updated: 2022-05-29 23:44:45.679 url: &#x2F;archives&#x2F;远程证明04虚拟化环境的安全认证 categories:  远程证明 tags: 可信计算 远程证明   原文信息 文章标题：Secure Attestation of">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653574885124.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653575271732.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653575543710.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653576139280.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653576459909.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653577208615.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653577403822.png">
+<meta property="article:published_time" content="2023-03-07T13:36:42.000Z">
+<meta property="article:modified_time" content="2024-04-15T10:15:46.686Z">
+<meta property="article:author" content="landery">
+<meta property="article:tag" content="远程证明">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653574885124.png">
+  
+  
+  
+  <title>远程证明_04_虚拟化环境的安全认证 - landery小站</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/scroll.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"GK4nuH8jdXDcw4IJIVShjMtA-gzGzoHsz","app_key":"7P0B0kJFdaLY6eDQ93Lhcv8J","server_url":"https://api.landery.cn","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>landery 小站</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/links/" target="_self">
+                <i class="iconfont icon-link-fill"></i>
+                <span>友链</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/remark/" target="_self">
+                <i class="iconfont icon-twitch-fill"></i>
+                <span>留言板</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/image/bg/001.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="远程证明_04_虚拟化环境的安全认证"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2023-03-07 21:36" pubdate>
+          2023年3月7日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          6.2k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          52 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">远程证明_04_虚拟化环境的安全认证</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <hr>
+<p>title: 远程证明_04_虚拟化环境的安全认证 date: 2022-05-26 22:07:48.437 updated: 2022-05-29 23:44:45.679 url: &#x2F;archives&#x2F;远程证明04虚拟化环境的安全认证 categories:</p>
+<ul>
+<li>远程证明 tags:</li>
+<li>可信计算</li>
+<li>远程证明</li>
+</ul>
+<hr>
+<h1 id="原文信息"><a href="#原文信息" class="headerlink" title="原文信息"></a><strong>原文信息</strong></h1><ol>
+<li>文章标题：Secure Attestation of Virtualized Environments</li>
+<li>文章中文翻译：虚拟化环境的安全认证</li>
+<li>文章等级：CCF C</li>
+<li>文章发表时间：2020</li>
+<li>文章作者：Eckel M, Fuchs A, Repp J, et al.</li>
+<li>完整引用：Eckel M, Fuchs A, Repp J, et al. Secure attestation of virtualized environments[C]&#x2F;&#x2F;IFIP International Conference on ICT Systems Security and Privacy Protection. Springer, Cham, 2020: 203-216.</li>
+<li>全文请查看：<a target="_blank" rel="noopener" href="https://link.springer.com/content/pdf/10.1007/978-3-030-58201-2_14.pdf">全文链接</a></li>
+</ol>
+<h1 id="1-介绍"><a href="#1-介绍" class="headerlink" title="1 介绍"></a><strong>1 介绍</strong></h1><ul>
+<li>OPEN CIT</li>
+<li>pTPM vTPM</li>
+</ul>
+<p>本文分析了现有的虚拟环境认证方法。我们对现有的单独认证方法进行了改进，增强了它对中继攻击的抵御能力。我们实现了Lauer和Kuntze提出的基于虚拟机监控程序的认证方法，以及我们改进的独立认证方法。最后，我们通过在生产级硬件上的性能度量来评估这两种方法的可行性。</p>
+<h1 id="2-相关工作"><a href="#2-相关工作" class="headerlink" title="2 相关工作"></a><strong>2 相关工作</strong></h1><p>现有的关于认证虚拟化环境的研究主要集中在提供虚拟化环境的隔离认证或单个虚拟机的认证。有些人提出了更复杂的解决方案，试图构建一个可信的虚拟机监视器(VMM)。 这些方法之一是来自Garfinkel等人的Terra。Terra通过虚拟机之间的隔离来保护虚拟机。它在加载单个内存块之前测量它们，并允许对外部评估人员进行远程认证。这种内存自省方法是计算密集型的，需要大量的主存。然而，Terra构建了许多其他工作的基础，这些工作进一步阐述了保护VM内存的想法，如Cerberus和TrustVisor。 其他方法，如Azab等人的基于hypervisor的完整性测量代理(HIMA)，测量运行在VM中的程序和服务。在被hypervisor执行之前，VM系统调用和硬件中断被拦截和分析。它需要hypervisor上的NX位(无执行位)支持，以便在测量的内存页执行之前标记它们。HIMA要求将程序的所有内存页加载到内存中。因此，必须对操作系统进行更改。HIMA需要大量的计算能力，必须仔细评估其适用性。 目前已有基于CPU的认证方式实现软件完整性保护，如Bastion、HyperWall等。这些CPU扩展允许在软件模块执行之前测量和验证它们，Zhang等人在中分析了它们对云解决方案的适用性。 由于基于TPM的内存验证技术很慢，因此希望以资源高效的方式为vm提供TPM功能。中的工作在VMM中引入了一个抽象层，在pTPM中添加了上下文切换功能。这给vm提供了一种错觉，即具有对真实pTPM的独占访问权。这种方法的问题是，与多个vm共享一个物理TPM会使pTPM成为瓶颈。随着Berger等人引入vtpm, vm的认证发生了一定的变化。有了vtpm，就可以在软件中为每个VM提供自己的TPM, TPM被安全地固定在pTPM中。自从2006年引入vTPM以来，Berger等人对它的实现做了细微的改变，将它变成了一个hypervisor扩展。因此，不需要额外的管理VM。由于vtpm的有效性，许多研究人员现在关注于集成vtpm来验证运行在vm中的软件。vm和vtpm的迁移是研究的另一个热点。 <strong>现有的大多数研究将vm和hypervisor的认证分开处理，几乎没有将这些认证绑定在一起的研究</strong>。验证者通过远程认证验证虚拟机的完整性后，才会信任虚拟机。但是，如果底层管理程序受到威胁，VM的完整性和可信性也可能受到威胁。如果攻击者设法破坏管理程序，她可能能够提取或操纵敏感信息，例如篡改VM主内存。 TCG (Trusted Computing group)的虚拟化平台工作组定义了一个深度认证方案，用于链接vm和hypervisor的认证。在《Remote and deep attestations to mitigate threats in cloud mash-up services》.中，Celesti等人描述了如何使用远程和深度认证来构建联邦云环境。 Lauer和Kuntze提出了基于hypervisor的认证(HYPA)[12]。它向管理程序添加了一个认证管理器(ATAMAN)，它直接读取运行的vTPM实例的内部状态。该方法属于自底向上的认证方法，目的是在运行数十或数百个虚拟机的情况下提高虚拟机认证的可伸缩性。 在HYPA进程中，验证者向hypervisor发送一个认证请求(参见图1)。作为回报，它接收一个认证响应(9)，包括所有运行的vm(2-7)以及hypervisor本身的认证(8)。 <img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653574885124.png" srcset="/img/loading.gif" lazyload alt="image-1653574885124"> Attestation Manager直接访问正在运行的vTPM实例以读取其内部状态，即vPCR。此外，它还从每个虚拟机内部读取虚拟存储的测量日志（vSML）。所有的vPCR和vSML被编译成一个数据结构，然后进行散列。由此产生的摘要被作为限定数据（nonce）传递给TPM Quote操作的管理程序证明，使用pTPM。认证管理器在hypervisor的范围内运行，因此，它是hypervisor认证的一部分。整个验证结果包括带有vPCR和vSML的数据结构，以及hypervisor的证明。Verifier同时验证hypervisor和VM的认证。 基于管理程序的证明方法的主要好处是，与单个虚拟机的证明相比，其可扩展性有了巨大的提高。这体现在减少了证明协议的开销，以及减少了I&#x2F;O操作。然而，<strong>它非常具有侵入性，需要访问当前运行的vTPM实例，以及访问虚拟机内部，即vSMLs</strong>。 虚拟机和管理程序的单独认证（SEPA）是Lauer和Kuntze在中描述的另一种方法。验证者向单个虚拟机（参见图2）发送一个验证请求，并收到一个验证结果（2）。然后验证者使用相同的nonce向管理程序发送验证请求（3），并收到验证结果（4）。通过使用相同的nonce，在虚拟机和管理程序之间实现了一个弱层链接。 <img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653575271732.png" srcset="/img/loading.gif" lazyload alt="image-1653575271732"> 正如作者所述，<strong>SEPA方法不是资源节约的，并使pTPM成为连续VM认证期间的瓶颈</strong>。每个单独的VM认证还需要额外的管理程序认证，这大大降低了这种方法的可伸缩性。<strong>另一个问题是层链接不是很强，Verifier需要不断更新VM运行的管理程序的信息</strong>。由于这种层链接既不是强制的，也不是可验证的，它破坏了pTPM和vTPM的强认证声明。Lauer和Kuntze提出了一种改进VM和hypervisor之间链接的方法，即向VM提供一个秘密值N，用于生成远程认证数据。虚拟机终止后，通过虚拟机与hypervisor之间的安全通道，向hypervisor提供一个秘密值N。然后，系统管理程序使用这个秘密值进行认证。这种方法的缺点是，Verifier不能平等对待VM和hypervisor。它需要更改来宾操作系统和管理程序。因此，使实现复杂化并降低了可伸缩性。 SEPA不需要更改现有的软件组件或协议，因此可以轻松地集成到现有的认证解决方案中。从Verifier的角度来看，可以平等地对待vm和hypervisor。在只运行少量虚拟机的系统中，这种方法代表了一种可行的认证解决方案。然而，我们注意到Lauer和Kuntze提出的单独认证会受到中继攻击。 还有其他更复杂的云完整性验证技术，但它们依赖于前面描述的技术。在下一节中，我们将介绍我们的参考体系结构，我们将使用它进一步评估SEPA和HYPA方法。</p>
+<h1 id="3-参考系统架构"><a href="#3-参考系统架构" class="headerlink" title="3 参考系统架构"></a><strong>3 参考系统架构</strong></h1><p>我们的参考架构是基于英特尔和Hytrust在中提出的架构，该架构将数据分割成工作包来并行处理它们（参见图3）。我们建议使用虚拟机来实现这一目的，它可以根据当前的需求灵活地生成和拆分。工作流编排系统处理工作包的分配和调度。我们假设主机系统和虚拟机是由同一方拥有和运营的。 <img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653575543710.png" srcset="/img/loading.gif" lazyload alt="image-1653575543710"> 在将可能敏感的工作包委托给VM处理之前，工作流编排确保VM是可信的。这个过程很复杂，需要对特定VM的配置有深入的了解。这就是为什么Verifier专用于这个任务。它对主机和虚拟机进行验证，为工作流业务流程提供最新的完整性信息。<strong>验证者维护一个参考完整性测量(RIMs)数据库，代表已知的良好系统配置</strong>。通过与系统当前的运行状态进行比较，验证者可以判断主机和虚拟机是否可信。</p>
+<blockquote>
+<p>基准库</p>
+</blockquote>
+<p>主机配备pTPM，运行Linux操作系统。它们有一个支持tpm的BIOS和引导加载程序，并支持用于引导时间完整性的Measured boot，以及用于运行时完整性的Linux integrity Measurement Architecture (IMA)。虚拟机管理程序支持分配给虚拟机的vtpm，如QEMU&#x2F;KVM。vTPM在hypervisor上下文中执行，一个vTPM被分配给一个VM。vtpm提供与ptpm相同的功能。然而，他们缺乏真实随机数生成器(TRNG)以及来自TPM制造商的背书密钥证书(EK Cert)。此外，它们不能提供与pTPM相同的安全保证，因为它们只是软件。</p>
+<h1 id="4-认证要求"><a href="#4-认证要求" class="headerlink" title="4 认证要求"></a><strong>4 认证要求</strong></h1><p>Coker等人已经假设了基于远程认证的解决方案的需求。Lauer和Kuntze在中对它们进行了分析和扩展。这些要求中的<strong>第一个是认证信息的新鲜度，这要求保持测量时间和使用时间之间的差距尽可能小，以最大限度地减少使用过时信息的风险</strong>。<strong>下一个要求是认证的全面性，使验证者能够以可复制的、可问责的和全面的方式推断系统的状态</strong>。<strong>认证信息还必须以逻辑形式呈现，以帮助验证者随着时间的推移将多个认证关联起来，从而进一步改进对不当行为的检测</strong>。由于认证公开了关于目标系统的敏感信息，因此它们的公开必须仅限于有效的验证者。为了在认证中建立信任，验证者依赖于可确保报告数据真实性和完整性的交付机制的可信性。 在云认证方面，Lauer和Kuntze进一步要求vm和hypervisor之间的层链接，以便信任vm认证。因此，必须为VM和hypervisor提供有效的认证信息。为了确保VM在其指定的管理程序上运行，必须能够将这些关联起来。Lauer和Kuntze的另一个要求是认证方案的可扩展性，它针对的是具有大量虚拟机的系统。就基于tpm的认证而言，这意味着减少对pTPM的调用数量。 此外，我们提出了特定于实现的需求：<strong>实现复杂性（Implementation Complexity）</strong> 和 <strong>客户机独立性（Guest Independence）</strong>。</p>
+<ul>
+<li>实现的复杂性：根据使用的认证方案和获取认证信息的方式，需要对客户OS或vTPM进行修改，这将增加开发成本。这也适用于在客户系统内安装其他软件，尽管这些并不像操作系统代码更改那样被认为是至关重要的。在典型的云环境中，客户希望根据应用程序需求选择软件和操作系统，而不是根据是否存在附加安全工具的实现。必须考虑到这些工具的影响和侵入性。越小、越少干扰的工具越容易移植。巨大的代码变化和对其他软件的依赖可能会在移植中产生更大的障碍。还必须考虑到软件所需的系统特权。</li>
+<li>客户机独立性。为了减少攻击面，认证解决方案必须依赖尽可能少的附加基础设施。对其他基础设施的依赖关系也会影响解决方案的整体可靠性。增加实现的复杂性，导致系统变得更容易出错。不那么复杂的解决方案更容易维护。</li>
+</ul>
+<h1 id="5-安全独立的认证"><a href="#5-安全独立的认证" class="headerlink" title="5 安全独立的认证"></a><strong>5 安全独立的认证</strong></h1><p>在分析SEPA方法[12]时，我们发现VM和hypervisor之间的层链接机制存在缺陷。攻击者可以发起中继攻击来生成可验证的VM认证，从而欺骗验证者信任一个Bad VM。 我们假设一个威胁模型遵循[9]中Dolev和Yao的定义。攻击者完全控制网络，因此可以在网络上的任何地方读取、修改、插入或阻止消息。但是，她不能破坏任何底层的密码原语。而且，攻击者能够控制在VM中运行的系统，但不能控制hypervisor。 为了发起攻击，攻击者在目标系统的边界之外操作自己的虚拟机监控程序主机(Attacker Controlled System)，如图4所示。在该系统上，她运行VM的原始副本以及相应的vTPM，包括其配置和密钥。她进一步获得对原始系统上的虚拟机的访问，通过这种方式，她可以修改和运行内部被破坏的软件(参见图4中的bad VM)。 <img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653576139280.png" srcset="/img/loading.gif" lazyload alt="image-1653576139280"> 图4显示了中继攻击过程的时序图。每当验证者(V)向虚拟机发送它的认证请求时，Bad VM将这个请求转发给攻击者控制的系统上的原始虚拟机。从那里，VM将请求转发给它的vTPM, vTPM生成一个VmAttestation。VM将这个响应返回给Bad VM，Bad VM最终将VmAttestation转发给验证者。在原始系统上的hypervisor的后续认证中，将使用pTPM。验证者反过来验证两个认证，错误地认为Bad VM值得信任。 我们通过使用vTPM本身作为到管理程序的可信通道来解决中继问题。每当VM收到来自Verifier (V)的认证请求时，它会像往常一样在vTPM上触发TPM Quote操作(参见图5)。此时，为了缓解这一问题，我们让vTPM在hypervisor(3)上存储vTPM报价结果(VmAttestationhash)的散列。然后，继续正常的流程，VM将VM认证结果返回给验证者。 <img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653576459909.png" srcset="/img/loading.gif" lazyload alt="image-1653576459909"> 随后，验证者向hypervisor发送一个认证请求。hypervisor为VM使用最新的VmAttestationhash，并将其包含在hypervisor认证中。为了达到这个目的，hypervisor通过VmAttestationhash对来自Verifier的nonce的连接进行散列，从而创建一个复合nonce。这个复合nonce用于pTPM上的TPM Quote操作。结果返回给验证器。验证者验证虚拟机认证哈希是否匹配。为此，它创建一个从VM认证接收到的VM认证数据(VmAttestation)散列。Verifier与hypervisor完全相同地生成nonce，并将其与来自hypervisor认证数据的复合nonce进行比较。只有当复合认证匹配时，验证者才能确定收到了正确的虚拟机认证。通过这种方式，VM和hypervisor之间的层链接得到了显著改进。之后，Verifier继续验证VM和hypervisor的认证。 <strong>这种方式存在将指定给虚拟机的数据泄露给其他虚拟机或未经授权的第三方的风险</strong>。我们认为这种风险是最小的，因为认证方法确保VM和底层hypervisor主机都是值得信任的。可以使用加密和访问控制机制等其他安全措施来进一步保护转发的散列。不受信任的虚拟机监控程序可能会泄露从vTPM转发的信息，但会使用SEPA方案检测到。</p>
+<h1 id="6-实现"><a href="#6-实现" class="headerlink" title="6 实现"></a><strong>6 实现</strong></h1><p>内存内省方法是计算密集型的，需要大量的主存，而且不容易实现。拦截从虚拟机到主机操作系统的系统调用需要更改hypervisor和主机操作系统。因为它们违反了我们的许多需求，所以我们不认为它们是我们实现的候选者。分层链接是至关重要的，我们选择SEPA和HYPA来实现，两者都符合我们的要求。 我们将SEPA和HYPA作为单一的概念验证来实现，扩展了英特尔的Open CIT 2.2。Open CIT提供主机启动时间认证功能，并使用Intel Trusted Execution Technology (TXT)建立硬件测量信任根(RTM)。支持VMware ESX、Citrix Xen、KVM (Kernel-based Virtual Machine)、Microsoft HyperV等hypervisor。认证信息通过web界面呈现。 Open CIT由两个主要组件组成：<strong>认证服务器(Attestation Server)和信任代理(Trust Agent)<strong>。认证服务器充当远程认证的验证者。它维护带有RIMs和认证结果的数据库，并通过REST API向依赖方公开这些结果。信任代理在任何经认证的计算机上运行，处理来自认证服务器的认证请求。即执行TPM Quote操作，收集并返回存储的测量日志(SMLs)。 我们向Open CIT添加了对验证VM的支持，包括HYPA和我们改进的SEPA层绑定机制，以将vm与其底层hypervisor关联起来。这需要同时更改信任代理和认证服务器。我们开发了一个vTPM实例管理器来为vm提供vTPM，使用QEMU和Stefan Berger的vTPM实现，以适应我们的需要。</strong>也就是说，对于HYPA，我们向hypervisor的Trust Agent添加了平台配置寄存器(PCR)读访问，对于SEPA，我们在hypervisor文件系统中存储VM认证散列</strong>。为了让HYPA访问vm中的vSML，我们使用hypervisor上的VirtIO与VM共享一个_tempfs_文件夹。此外，我们还添加了对IMA运行时完整性验证的支持。需要修改认证服务器、信任代理和虚拟机操作系统。</p>
+<h1 id="7-评估"><a href="#7-评估" class="headerlink" title="7 评估"></a><strong>7 评估</strong></h1><p>在本节中，我们评估SEPA和HYPA认证方法。hypervisor主机使用libvirt、KVM和QEMU 2.6进行虚拟化。所有机器都运行Ubuntu 16.04。客户端虚拟机和hypervisor运行定制的Open CIT信任代理。为了比较SEPA和HYPA之间的性能度量，我们基于Open CIT为验证vm和hypervisor所执行的典型操作定义了评估场景:</p>
+<ol>
+<li>验证所有虚拟机;</li>
+<li>验证单个VM;</li>
+<li>验证Hypervisor。</li>
+</ol>
+<h2 id="7-1-Evaluation-Criteria-评估标准"><a href="#7-1-Evaluation-Criteria-评估标准" class="headerlink" title="7.1 Evaluation Criteria 评估标准"></a><strong>7.1 Evaluation Criteria 评估标准</strong></h2><ul>
+<li><strong>执行时间</strong>。为了比较基于执行时间的认证方案，我们测量了每个场景的总体执行时间。这包括认证请求生成、响应处理、验证和网络传输。由于Open CIT在后端生成和验证TPM Quote响应会产生大量的开销，因此我们还要度量这两个事件完成所需的时间。</li>
+<li><strong>网络流量</strong>。对于每个评估场景，我们捕获三个后续认证的整个网络流量。对于从authentication Server到hypervisor主机或VM的每个连接，我们计算接收和传输的数据量、吞吐量率以及第一次和最后一次传输之间的时间。在总结中，我们只包括所有连接的累计数据量。</li>
+<li><strong>CPU和内存占用率</strong>。对于每次尝试进行3次验证，我们以兆字节为单位测量常驻(非交换)物理内存消耗以及CPU利用率的百分比。根据不同的场景，使用Linux top命令每100毫秒测量一次authentication Server和Trust Agent，计算平均值和峰值。有些任务占用超过100%的CPU，这意味着它们占用一个以上的CPU核。</li>
+</ul>
+<h2 id="7-2-评估结果"><a href="#7-2-评估结果" class="headerlink" title="7.2 评估结果"></a><strong>7.2 评估结果</strong></h2><p>在评估过程中，我们观察了这些方案的预期行为。表1显示了这些场景的测量执行时间。我们为每个场景生成10个度量值，并将它们积累到单个表中。也就是说，组中的每个值都是特定场景中所有测量执行时间的算术平均值。 <img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653577208615.png" srcset="/img/loading.gif" lazyload alt="image-1653577208615"> 表1数据显示，如果对所有虚拟机都进行了校验，则HYPA比SEPA快，因为它只对hypervisor进行一次校验。如果只验证了一个VM，或者只验证了hypervisor，那么SEPA要快得多。一个有趣的观察结果是检索TPM Quote响应和验证它所需的时间。这似乎在很大程度上不受已认证虚拟机数量的影响，SEPA显示了一个异常的最大值。然而，在实践中，如果要求的认证更少，或者IMA sml的规模变得非常大，那么HYPA的规模就会更大。当达到某个认证请求阈值(取决于虚拟机数量)后，SEPA的效率将低于HYPA。 <img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653577403822.png" srcset="/img/loading.gif" lazyload alt="image-1653577403822"> 对于CPU利用率，表3显示SEPA的平均CPU利用率和峰值总是较小，但一次验证所有vm除外。与SEPA相比，HYPA执行的认证操作更少，因此需要更少的CPU时间进行认证验证。表3中描述的内存消耗显示了意外的行为。在大多数情况下，HYPA比SEPA更有效。理论上，HYPA在验证时应该需要更多内存，因为它同时验证hypervisor和vm。我们只能用JAVA的垃圾回收来解释这种行为，或者是一般的操作系统内存管理扰乱了我们的测量结果。 表2显示，SEPA更有效地利用网络，直到达到认证请求的阈值。如果向hypervisor主机添加了更多的客户机vm，或者一次请求了更多的认证，那么HYPA将变得更高效。我们还测试了vm或底层hypervisor主机的完整性是否会影响测量结果。然而，我们无法找到非整数系统更昂贵的相关性或指标。结果是如此接近和难以区分，以至于这些差异可能是由不同的噪杂源引起的，从而导致测量的抖动，例如网络通信、其他应用程序和服务的主机利用率、Java Just in Time (JIT)优化、垃圾收集或操作系统调度。 我们还监控了客户端的Trust Agent。我们看不出这些方案之间有什么明显的差别。两种方案之间的CPU利用率和内存消耗没有差异。这也可能是由JAVA的开销和垃圾收集引起的。从逻辑上说，当认证管理器以SML和PCR值(需要加载到内存中)的形式收集认证信息时，内存消耗应该会稍微多一些。 <strong>两种方案的Nonce生成时间不同</strong>。HYPA需要更多的时间来收集和组合所有认证信息。它总体上是稳定的，只对方案的整体性能有很小的影响。随着运行虚拟机数量的增加，HYPA Nonce生成时间越长。因此，<strong>HYPA可能会在hypervisor Trust Agent上遇到可伸缩性问题。但只有在有许多客户机和非常大的SML的情况下。SEPA只有在许多主机需要在网络上进行认证时才有扩展性问题，但在单个信任代理上没有。</strong> 我们的结论是，对于少量VM, SEPA的性能优于HYPA。随着虚拟机认证次数的增加，SEPA性能下降。正如预期的那样，HYPA在所有测试中显示出稳定的性能。支持目标系统上的这两种认证方案，就可以定义有效的组合。</p>
+<h1 id="8-未来工作和结论"><a href="#8-未来工作和结论" class="headerlink" title="8 未来工作和结论"></a><strong>8 未来工作和结论</strong></h1><p>本文分析了现有的基于可信计算的虚拟环境认证方法。我们发现现有的单独认证方法在概念上存在安全缺陷。 通过提出安全的独立认证，加强了hypervisor和VM层之间的层链接。改进了原有的单独认证方式的安全特性，为防止中继攻击提供了有效的对策。我们在生产级硬件上实现并评估了基于管理程序的认证方法以及安全的独立认证方法。通过性能度量，我们强调了我们的方法对于运行数量有限的vm的系统的可行性。此外，我们指出，通过只需要对管理程序软件进行最小的更改，我们的安全改进允许保持标准的认证协议。 未来的工作方向包括安全分离认证在虚拟网络设备、雾（fog）和边缘计算中的应用。随着容器技术的发展，我们的方法在完全成熟的机器虚拟化之外的适用性是另一个有趣的研究方向。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%8F%AF%E4%BF%A1%E8%AE%A1%E7%AE%97/" class="category-chain-item">可信计算</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E8%BF%9C%E7%A8%8B%E8%AF%81%E6%98%8E/" class="print-no-link">#远程证明</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>远程证明_04_虚拟化环境的安全认证</div>
+      <div>http://example.com/0004.html</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>landery</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2023年3月7日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/0005.html" title="远程证明_05_物联网远程认证技术综述:攻击、对策与展望">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">远程证明_05_物联网远程认证技术综述:攻击、对策与展望</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/0003.html" title="远程证明_03_使用Intel SGX对虚拟机进行远程认证和完整性测量">
+                        <span class="hidden-mobile">远程证明_03_使用Intel SGX对虚拟机进行远程认证和完整性测量</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"GK4nuH8jdXDcw4IJIVShjMtA-gzGzoHsz","appKey":"7P0B0kJFdaLY6eDQ93Lhcv8J","path":"window.location.pathname","placeholder":"建议使用QQ邮箱，评论头像采用QQ头像","avatar":"retro","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":true,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":true,"bg":null,"count":true},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+    <!-- 备案信息 ICP for China -->
+    <div class="beian">
+  <span>
+    <a href="http://beian.miit.gov.cn/" target="_blank" rel="nofollow noopener">
+      蜀ICP备2022011502号
+    </a>
+  </span>
+  
+    
+      <span>
+        <a
+          href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=51012202001227"
+          rel="nofollow noopener"
+          class="beian-police"
+          target="_blank"
+        >
+          
+            <span style="visibility: hidden; width: 0">|</span>
+            <img src="/img/police_beian.png" srcset="/img/loading.gif" lazyload alt="police-icon"/>
+          
+          <span>川公网安备51012202001227号</span>
+        </a>
+      </span>
+    
+  
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/DynamicRibbon.min.js"></script>
+<script src="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/love.min.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

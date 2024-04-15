@@ -1,0 +1,937 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="landery">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="title: 远程证明_06_论远程证明中的TOCTOU问题 date: 2022-06-12 18:56:32.249 updated: 2022-06-13 00:22:53.942 url: &#x2F;archives&#x2F;yczm06 categories:  远程证明 tags: 可信计算 远程证明   原文信息 文章标题：On the TOCTOU Problem in Re">
+<meta property="og:type" content="article">
+<meta property="og:title" content="远程证明_06_论远程证明中的TOCTOU问题">
+<meta property="og:url" content="http://example.com/0006.html">
+<meta property="og:site_name" content="landery小站">
+<meta property="og:description" content="title: 远程证明_06_论远程证明中的TOCTOU问题 date: 2022-06-12 18:56:32.249 updated: 2022-06-13 00:22:53.942 url: &#x2F;archives&#x2F;yczm06 categories:  远程证明 tags: 可信计算 远程证明   原文信息 文章标题：On the TOCTOU Problem in Re">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1655026933113.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1655027182327.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1655028194335.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1655028450745.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1655028947606.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1655029692616.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1655029924631.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1655029944750.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1655030088281.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1655030323738.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1655030421599.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1655030511026.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1655030753804.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1655030777814.png">
+<meta property="article:published_time" content="2023-03-07T13:38:04.000Z">
+<meta property="article:modified_time" content="2024-04-15T10:15:57.432Z">
+<meta property="article:author" content="landery">
+<meta property="article:tag" content="远程证明">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1655026933113.png">
+  
+  
+  
+  <title>远程证明_06_论远程证明中的TOCTOU问题 - landery小站</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/scroll.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"GK4nuH8jdXDcw4IJIVShjMtA-gzGzoHsz","app_key":"7P0B0kJFdaLY6eDQ93Lhcv8J","server_url":"https://api.landery.cn","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>landery 小站</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/links/" target="_self">
+                <i class="iconfont icon-link-fill"></i>
+                <span>友链</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/remark/" target="_self">
+                <i class="iconfont icon-twitch-fill"></i>
+                <span>留言板</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/image/bg/001.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="远程证明_06_论远程证明中的TOCTOU问题"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2023-03-07 21:38" pubdate>
+          2023年3月7日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          14k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          120 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">远程证明_06_论远程证明中的TOCTOU问题</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <hr>
+<p>title: 远程证明_06_论远程证明中的TOCTOU问题 date: 2022-06-12 18:56:32.249 updated: 2022-06-13 00:22:53.942 url: &#x2F;archives&#x2F;yczm06 categories:</p>
+<ul>
+<li>远程证明 tags:</li>
+<li>可信计算</li>
+<li>远程证明</li>
+</ul>
+<hr>
+<h1 id="原文信息"><a href="#原文信息" class="headerlink" title="原文信息"></a><strong>原文信息</strong></h1><ol>
+<li>文章标题：On the TOCTOU Problem in Remote Attestation</li>
+<li>文章中文翻译：论远程证明中的TOCTOU问题</li>
+<li>文章等级：CCF A</li>
+<li>文章发表时间：2021</li>
+<li>文章作者：De Oliveira Nunes I, Jakkamsetti S, Rattanavipanon N, et al.</li>
+<li>完整引用：De Oliveira Nunes I, Jakkamsetti S, Rattanavipanon N, et al. On the TOCTOU problem in remote attestation[C]&#x2F;&#x2F;Proceedings of the 2021 ACM SIGSAC Conference on Computer and Communications Security. 2021: 2921-2936.</li>
+<li>全文请查看：<a target="_blank" rel="noopener" href="https://dl.acm.org/doi/pdf/10.1145/3460120.3484532">全文链接</a></li>
+</ol>
+<h1 id="1-TOCTOU"><a href="#1-TOCTOU" class="headerlink" title="1 TOCTOU"></a><strong>1 TOCTOU</strong></h1><p>Time-Of-Check-Time-Of-Use (TOCTOU)，指的是远程证明中存在的一个尚未解决的问题，如果短暂的恶意软件感染了一个设备(通过修改它的二进制文件)，执行它的恶意任务，并在下一次认证之前删除自己，它的临时存在将不会被检测到。</p>
+<blockquote>
+<p>就是利用远程证明中，认证的间隙，来进行攻击。远程证明无法发现这种攻击。</p>
+</blockquote>
+<p>这篇文章提出了一种RATA：一种可证明安全的方法来解决TOCTOU问题，使得即使是在执行下一次RA之前删除自己的恶意软件，也无法隐藏其短暂的存在。 RAT A针对低端嵌入式设备的混合 RA 架构，提出了两种RAT AA和RAT AB，分别适用于有无实时时钟，但是他们都被证明是安全的。 Hybrid RA(基于软硬件协同)。</p>
+<h1 id="1-介绍"><a href="#1-介绍" class="headerlink" title="1 介绍"></a><strong>1 介绍</strong></h1><p>认证的完整性检查需要某种类型的完整性保证功能，通常实现为消息认证代码 (MAC)，在 Prv 认证的内存区域上计算。计算 MAC 需要 Prv 具有唯一的密钥，用 K 表示 - 与共享的对称密钥Vrf 或 Vrf 已知对应公钥的私钥。 K 必须驻留在安全存储中，并且在 Prv 上运行的任何软件都无法访问，但特权和不可变的证明代码除外。由于通常的 RA 威胁模型假定 Prv 上的软件状态完全受损，因此安全存储意味着一定程度的硬件支持。混合 RA（基于硬件&#x2F;软件协同设计）[7-10] 是一种特别适用于低端的方法嵌入式设备。在混合 RA 设计中，完整性确保功能在软件中实现，而硬件控制该软件的执行，检测可能导致意外行为或 K 泄漏的任何违规行为。简而言之，混合 RA 提供与（更昂贵的）基于硬件的 RA 方法（例如，基于 TPM [11] 或其他独立硬件模块的方法）相同的安全保证，同时最大限度地减少对底层硬件平台的修改。我们在 3.2 节中概述了一个具体的混合 RA 架构。 尽管取得了很大的进展，但目前的混合RA架构有一个共同的限制:它们度量Prv执行RA时Prv可执行文件的状态。在RA测量之前，它们不提供关于Prv可执行文件的信息，也不提供在两个连续RA测量之间的状态信息。我们将这个问题称为检查时间使用时间(Time-Of-Check Time-Of-Use)。虽然在此之前已经讨论过该问题的变体[12-16]，但在混合RA中仍未得到解决。 我们强调，RA-TOCTOU 问题（如本文所述）不应与确保证明和二进制执行之间的时间一致性问题混淆或混为一谈，这是通过运行时证明方法解决的，例如，[3-6 ]。 尽管如此，二进制文件的 RA（即静态 RA）在这种情况下仍然相关，因为大多数低端设备的运行时证明技术都依赖于静态 RA 作为构建块（一个例外是 [17]，相反，它假设二进制文件 永不改变 4). 事实上，正如我们在第 8 节中讨论的那样，针对 TOCTOU 的安全 RA 架构使得依赖静态 RA 的运行时证明技术更加高效。 在实践中，TOCTOU 问题使设备容易受到临时恶意软件的攻击，这些恶意软件在完成任务后会擦除自身（其可执行文件）。这在大量 MCU 报告长时间收集的测量值的环境中是有害的。例如，考虑在智能城市中测量能源消耗的几个基于 MCU 的传感器，其中大规模错误测量可能导致断电。如果在这种情况下使用对 TOCTOU 不安全的常规 RA 方案（例如，通过每天执行一次 RA，或每个计费周期执行一次），则可以通过以下方式破坏安全性：（i）在常规使用期间将传感器软件更改为欺骗测量，以及 (ii) 使用预期的可执行文件重新编程传感器，其中 (i) 和 (ii) 都发生在连续 RA 实例之间的时间段内。特别是，由于必须通过不受信任的通信通道接收 RA 请求，因此恶意软件可能会在检测到传入的证明请求时简单地擦除自身，即使 RA 调度是先验未知的。如前所述，在还需要检测运行时违规（例如，代码重用和数据损坏攻击）的环境中（例如，MCU 代码是用内存不安全的语言编写的），底层静态 RA 的 TOCTOU-Security 使整体运行时证明更高效；见第 8 节。 我们缓解TOCTOU问题的方法是基于以下观察，即当前的混合RA技术只使用可信硬件来检测危及RA软件本身执行的安全违规，并在检测到此类违规时采取行动(例如，重置设备)。然而，RAT A 的主要新特性是使用最小（正式验证）硬件组件来额外提供有关 Prv 程序内存状态的历史上下文。这是通过在受保护的内存区域中安全记录程序内存修改的最新时间来实现的，该区域也被RA完整性确保功能覆盖。这使得Vrf可以稍后检查Prv内存修改的真实性和完整性。这个新特性被无缝集成到底层RA架构中，并且该组合被证明是安全的。我们相信这将带来以下贡献:</p>
+<ul>
+<li>RA TOCTOU-Security制定:我们在RA的背景下激励并正式化TOCTOU。我们使用安全游戏(参见定义4.1)定义RA TOCTOU - security，并讨论为什么当前基于连续自我测量的RA技术不满足这一定义。我们认为我们的工作是对这一问题的第一次正式处理。此外，我们评估了基于连续自我测量的RA技术的实用性，并认为使用它们来获得TOCTOU-Security会引起极高的运行时开销，可能会使Prv上的良性应用程序极度匮乏。</li>
+<li>设计、实施和验证：我们提出了两种技术：RAT AA 和 RAT AB。前者假设 Prv 有一个与 Vrf 同步的安全只读实时时钟 (RTC)。由于这个假设对于许多低端 Prv-s 来说是不现实的，RAT AB 权衡了对安全 RTC 的需求验证传入的证明请求；事实上，这个特性已经是几种混合 RA 架构的一部分。我们表明，这两种技术都满足 TOCTOU-Security 的正式定义，假设它们的实现遵循线性时序逻辑 (LTL) 中所述的一组正式规范。 最后，实现本身经过形式验证以符合这些 LTL 规范，从而在设计和实现层面产生安全性。 我们的实现在 [18] 上是公开的。 它在现实世界的低端 MCU (TI MSP430) 上实现，并使用商用 FPGA 进行部署。 实验结果表明硬件开销低，即使对于成本敏感的低端设备也是可以承受的。</li>
+<li>RA 和相关服务的增强：我们讨论 RATA 对 RA 和 TOCTOU-Security 之外的相关服务的影响。 特别是，我们表明，在大多数情况下，RAT A 可以将 RA 计算复杂度从线性（就证明的内存大小而言）降低到恒定时间，从而显着节省。 我们还讨论了 RAT A 对专业 RA 应用程序的好处：(i) 实时系统； (ii) 运行时完整性&#x2F;控制流证明； (iii) 集体 RA，需要同时证明多个证明者。</li>
+</ul>
+<h1 id="2-Scope"><a href="#2-Scope" class="headerlink" title="2 Scope"></a><strong>2 Scope</strong></h1><p>本节根据目标设备和期望的安全属性描述了本文的范围。 <strong>低端设备</strong>：这项工作侧重于计算能力较低的 CPS&#x2F;IoT 传感器和执行器（或其混合体）。 这些是一些基于低功耗单核 MCU 的最小和最弱的设备，只有几 KB 的程序和数据存储器。 两个突出的例子是： Atmel AVR ATmega 和 TIMSP430：8 位和 16 位 CPU，通常以 1-16MHz 时钟频率运行，可寻址内存约为 64 KB。 SRAM 用作数据存储器，大小通常在 4 到 16KBytes 之间，而其余地址空间可用于程序存储器。 此类设备通常在“裸机”上运行软件并就地执行指令（物理上来自程序内存），并且没有内存管理单元 (MMU) 来支持虚拟内存。 我们的实现基于MSP430。这个选择是由于开放核心中维护良好的开源MSP430硬件设计的公开可用性。然而，我们的机器模型和本文开发的整个方法适用于同级别的其他低端mcu，如Atmel AVR ATmega。<strong>RAT A的主要实现是由VRASED组成的</strong>，它是一个公开可用的经过验证的混合RA架构，它允许我们演示安全性。尽管我们有特定的实现选择，但我们相信RAT A概念也适用于其他RA架构。为了支持这一声明，附录D描述了在SANCUS之上的RAT A实现：一种基于硬件的RA架构，也针对低端设备。参见第9节，了解各种RA架构的概述。 <strong>检测、预防和内存不可变性</strong>：作为一个面向检测的安全服务，RA不会阻止未来的二进制修改。因此，TOCTOU一词应考虑具有追溯效力。特别是，本文提出的技术允许Vrf理解“从什么时候开始”Prv记忆保持与目前RA结果报告的相同。 虽然可以通过将所有可执行内存设为只读（例如，将代码存储在 ROM 中）来轻松防止恶意软件感染，但这种激进的方法会因无法进行合法软件更新而牺牲可重构性，并且实质上会将 MCU 转变为专用集成电路 （ASIC）。 然而，可重构性是 MCU 最重要的特性之一，甚至可能是它的全部“存在理由”。 一种不那么激烈的方法是防止在运行时发生的程序内存修改。这种方法容易受到物理攻击，即对手直接重新编程Prv。更重要的是，(即使我们排除了物理攻击)它使远程更新变得不可能，只要设备软件需要更新，就需要物理访问。由于这些设备通常是远程的或物理上不可访问的(在一个更大的系统内，如车辆)，低端mcu(包括前面提到的MSP430和ATMega)通常不阻止程序内存的修改。我们基于检测的方法符合这一点，允许对二进制文件进行更改并将其报告给Vrf：即使它们发生在连续的RA实例之间。<strong>由于Vrf知道Prv上所有的二进制修改，所以它可以区分非法修改和预期修改</strong>。</p>
+<h1 id="3-背景和定义"><a href="#3-背景和定义" class="headerlink" title="3 背景和定义"></a><strong>3 背景和定义</strong></h1><h2 id="3-1-设备模型和MCU假设"><a href="#3-1-设备模型和MCU假设" class="headerlink" title="3.1 设备模型和MCU假设"></a><strong>3.1 设备模型和MCU假设</strong></h2><p>我们现在概述与RAT A相关的MCU假设，它们反映了第2节中讨论的低端嵌入式系统的行为，并与之前关于确保低端MCU的工作一致。特别地，我们假设MCU硬件正确地实现了它的规格，如下:</p>
+<ul>
+<li>A1 -程序计数器(PC): PC总是包含在给定的CPU周期内执行的指令的地址。</li>
+<li>A2 -内存地址：无论何时读取或写入内存，数据地址信号(Daddr)包含相应内存位置的地址。对于读访问，必须设置数据读使能位Ren；对于写访问，必须设置数据写使能位Wen。</li>
+<li>A3 - DMA：当直接内存访问(DMA)控制器试图访问主系统内存时，DMA地址信号(DMAaddr)反映正在访问的内存位置的地址，并设置DMA使能位(DMAen)。如果没有设置DMAen, DMA就不能访问内存。</li>
+<li>A4 -单片机复位:在一个成功的复位程序结束时，所有寄存器(包括PC机)都被置零，然后恢复正常的软件执行流程。硬件上的复位由单片机处理。因此，不能修改复位处理例程。当复位发生时，设置相应的复位信号。在MCU第一次初始化时也设置相同的信号。</li>
+<li>A5 -无数据执行：指令必须驻留(物理上)在程序内存(PMEM)中才能执行。它们没有加载到DMEM来执行。数据执行在大多数低端设备中是不可能的，包括我们原型中使用的OpenMSP430。例如，在基于哈佛的低端设备(如VR Atmega)中，没有硬件支持从数据存储器(DMEM)中获取&#x2F;执行指令。在默认情况下不阻止数据执行的其他低端设备中，这通常是由底层混合RA架构强制执行的。因此，即使恶意软件驻留在DMEM中，也必须在执行之前将其复制到PMEM中，从而驻留在PMEM中。</li>
+</ul>
+<h2 id="3-2-RA定义，架构和对抗模型"><a href="#3-2-RA定义，架构和对抗模型" class="headerlink" title="3.2 RA定义，架构和对抗模型"></a><strong>3.2 RA定义，架构和对抗模型</strong></h2><p>正如第1节所讨论的，RA通常被实现为Vrf和Prv之间的挑战响应协议。这个概念被定义3.1中的RA协议通用语法捕获。 定义3.1(语法)。RA是一个元组(请求，证明，验证) (<strong>Request, Attest, Verify</strong>) 算法:<img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1655026933113.png" srcset="/img/loading.gif" lazyload alt="image-1655026933113">定义3.1将RA指定为一个元组(Request, Attest,Verify)。 Vrf计算请求生成挑战Chal并发送给Prv。Prv通过使用Chal在被验证的内存范围(由AR表示)上计算一个经过验证的完整性保证函数(例如MAC)，并产生H来执行验证，H被发送回Vrf进行验证。例如，如果使用MAC实现作证，H计算为: $$H &#x3D; HMAC(KDF(K, Chal), AR) ——(1)$$ 其中KDF表示一个密钥推导函数，K是Prv和Vrf共享的对称密钥。Vrf收到H后，执行算法Verify，检查H是否对应某个期望值M的MAC。 虽然本文中讨论的技术与特定的RA架构无关，但我们选择了用VRASED[10]组成RAT A。 我们的选择的动机是VRASED正式的安全定义，它允许推理RAT A与底层RA架构的安全组合；参见定理5.1和6.1。接下来我们概述VRASED。 VRASED是一种经过正式验证的基于软硬件协同设计的混合RA架构。它被构建为一组子模块，每个模块保证一组特定的子属性。每个子模块(硬件或软件)都要单独验证。最后，证明了所有子模块的组成满足RA的稳健性和安全性的形式化定义。非正式地说，RA的可靠性保证了完整性保证函数(VRASED中的HMAC)在经过验证的内存范围(AR)上被正确地计算出来。它还保证了AR在RA计算开始后不会被修改，从而加强了时间一致性，并在RA计算[22]期间防止“躲猫猫”攻击。<strong>RA安全性确保RA执行生成一个不可伪造的经过身份验证的内存测量值，并且用于计算该测量值的K不会在认证之前、期间或之后泄露</strong>。 为了实现上述目标，VRASED软件部分(SW-Att)驻留在只读存储器(ROM)中，并依赖于来自HACL密码库[23]的经过正式验证的HMAC实现。典型的SW-Att执行过程如下:</p>
+<ol>
+<li>从MR表示的固定内存区域读取挑战Chal。</li>
+<li>使用密钥推导函数(KDF)从Chal和认证主密钥K中导出一次性密钥：$KDF(K, MR)$(其中MR &#x3D; Chal)。</li>
+<li>验证实现(SW-Att)通过在被验证的内存区域AR上使用新衍生的密钥计算HMAC生成验证令牌H: $H &#x3D; HMAC (KDF(K, MR)， AR)$</li>
+<li>用结果H重写MR，并返回执行到非特权软件，即正常的应用程序。</li>
+</ol>
+<p>VRASED硬件(HW-Mod)监测7个不同的MCU信号：</p>
+<ol>
+<li>PC:当前程序计数器值;</li>
+<li>Ren:指示MCU是否从内存中读取的信号(1位);</li>
+<li>Wen:指示MCU是否写入内存的信号(1位);</li>
+<li>Daddr: MCU存储器访问地址;</li>
+<li>DMAen:表示是否直接内存访问(DMA)当前正在访问内存(1位)的信号;</li>
+<li>DMAaddr:被DMA访问的内存地址。</li>
+<li>irq:表示中断是否正在发生的信号(1位)</li>
+</ol>
+<p>这些信号确定一个位复位信号输出，当设置为1时，立即触发系统范围的MCU复位，即在执行下一个指令之前。当VRASED硬件检测到任何违反安全属性的情况时，会触发复位输出。VRASED硬件是用有限状态机(FSMs)在寄存器传输层(RTL)中描述的。然后，使用NuSMV Model Checker[24]自动证明FSMs实现了声明的安全子属性。最后，使用一个<strong>LTL定理证明器</strong>来证明硬件和软件子属性的结合意味着端到端可靠性和安全性。 <img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1655027182327.png" srcset="/img/loading.gif" lazyload alt="image-1655027182327"> 更正式地说，VRASED的端到端安全证明保证了在定义3.2的RA安全博弈中，没有一个概率多项式时间(PPT)的对手能够以不可忽略的概率在安全参数l上获胜，即Pr[Adv, RA-game]≤negl(l)。 备注1：虽然上述保证确保了认证计算期间被验证内存的一致性，VRASED或任何之前的低端RA方案都不是TOCTOU-Secure的，因为在认证之前的修改是不被检测到的。 <strong>敌对的模型</strong>。我们考虑一个相当强大的对手Adv，它控制着Prv的整个软件状态，包括代码和数据。Adv可以修改任何可写内存，也可以读取任何没有受到可信硬件显式保护的内存(包括机密内存)。此外，如果在Prv上存在任何DMA控制器，Adv可以完全访问所有DMA控制器。回想一下，DMA允许直接访问和修改内存，而不需要经过CPU。 虽然Adv可能会通过有线连接flash的方式对Prv软件进行物理重编程，但侵入性&#x2F;篡改性硬件攻击不在本文的研究范围之内:我们假设Adv不能:(1)改变硬件组件，(2)修改ROM中的代码，(3)诱发硬件故障，(4)通过物理侧通道获取Prv机密。针对物理硬件攻击的保护与我们的目标是正交的，可以通过防篡改技术[25]实现。</p>
+<h2 id="3-3-线性时间逻辑-LTL"><a href="#3-3-线性时间逻辑-LTL" class="headerlink" title="3.3 线性时间逻辑(LTL)"></a><strong>3.3 线性时间逻辑(LTL)</strong></h2><p>计算机辅助形式化验证通常包括三个基本步骤：首先，使用形式化模型(如有限状态机，FSM)描述感兴趣的系统(如硬件、软件、通信协议)。第二，正式指定了模型应该满足的属性。第三，根据正式指定的属性检查系统模型，以确保保留它们。这可以通过定理证明或模型检查来实现。在本工作中，我们使用后者来验证系统模块的实现。 在模型检查的一个实例中，使用线性时间逻辑(Linear Temporal Logic, LTL)将属性指定为公式，系统模型表示为FSMs。因此，一个系统由一个三元组(S, S0,T)表示，其中S是状态的有限集合，$S0⊆S$ 是可能初始状态的集合，$T⊆S ×S$ 是转移关系集-它描述了从每个状态可以在一个单一步骤到达的状态集。使用LTL指定属性允许表示预期的系统行为。 除了命题连接词，如连接(∧)、分离(∨)、否定(¬)和蕴涵(→)，LTL还包括时间连接词，因此可以进行顺序推理。在本文中，我们对下列时态连接词感兴趣:</p>
+<ul>
+<li>$Xϕ$ - neXt ϕ ：如果ϕ 在下一个系统状态为true，则成立。。</li>
+<li>$Fϕ$ -Future ϕ: 如果存在ϕ 为true的未来状态，则成立。</li>
+<li>$Gϕ$ -Globally ϕ：如果对于所有未来状态ϕ 为true，则成立。</li>
+<li>$ϕ U ψ$ - ϕ Until ψ：如果存在一个未来状态 ψ 成立并且 ϕ 对于之前的所有状态都成立，则成立。</li>
+<li>$ϕ W ψ$ - ϕ Weak until ψ：如果假设 ψ 成立的未来状态，则 ϕ 对于之前的所有状态都成立。 如果 ψ 永远不会变为true，则 ϕ 必须永远成立。 更正式地说： $ϕWψ ≡ (ϕUψ ) ∨ G(ϕ)$</li>
+</ul>
+<h1 id="4-RA-TOCTOU"><a href="#4-RA-TOCTOU" class="headerlink" title="4 RA TOCTOU"></a><strong>4 RA TOCTOU</strong></h1><p>本节定义了 TOCTOU-Security for RA 的概念。 我们首先使用安全游戏将这个概念正式化。 接下来，我们考虑这个问题的实用性并概述现有机制，认为它们没有实现TOCTOU-Security（既不根据TOCTOU-Security定义，也不在实践中）并且产生相对较高的开销。</p>
+<h2 id="4-1符号"><a href="#4-1符号" class="headerlink" title="4.1符号"></a><strong>4.1符号</strong></h2><p>我们总结了表 1 中的符号。它与 VRASED [10] 中的符号基本一致，并添加了一些额外的元素来表示 RAT A 特定的内存区域和信号。 为了简化符号，当给定信号（例如，Daddr）的值在一定范围内（例如，$AR &#x3D; [AR_{min}, AR_{max}]$）时，我们写出 $D_{addr} ∈ AR$，即： $$D_{addr} ∈ AR ≡ AR_{min} ≤ D_{addr} ≤ AR_{max} —- (2)$$ 根据3.1节讨论的公理，我们使用$Mod_Mem(x)$表示对内存地址x的修改。给定我们的机器模型，如下逻辑等价： $$Mod_Mem(x) ≡ (W_{en} ∧ D_{addr} &#x3D; x) ∨ (DMA_{en} ∧ DMA_{addr} &#x3D; x) ——–(3)$$ 这捕捉了一个事实，即内存修改可能是由CPU(反映在信号Wen &#x3D; 1和Daddr &#x3D; x)或DMA(信号DMAen &#x3D; 1和DMAaddr &#x3D; x)引起的。我们也用这个表示法来表示连续内存区域R内某个位置的修改： $$Mod_Mem(R) ≡ (W_{en} ∧ D_{addr} ∈ R) ∨ (DMA_{en} ∧ DMA_{addr} ∈ R) ——–(4)$$ <img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1655028194335.png" srcset="/img/loading.gif" lazyload alt="image-1655028194335"></p>
+<h2 id="4-2-TOCTOU-Security定义"><a href="#4-2-TOCTOU-Security定义" class="headerlink" title="4.2 TOCTOU-Security定义"></a><strong>4.2 TOCTOU-Security定义</strong></h2><p>定义 4.1 抓住了 TOCTOU-Security 的概念。 在其中，游戏形式化了第 3.2 节中讨论的威胁模型，其中 Adv 控制 Prv 整个软件状态，包括随意调用 Attest 的能力。 游戏从挑战者 (Vrf) 选择时间 t0 开始。 在稍后的时间（tatt），Adv 收到 Chal 并赢得游戏，如果它可以产生被验证接受为对预期 AR 值 M 的有效响应的 HAdv，实际上，在 t0 和 tatt 之间存在时间 当AR≠M。 这个定义增强了RA的安全性(定义3.2)，通过允许Adv在产生预期响应时成功，即使在t0之后的任何一点AR被修改，而t0是由Vrf选择的。例如，如果Vrf想知道AR在过去两小时内是否保持有效状态，Vrf选择t0为t0 &#x3D; tatt−2h。注意，这个定义还捕获了针对暂时性攻击的安全性，其中Adv将修改过的内存更改回其预期状态并离开设备，从而试图对即将到来的认证请求隐藏其短暂的修改。这种攻击是不可检测的所有RA方案，不是TOCTOU-Secure。 备注2：回想一下，AR对应于Prv存储器的可执行部分，即程序存储器。由于数据内存是不可执行的(参见3.1节)，定义4.1没有考虑对数据内存的更改。在8.4节中讨论了运行时&#x2F;数据-内存攻击的关系。</p>
+<h2 id="4-3-TOCTOU-Secure-RA-vs-连续自我测量"><a href="#4-3-TOCTOU-Secure-RA-vs-连续自我测量" class="headerlink" title="4.3 TOCTOU-Secure RA vs. 连续自我测量"></a><strong>4.3 TOCTOU-Secure RA vs. 连续自我测量</strong></h2><p>基于连续的自我测量[12,26]的RA方案试图检测两个连续的RA测量之间的短暂恶意软件。<strong>策略是让Prv间歇性地(基于周期性或不可预测的时间表)并单方面调用其RA功能。然后，要么Prv自连接到Vrf[26]，要么在本地累积测量值，等待Vrf显式地请求[12]。在收到RA响应后，Vrf在每次RA测量时检查恶意软件的存在</strong>。图2描述了这些RA方案中使用的时间间隔。 <img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1655028450745.png" srcset="/img/loading.gif" lazyload alt="image-1655028450745"> 显然，所有自我测量方案总是在连续的 RA 实例之间留出一些时间，在此期间不会检测到短暂的恶意软件存在。 使用自我测量方案检测所有瞬态恶意软件的唯一方法是在 Prv 上以足够高的频率调用 RA 功能，这样可能最快的瞬态恶意软件就不会出现和消失。 然而，即使确定如此“足够高的频率”很容易（事实并非如此），这样做的成本也会非常高，如下所示。 我们将连续方案中的 CPU 利用率 (U) 定义为常规应用程序 (Capp) 可以使用的 CPU 周期的百分比，即除了用于自我测量 (CRA) 的周期之外的周期： $$ U &#x3D; \frac{C_{app}}{C_{app} + C_{RA}} ——-(7) $$ 如上所述，通过连续的自我测量来保证瞬时恶意软件的检测需要: $$C_{app} &lt; C_{Adv} ———-(8)$$ 其中，CAdv是最快的瞬时恶意软件使用的指令周期数，它可以感染Prv，执行它的任务，并清除自己。为了说明这一点，我们假设CAdv &#x3D; 10^6^个周期的保守值，在这种情况下： $$C_{Adv} &#x3D; 10^6 ⇒ C_{app} &lt; 10^6 ⇒ U &lt; \frac{10^6}{ 10^6 + C_{RA}}—– (9)$$ 例如，对于CRA，考虑VRASED(其他混合RA架构，例如[7]，也有类似的成本)所需的CPU周期数，以证明4KB的程序内存:CRA &#x3D; 3.6 × 10^6^个CPU周期(在典型的8MHz低端MCU中大约半秒)。 $$U &lt; \frac{10^6} {10^6 + 3.6 × 10^6} ⇒ U &lt; 21.74% ——-(10)$$ 为了检测暂时的恶意软件，很大一部分CPU周期(在这个玩具例子中几乎是80%)花费在RA计算上。在实践中，很难确定CAdv，在某些情况下(例如，改变一个通用的输入&#x2F;输出值来触发驱动)，它可能远远小于10^6^个周期，导致在Prv上运行的合法应用程序的CPU利用率更低。 因此，使用连续的自测来检测所有瞬态恶意软件是不切实际的。这也适用于连续测量之间的间隔是可变的和&#x2F;或从范围[0,tmax]随机选择的情况。正如在[26]中所讨论的，这是因为tmax &lt; CAdv才能达到可以忽略的恶意软件规避概率。 <img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1655028947606.png" srcset="/img/loading.gif" lazyload alt="image-1655028947606"> 如图 3 所示，TOCTOU-Secure RA（根据定义 4.1）允许 Vrf 独立于连续 RA 测量之间的时间确定内存完整性，而与瞬时恶意软件速度无关。 在接下来的部分中，我们提出了两种 TOCTOU-Secure 技术，并根据定义 4.1 展示它们的安全性。</p>
+<h1 id="5-RAT-AA-RTC-BASED-TOCTOU-SECURE技术"><a href="#5-RAT-AA-RTC-BASED-TOCTOU-SECURE技术" class="headerlink" title="5 RAT AA - RTC-BASED TOCTOU-SECURE技术"></a><strong>5 RAT AA - RTC-BASED TOCTOU-SECURE技术</strong></h1><p>在混合式RA中，可信软件(SW-Att)通常负责生成经过验证的RA响应(H)及其所有语义信息。同时，可信硬件(HW-Mod)负责：(i)确保SW-Att按预期执行，(ii)防止其密码机密泄露，以及(iii)处理执行期间的意外或恶意行为。为了解决TOCTOU，我们提出了一个范式转变，允许(正式验证的)HW-Mod也提供一些关于Prv内存状态的上下文。 我们现在概述RAT AA，一个简单的技术，<strong>需要Prv有一个可靠的只读实时时钟(RTC)与Vrf同步</strong>。然而，RTC在低端MCU上并不容易获得，而且分布式系统中的安全时钟同步具有挑战性[27-29]，尤其是对低端设备[30,31]。尽管如此，我们还是从这个简单的方法开始，以展示TOCTOU-Secure RA背后的主要思想。接下来，第6节提出了一种替代变体，只要Vrf请求通过Prv验证，就可以删除RTC要求。(请注意，Vrf认证已经是一些混合RA架构的一部分，包括VRASED。)</p>
+<h2 id="5-1-RAT-AA-设计与安全"><a href="#5-1-RAT-AA-设计与安全" class="headerlink" title="5.1 RAT AA 设计与安全"></a><strong>5.1 RAT AA 设计与安全</strong></h2><p><img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1655029692616.png" srcset="/img/loading.gif" lazyload alt="image-1655029692616"> RAT AA 如图 4 所示； 它被设计为一个<strong>经过验证的硬件模块</strong>，其行为如下：</p>
+<ol>
+<li>它监控一组 CPU 信号，并检测 AR 中的任何位置何时被写入。 这是通过检查信号 Daddr、Wen、DMAaddr 和 DMAen 的值来实现的（参见第 3.2 节）。这些信号允许通过 CPU 或 DMA 检测内存修改。</li>
+<li>每当检测到 AR 中的修改时，RAT AA 通过从 RTC 读取当前时间并将其存储在称为最新修改时间 (LMT) 的固定内存位置来记录时间戳。</li>
+<li>在内存布局中，LMT ∈ AR。 此外，RAT AA 强制 LMT 对于在 MCU 上执行的所有软件和 DMA 始终是只读的。</li>
+</ol>
+<p>请注意，通过强制执行 LMT ∈ AR，证明结果 $H &#x3D;HMAC(KDF(K, MR), AR)$包括 LMT 的认证值 - 与 AR 的最新修改对应的时间。作为验证算法的一部分，Vrf 将此信息与 AR 的最后一次授权修改时间（定义 4.1 的 t0）进行比较，以检查此后是否发生了任何未经授权的修改。构造 1 中进一步详细说明了总体思路，它显示了 RAT AA 如何无缝集成到 VRASED 中，在硬件中强制执行两个附加属性以获得 TOCTOU-Security。这些属性在构造 1 的公式 11 和 12 中以 LTL 形式化。 我们证明，只要 RAT AA 实现遵循公式 11 和 12 中的 LTL 语句，构造 1 就是安全的。该验证在第 5.2 节中讨论。密码证明是通过将结构 1 的 VRASED 安全性（根据定义 3.2）简化为 TOCTOU-Security（根据定义 4.1）。就其本身而言，只要 HMAC 是安全的，即存在性，VRASED 就根据定义 3.2 显示为安全的不可伪造的[32]，MAC（详见[10]）。定理 5.1 的证明见附录 B。 定理 5.1： 根据定义 4.1，只要 VRASED 根据定义 3.2 是安全的，构造 1 就是 TOCTOU-Secure。</p>
+<h2 id="5-2-RAT-AA：实施与验证"><a href="#5-2-RAT-AA：实施与验证" class="headerlink" title="5.2 RAT AA：实施与验证"></a><strong>5.2 RAT AA：实施与验证</strong></h2><p><strong>构造1(以及相应的安全性证明)假设公式11和12中的属性是由RAT AA强制执行的</strong>。图5显示了与此实现相对应的正式验证的FSM。它实现了方程11和12的两个性质。这个FSM被实现为一个Mealy机器，它的输出会根据当前状态和当前输入值随时变化。FSM以信号子集作为输入，如图4所示，并产生两个1位输出：reset触发立即复位，setLMT控制LMT内存位置的值(参见Construction 1)。当FSM转换到reset状态并保持在该状态时，reset为1;否则它将保持0。当FSM切换到MOD状态时，setLMT为1，当FSM切换到MOD状态时，setLMT为0。在所有其他情况下setLMT &#x3D; 0。 <strong>FSM的工作原理是监控LMT的写访问，并在出现这种情况时切换到RESET</strong>。当系统运行时(例如，reset &#x3D; 0)， FSM也会监控AR的写访问，并在它发生时转换到MOD状态。如果AR未被修改，FSM将返回NotMOD状态。采用Verilog2SMV[33]语言设计了FSM，并使用Verilog2SMV[33]语言自动转换为SMV。最后，我们使用NuSMV模型检查器[24]证明该FSM符合不变量11和12。实现和相应的验证可在[18]中获得。 备注3：由于删除是一种“写”操作，恶意软件无法在运行时清除自身而不被RAT A检测到。相反，任何通过有线连接直接重编程flash (AR)的尝试都需要设备重新初始化。RAT AA&#x2F;RAT AB总是更新LMT在初始化&#x2F;重置&#x2F;重启。因此，这些修改也会被检测到。 备注4：通过尝试写入LMT来引起复位的能力对Adv没有任何好处，因为任何裸金属软件(包括恶意软件)总是可以在未修改的低端设备上触发复位，例如，通过诱导软件故障。 <img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1655029924631.png" srcset="/img/loading.gif" lazyload alt="image-1655029924631"> <img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1655029944750.png" srcset="/img/loading.gif" lazyload alt="image-1655029944750"></p>
+<h1 id="6-RAT-AB-CLOCKLESS-TOCTOU-SECURE-RA-TECHNIQUE"><a href="#6-RAT-AB-CLOCKLESS-TOCTOU-SECURE-RA-TECHNIQUE" class="headerlink" title="6 RAT AB: CLOCKLESS TOCTOU-SECURE RA TECHNIQUE"></a><strong>6 RAT AB: CLOCKLESS TOCTOU-SECURE RA TECHNIQUE</strong></h1><p>我们现在描述 RAT AB：<strong>一种 TOCTOU-Secure 技术，不需要 Prv 上的时钟</strong>。 我们应用来自 RAT AA 的想法，通过使用硬件来传达有关最新内存修改时间的经过身份验证的信息，作为证明结果的一部分。 然而，缺乏 RTC 排除了 Prv 上的任何“时间”概念。 为了解决这个问题，<strong>我们依靠 Vrf 来传达与给定时间点相关的信息，根据 Vrf 自己的本地时钟</strong>。 这是作为 <strong>RA 请求算法的一部分完成的</strong>。 事实上，RAT AB 在此任务中使用证明挑战 (Chal) 本身，利用 Chal 每个请求都是唯一的这一事实，并且在任何 RA 技术中都可用，因此不会产生额外的通信开销。 RAT AB 的安全性与 Vrf 请求的身份验证紧密结合，这已经是 VRASED 架构的一部分 [10]； 详见附录 A。</p>
+<h2 id="6-1-RAT-AB-设计和安全性"><a href="#6-1-RAT-AB-设计和安全性" class="headerlink" title="6.1 RAT AB 设计和安全性"></a><strong>6.1 RAT AB 设计和安全性</strong></h2><p>RAT AB的设计与图4保持一致。RAT AB监控与RAT AA相同的一组MCU信号，也通过覆盖特殊的内存区域$LMT∈AR$工作。然而，它不是记录RTC时间戳到LMT，而是记录Chal，它是由Vrf作为请求的一部分发送的，并作为输入证明(Chal，…)。<strong>当且仅当AR自上一个Attest 实例以来发生修改时，LMT将被当前接收到的Chal覆盖</strong>。总之，RAT AB的安全性依赖于以下属性，由其经过验证的硬件实现强制执行(见章节6.2):</p>
+<ol>
+<li>与RAT AA类似，在Prv上运行的任何软件都不能覆盖LMT，即LMT只能由RAT AB硬件修改。</li>
+<li>只有在 <strong>Attest</strong> 过程中验证成功后才会立即触发对LMT的更新。</li>
+<li>修改AR后的第一次成功验证总是会导致LMT更新为存储在MR中的Chal的当前值(回想一下表1，MR是<strong>Attest</strong>读取Chal值的内存位置)。</li>
+</ol>
+<p>设Chal1和H1表示在给定的RA交互中Vrf成功发送&#x2F;接收的认证挑战和响应。Vrf对RA结果的解释如下：如果H1是一个有效响应，即对应一个期望的AR值，则收到该响应的t1时间由Vrf本地保存，与Chal1相关。在随后的认证结果(H2, H3，…)中，Vrf检查LMT的值是否与Chal1对应。如果LMT≠Chal1, Vrf得知AR在t1后被修改。这源于这源于 RAT AB 验证模块，该模块保证如果在对 Attest 的连续调用之间发生 TOCTOU，LMT 总是被新收到的质询覆盖。 在此设计中，我们强调以下几点:</p>
+<ul>
+<li><strong>Vrf请求的认证对RAT AB的安全性非常重要</strong>。没有它，Adv可以简单地选择ChalAdv，并在未经授权的AR修改后调用作证(ChalAdv)，从而设置LMT &#x3D; ChalAdv的选择。通过选择ChalAdv作为Vrf之前使用的值，Adv可以很容易地使Vrf相信在两次测量之间没有发生TOCTOU。换句话说，缺少请求认证使得Adv可以随意修改LMT，使LMT的写保护失效。</li>
+<li><strong>LMT的唯一性必须强制执行</strong>，例如，通过Vrf从足够大的空间随机抽样Chal或使用Chal作为单调递增的计数器，这取决于请求算法的细节。如果Chal在n个请求实例之后被重用，Adv可以等待第n个真实请求完成，感染Prv，执行它的任务，并在(n + 1)-st请求发生(重用Chal)之前离开Prv，导致有效的响应和损害TOCTOU-Security。例如，如果我们使用LMT作为一个脏位(而不是Chal)，安全性可以在两个请求中被破坏，即使它们是正确的身份验证。</li>
+</ul>
+<p>RAT AB在<strong>Construction 2</strong>中指定。Prv硬件模块控制1位信号UPLMT的值。当设置为1时，UPLMT用MR的当前值更新LMT；否则，LMT将保持当前值。RAT AB硬件通过检查程序计数器PC是否指向认证成功后立即到达的指令来检测Vrf认证是否成功。注意，除非身份验证成功，否则永远不会到达位置CRauth的指令。<strong>与RAT AA不同的是，RAT AB中的Vrf可以了解到在先前成功的认证响应之后是否发生了修改，但不知道修改的确切时间</strong>。RAT AB的安全性在定理6.1中说明，证明递延到附录C。 <img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1655030088281.png" srcset="/img/loading.gif" lazyload alt="image-1655030088281"> 定理 6.1：根据定义 4.1，只要 VRASED 根据定义 3.2 是安全的，构造 2 就是 TOCTOU-Secure。</p>
+<h2 id="6-2-RAT-AB：实施与验证"><a href="#6-2-RAT-AB：实施与验证" class="headerlink" title="6.2 RAT AB：实施与验证"></a><strong>6.2 RAT AB：实施与验证</strong></h2><p><img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1655030323738.png" srcset="/img/loading.gif" lazyload alt="image-1655030323738"> 定理6.1的证明假设RAT AB硬件遵循公式15到17中的性质。图6显示了RAT AB的实现，它是一个经过正式验证的FSM，符合这些属性。它以一个信号子集作为输入，如图4所示，并输出两个1位信号:复位触发立即系统范围的复位，UPLMT控制LMT区域的更新。当FSM转换到状态UPDATE时，UPLMT &#x3D; 1，并且在所有其他状态下的值为0。当FSM转换到状态reset时，reset &#x3D; 1，并且状态保持不变;否则它将保持0。FSM执行如下操作:</p>
+<ol>
+<li>如果尝试修改LMT软件，无论处于什么状态，FSM都会立即触发复位。</li>
+<li>如果AR自上次计算Attest以来没有任何修改，则FSM保持NotMOD状态。</li>
+<li>在任何时间点，如果检测到AR的修改，FSM转换到状态MOD。这个转换表明修改发生了，尽管它没有改变任何输出，也没有改变LMT。这是因为写入LMT的信息(下一个请求中Chal的值)此时不可用。</li>
+<li>当调用Attest时，可能会发生两种操作：<ol>
+<li>如果FSM处于NotMOD状态，则证明正常计算，并且FSM保持相同的状态。</li>
+<li>否则，FSM一直处于MOD状态，直到满足条件PC &#x3D; CRauth，表示Vrf请求认证成功。然后，FSM转换到状态UPDATE，导致在转换期间设置UPLMT。因此，LMT被Chal覆盖，Chal作为参数传递到当前的<strong>Attest</strong>调用。注意，对LMT的更新发生在AR上完整性保证函数(HMAC)计算之前，它发生在ATTEST状态。因此，认证结果H将反映LMT &#x3D; Chal作为AR的一部分。一旦认证完成(PC &#x3D; CRmax)， FSM转换回NotMOD。</li>
+</ol>
+</li>
+</ol>
+<p>在5.2节中讨论的相同的验证工具链被用来证明这个FSM遵守公式15、16和17中的LTL语句。</p>
+<h1 id="7-评估"><a href="#7-评估" class="headerlink" title="7 评估"></a><strong>7 评估</strong></h1><p>我们的原型是建立在低端设备的代表- TI MSP430 MCU家族[34]。它扩展了VRASED(本身建立在OpenMSP430的[19]之上——MSP430的一个开源实现)，使TOCTOU检测成为可能。采用Basys3商用FPGA原型板进行合成和实现。 <strong>硬件开销</strong>。表2反映了RAT A验证的硬件开销的分析。与一些相关的工作[1,5,6,10,35,36]类似，我们根据额外的查找表和寄存器来考虑硬件开销。LUT数量的增加可以用来估计组合逻辑所需的额外芯片成本和大小，而额外寄存器的数量提供了RAT A FSMs中顺序逻辑所需的状态寄存器的估计。与VRASED相比，经过验证的RAT AA模块增加了4个额外的寄存器和13个额外的LUT，而RAT AB则分别增加了57个LUT和27个寄存器。至于未修改的OpenMSP430架构，这意味着1.4%的LUT和1.4%的RAT AA寄存器以及3.8%的LUT和4.8%的RAT AB寄存器的开销。 <img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1655030421599.png" srcset="/img/loading.gif" lazyload alt="image-1655030421599"> <strong>运行时开销</strong>。<strong>RAT A不需要对RA执行进行任何修改。它只确保关于验证内存的最新修改的信息被纳入验证结果</strong>。因此，在VRASED架构之上，它不需要额外的运行时周期或额外的RAM分配。事实上，正如我们接下来在第8节中讨论的那样，可以将运行时时间减少到只用于验证LMT的时间。图8显示了运行时的缩减。这表示与验证大小为4K Bytes的AR所需的周期数相比，减少了约10倍。运行时节省随AR的大小线性增加。 <strong>内存开销</strong>。RAT AA需要128位额外存储：64位用于RTC和64位用于LMT。RTC是使用一个以每个时钟周期递增的64位存储单元来实现的。这保证了RTC在Prv的生命周期内不会缠绕，因为它将花费超过70000年的时间在运行在8MHz的MSP430上发生，并在每个周期增加RTC。在RAT AA中，LMT被实现为64位内存存储，并在setLMT位打开时用RTC值更新其内容。对于RAT AB，内存开销增加到总共512位。实现VRASED认证模块需要256位内存，而另外256位内存用于实现LMT，在适用的时候用Chal更新它的内容(如第6节所述)。这一小块预留内存对应于MSP430内存地址空间的0.1%(总共64K Bytes)。 <strong>验证资源</strong>。我们在运行在3.40GHz的Ubuntu 18.04机器上验证RAT A。结果如表2所示。RAT AA在VRASED之上增加了127行经过验证的Verilog代码。在公式11和12中，这两个变量需要强制使用。RAT AB增加了182行经过验证的Verilog代码，需要强制公式15、16和17中的3个不变量。此外，RAT A验证需要检查现有的VRASED不变量。整个验证过程耗时不超过1秒，最多消耗26MB内存。 <strong>比较</strong>。我们比较了RAT A与两种最新的自测量RA技术:SeED[26]和ERASMUS[12]的硬件开销。即使，正如在4.3节中所讨论的，这些技术没有实现TOCTOU - Security(按照定义4.1)，我们相信它们是RAT A . SeED扩展了32位Intel架构，这是比我们的目标设备，即16位TI MSP430更高端的方法。而ERASMUS是在MSP430上实现的。图7比较了RAT A与SeED和ERASMUS的附加LUT和寄存器的数量。与SeED和ERASMUS相比，RAT AA需要更少的LUT。然而，与ERASMUS相比，RAT AB需要更多的寄存器，它比两种自我测量技术使用更少的lut。总之，两个RAT A-s都招致较低的开销：lut和寄存器都增加了&lt; 5%。 <img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1655030511026.png" srcset="/img/loading.gif" lazyload alt="image-1655030511026"></p>
+<h1 id="8-使用RATA增强RA及相关服务"><a href="#8-使用RATA增强RA及相关服务" class="headerlink" title="8 使用RATA增强RA及相关服务"></a><strong>8 使用RATA增强RA及相关服务</strong></h1><p>我们现在讨论RAT A如何使RA和相关服务更简单、更高效。</p>
+<h2 id="8-1-Constant-Time-RA"><a href="#8-1-Constant-Time-RA" class="headerlink" title="8.1 Constant-Time RA"></a><strong>8.1 Constant-Time RA</strong></h2><p>RAT A的一个显著和有益的特点是，大多数时候，RA不再需要在整个AR上计算，这大大减少了RA在Prv上的执行时间。 如果Vrf已经从之前的认证结果中知道AR内容，则足以表明AR自那时以来没有改变。这可以通过对LMT本身进行验证来实现，而不是对AR进行整体验证，从而使计算时间从AR大小的线性大幅减少到常数：$LMT$，即32字节。因此，在两种可能的情况下，RA的执行方式不同:</p>
+<ul>
+<li>情况1：如果自上次验证(以tatt表示)以来没有对AR进行修改，只调用验证LMT区域。验证检查$H≡H MAC(KDF(K, Chal)， LMT)$。然后Vrf仅基于LMT来学习AR自上次测量以来是否被修改。通过检查LMT对应的t0 &lt; tatt，这个结果确认AR在过渡期间保持相同。因此，再次测量AR是没有必要的，这样做是多余的。</li>
+<li>情况2：如果AR自最后一次验证以来被修改，调用涵盖整个AR的证明。验证通常按照结构1或2中描述的计算，取决于实现，即RAT AA或RAT AB。</li>
+</ul>
+<p>备注5：注意Prv RA功能可以通过检查LMT的值很容易地检测AR是否被修改(以便决定用Case-1还是Case-2验证)，LMT在软件中是可读的(虽然不是可写的)。 大多数时候，Prv被期望处于良性状态(即，没有恶意软件)，特别是如果Adv知道它的存在是保证可检测到的。在这种情况下，验证内存的大小可以从几个KBytes(例如，当AR是低端Prv上的整个程序内存时)减少到仅仅32 Bytes (LMT大小)，图8描述了MSP430 MCU上的经验结果，显示了这种优化如何可以显著降低RA运行时开销。 在本节的其余部分中，我们将讨论这种优化的一些含义，以及RAT A提供的对RA和相关安全服务的不同分支的安全性改进。</p>
+<h2 id="8-2-原子性和实时设置"><a href="#8-2-原子性和实时设置" class="headerlink" title="8.2 原子性和实时设置"></a><strong>8.2 原子性和实时设置</strong></h2><p>混合RA架构的安全性通常取决于验证内存的时间一致性。简单地说，时间一致性意味着“在RA计算期间不修改AR”。由于缺乏这一特性，自我重新定位的恶意软件会在认证期间移动自己在Prv内存中，以避免检测，例如，如果恶意软件中断认证执行，将自己重新定位到已被完整性保证功能(在我们的例子中是HMAC)覆盖的AR部分，并重新启动认证。 在更高端的设备中，可以使用内存锁定防止在验证结束之前进行修改，如[22]中所讨论的那样。然而，在低端设备中，应用程序运行在裸金属上，没有内存锁定的架构支持，通过强制认证软件(SW-Att)原子地运行来实现时间一致性：一旦启动，它就不能被运行在Prv上的任何软件中断，从而防止恶意软件中断RA并重新定位自己。虽然对于安全目的有效，但如果Prv服务于安全关键和时间敏感的功能，则这一需求与实时需求相冲突。 一些先前提出的补救技术可以在保持时间一致性的同时启用中断，概率很高。SMARM[37]就是这样一种方法。([38]中讨论了其他类似的技术)。SMARM将验证内存(AR)分成一组块，这些块以随机顺序进行验证。对一个块的验证仍然是原子的。但是，允许在两个块验证之间中断。假设恶意软件无法猜测下一个被验证区块的索引，即使允许中断，恶意软件也只有一定的概率避开检测。如果整个认证过程重复多次，这个概率可以变得任意小。 我们注意到，考虑到第8.1节中讨论的RAT A优化，可以更快地计算验证。特别是，由于大多数伪随机函数(PRF)实现使用至少32字节的块大小，smarm类型策略中一个块的原子认证不能比RAT a中的LMT上的认证快(LMT &#x3D; 32字节)。此外，LMT的认证提供了AR内容的完整信息，不存在漏报的可能性。我们相信这使得RAT A对安全关键操作比现有方法更友好。 在这样的设置中，我们设想AR将在系统启动时被完整地验证(案例2在8.1节)，而随后的RA将只在LMT上计算(案例1在8.1节)。我们注意到，如果AR最终被修改，Prv将需要回到Case-2进行下一次RA计算，这需要原子运行的时间。<strong>然而，在未经授权修改了Prv内存之后，我们还不清楚为什么还想为被入侵的软件提供实时保证</strong>。</p>
+<blockquote>
+<p>被入侵了 不需要提供实时性保证</p>
+</blockquote>
+<h2 id="8-3-RA集体协议和设备到设备恶意软件迁移"><a href="#8-3-RA集体协议和设备到设备恶意软件迁移" class="headerlink" title="8.3 RA集体协议和设备到设备恶意软件迁移"></a><strong>8.3 RA集体协议和设备到设备恶意软件迁移</strong></h2><p>集体RA协议(CRA)(又名群体认证)[13,39 - 44]是一组技术，用于验证作为一个更大系统的一部分一起运行的大量设备。CRA方案通常在单个设备上采用混合RA架构，并研究如何有效地验证许多设备。一个安全问题通常超出单设备RA的范围，在CRA设置中变得相关，它是由迁移恶意软件引起的。这是一个类似于在集体设置中出现的设备内自我重新定位恶意软件(在第8.2节中讨论)。<strong>具体来说，它不是在同一设备的内存中移动，而是从一个设备迁移到另一个设备，以避免被检测到</strong>。 为了保证迁移恶意软件的检测，<strong>CRA结果必须使Vrf相信所有设备在同一时间窗口内都处于安全状态，这意味着恶意软件没有目标设备进行迁移和躲避检测</strong>。因此，如果单台设备的验证结果只在请求和验证算法执行之间的某个点传达安全状态，那么几乎不可能(特别是在网络延迟的情况下)得出迁移恶意软件不存在于群中的结论。虽然CRA文献中讨论了这个问题，但现有的方法要么将其置于对抗性模型[13,39,40,43]之外，要么对群中所有设备的时钟同步做一个强烈的假设[26,41,42,44]，这样所有设备都可以被安排在同一时间运行作证。 <img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1655030753804.png" srcset="/img/loading.gif" lazyload alt="image-1655030753804"> 我们声称，通过解决单设备设置中的TOCTOU问题，RAT AB可以用来构建第一个不依赖整个蜂群同步的安全的抗迁移恶意软件的CRA协议。要了解为什么会出现这种情况，请考虑Construction 3。在这种构造中，单个设备上的TOCTOU - Security允许Vrf得出每个Prv在固定的时间间隔内处于有效状态的结论。因此，Vrf可以通过检查所有Prv-s 有效区间内的重叠情况，来学习整个蜂群安全的时间窗口，或者在不存在这种时间窗口的情况下检测迁移恶意软件。定理8.1阐明了Construction 3所提供的具体保证。 <img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1655030777814.png" srcset="/img/loading.gif" lazyload alt="image-1655030777814"></p>
+<h2 id="8-4-运行时认证"><a href="#8-4-运行时认证" class="headerlink" title="8.4 运行时认证"></a><strong>8.4 运行时认证</strong></h2><p>运行时认证侧重于检测运行时&#x2F;数据-内存攻击，提供软件在Prv上执行的认证信息。虽然它似乎与检测回溯程序内存修改无关，但我们认为RAT A还可以改进运行时验证技术。 嵌入式系统的执行证明(PoX)最近在<a target="_blank" rel="noopener" href="https://www.landery.cn/console/APEX">6</a>中得到了探索。PoX证明对Prv的给定操作是通过执行预期的代码来执行的，并验证此执行确实产生了输出。[3] (C-FLAT)中引入的控制流认证(CFA)允许Vrf还验证在Prv上执行的软件是否采取了特定(或一组)有效的控制路径，从而能够检测代码重用攻击。 我们注意到，常规(或静态)RA是这些功能的常见垫脚石。在C-FLAT、OAT[45]和Tiny-CFA[4]中，可执行文件必须使用特定的指令来实现CFA，并使用RA来验证这些指令没有被删除或修改。此外，即使使用相同的控制流执行，如果它们的指令不同，在行为或输出方面也可能不同。同样，在APEX中，Vrf的执行证明是通过执行元数据的验证来获得的。然而，如果不验证相应的可执行文件(在程序内存中)，这样的证明将没有任何意义，只有“某些代码成功执行”。 在许多应用程序中，相同的可执行文件预计会在内存中保留很长一段时间，而对于每个安全关键嵌入式操作[45]，必须反复验证它的正确执行(或控制流)。在8.1中讨论的优化可以最小化这种连续的运行时验证的开销。 为了说明这个概念，我们将RAT A与APEX和在APEX上实现的Tiny-CFA结合起来。在APEX中，在没有向Vrf证明它成功执行的情况下执行同一软件的所有运行时开销都是由静态RA的开销造成的。由于APEX是在VRASED之上实现的，所以我们在不改变RAT A硬件模块和APEX硬件模块本身内部行为的情况下实现了一个RAT A -compliant版本的APEX。因此，这种方法大大降低了PoX和CFA的计算成本(节省的成本与图8一致)，同时需要与表2中报告的相同的额外硬件成本。</p>
+<h1 id="9-相关工作"><a href="#9-相关工作" class="headerlink" title="9 相关工作"></a><strong>9 相关工作</strong></h1><ul>
+<li>RA (Remote authentication)：远程认证技术可以分为基于硬件、基于软件和混合三种。基于硬件的技术[11,21,46,47]要么使用专用的自主硬件组件(如TPM[11])执行RA，要么需要对底层指令集架构进行实质性的更改，以支持可信软件的执行(如SGX[48])。这样的改变对于成本敏感的低端嵌入式设备来说太昂贵了。另一方面，基于软件的技术[49-51]不需要硬件安全特性；它们使用完全在软件中实现的自定义校验和函数来执行RA。基于软件的技术的安全性依赖于精确的测量计时，这只适用于Vrf和Prv之间的通信延迟可以忽略和&#x2F;或恒定的设置，例如，外设和主机CPU之间的通信。因此，基于软件的RA不适合必须通过internet执行RA的环境。然而，混合RA特别适合低端嵌入式设备。它提供了与基于硬件的RA相同的安全保证，同时最小化对底层MCU硬件的修改。目前的混合RA技术[7 - 10,14,52]在软件中实现完整性保证功能(例如MAC)，并使用可信的硬件来控制该软件的执行，防止任何可能导致RA安全问题的违反，例如，基于小工具的攻击[53]或密钥泄漏。本文提出了一种混合式RA的范式转换，通过可信硬件附加提供一些关于Prv内存状态的上下文。</li>
+<li>RA的时间方面：除了TOCTOU，其他两个时间方面对RA的安全性至关重要:第一，时间一致性[22]意味着保证RA结果反映了RA期间某个时间点的Prv验证内存的瞬时快照。缺乏它允许自我重新定位的恶意软件在RA期间通过复制和&#x2F;或删除自己来逃避检测。时间一致性是通过强制执行认证代码的原子(不可中断)执行，或通过在RA执行期间锁定认证内存(即使其不可修改)来实现的。其次，当RA用于安全临界和&#x2F;或实时设备[38]时，原子性要求可能会干扰Prv应用程序的实时性。为了解决这个问题，SMARM[37]通过使用概率恶意软件检测放宽了这一要求。同时，ERASMUS[12]和SeED[26]基于Prv的自我测量，用于检测感染Prv并在下一个RA实例之前离开的瞬时恶意软件。关于这些类型的技术的进一步讨论，请参阅第4.3节。Atrium[35]处理物理-硬件对手，当指令在认证期间被提取到CPU时，它们会拦截指令。中庭将这个问题称为toctu。尽管有术语，但这个问题明显不同于RAT A目标。</li>
+<li>形式化验证和RA：形式化验证提供了更高水平的保证，为协议规范及其实现提供了可证明的安全性。最近，一些工作集中在安全关键服务和系统的正式验证上[23,54-58]。vrased[10]实现了一个正式验证的针对低端设备的RA架构。通过扩展VRASED，获得软件更新、内存擦除和全系统MCU复位[1]的远程证明，从而获得其他经过正式验证的安全服务。APEX[6]构建在VRASED之上，为低端设备[6]上的远程软件执行的证明开发了一个经过验证的架构。RAT A还建立在VRASED之上，扩展它以提供TOCTOU安全，同时保留原来的经过验证的保证。基于VRASED，我们可以对RAT A设计进行推理，并正式验证其安全性能。尽管如此，RAT A的主要概念适用于其他混合(可能是基于硬件的，如[20])RA架构。</li>
+</ul>
+<h1 id="10-总结"><a href="#10-总结" class="headerlink" title="10 总结"></a><strong>10 总结</strong></h1><p>在本文中，我们设计、证明并正式验证了两种设计(RAT AA和RAT AB)，以确保RA在连续的RA实例之间免受TOCTOU相关的攻击，这些攻击在一个低端嵌入式系统上执行非法的二进制修改。RAT AA和RAT AB模块使用模型检查器正式指定和验证。它们还由VRASED -经过验证的RA架构组成。我们使用基于约简的密码证明证明这个组合是TOCTOU-Secure的。我们的评估表明，TOCTOU安全设计即使对于成本敏感的低端嵌入式设备也是负担得起的。此外，在大多数情况下，在验证内存的大小方面，它将RA时间复杂度从线性降低到常数。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%8F%AF%E4%BF%A1%E8%AE%A1%E7%AE%97/" class="category-chain-item">可信计算</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E8%BF%9C%E7%A8%8B%E8%AF%81%E6%98%8E/" class="print-no-link">#远程证明</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>远程证明_06_论远程证明中的TOCTOU问题</div>
+      <div>http://example.com/0006.html</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>landery</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2023年3月7日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/0007.html" title="远程证明_07_安全即服务:具有策略定制的可信云服务架构">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">远程证明_07_安全即服务:具有策略定制的可信云服务架构</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/0005.html" title="远程证明_05_物联网远程认证技术综述:攻击、对策与展望">
+                        <span class="hidden-mobile">远程证明_05_物联网远程认证技术综述:攻击、对策与展望</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"GK4nuH8jdXDcw4IJIVShjMtA-gzGzoHsz","appKey":"7P0B0kJFdaLY6eDQ93Lhcv8J","path":"window.location.pathname","placeholder":"建议使用QQ邮箱，评论头像采用QQ头像","avatar":"retro","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":true,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":true,"bg":null,"count":true},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+    <!-- 备案信息 ICP for China -->
+    <div class="beian">
+  <span>
+    <a href="http://beian.miit.gov.cn/" target="_blank" rel="nofollow noopener">
+      蜀ICP备2022011502号
+    </a>
+  </span>
+  
+    
+      <span>
+        <a
+          href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=51012202001227"
+          rel="nofollow noopener"
+          class="beian-police"
+          target="_blank"
+        >
+          
+            <span style="visibility: hidden; width: 0">|</span>
+            <img src="/img/police_beian.png" srcset="/img/loading.gif" lazyload alt="police-icon"/>
+          
+          <span>川公网安备51012202001227号</span>
+        </a>
+      </span>
+    
+  
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/DynamicRibbon.min.js"></script>
+<script src="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/love.min.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

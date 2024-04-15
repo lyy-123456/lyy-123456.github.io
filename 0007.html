@@ -1,0 +1,971 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="landery">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="原文信息 文章标题：Toward security as a service: A trusted cloud service architecture with policy customization 文章中文翻译：安全即服务:具有策略定制的可信云服务架构 文章等级：CCF B 文章发表时间：2021 文章作者：De Oliveira Nunes I, Jakkamsetti S, Ratta">
+<meta property="og:type" content="article">
+<meta property="og:title" content="远程证明_07_安全即服务:具有策略定制的可信云服务架构">
+<meta property="og:url" content="http://example.com/0007.html">
+<meta property="og:site_name" content="landery小站">
+<meta property="og:description" content="原文信息 文章标题：Toward security as a service: A trusted cloud service architecture with policy customization 文章中文翻译：安全即服务:具有策略定制的可信云服务架构 文章等级：CCF B 文章发表时间：2021 文章作者：De Oliveira Nunes I, Jakkamsetti S, Ratta">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1655637630001.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1655637671553.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1655637793567.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1655638286531.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1655638214976.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1655638247201.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1655638367308.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1655638551580.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1655638702284.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1655638822455.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1655638747928.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1655639093291.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1655639103110.png">
+<meta property="article:published_time" content="2023-03-07T13:39:47.000Z">
+<meta property="article:modified_time" content="2024-04-15T10:16:02.158Z">
+<meta property="article:author" content="landery">
+<meta property="article:tag" content="远程证明">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1655637630001.png">
+  
+  
+  
+  <title>远程证明_07_安全即服务:具有策略定制的可信云服务架构 - landery小站</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/scroll.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"GK4nuH8jdXDcw4IJIVShjMtA-gzGzoHsz","app_key":"7P0B0kJFdaLY6eDQ93Lhcv8J","server_url":"https://api.landery.cn","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>landery 小站</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/links/" target="_self">
+                <i class="iconfont icon-link-fill"></i>
+                <span>友链</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/remark/" target="_self">
+                <i class="iconfont icon-twitch-fill"></i>
+                <span>留言板</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/image/bg/001.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="远程证明_07_安全即服务:具有策略定制的可信云服务架构"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2023-03-07 21:39" pubdate>
+          2023年3月7日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          12k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          98 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">远程证明_07_安全即服务:具有策略定制的可信云服务架构</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="原文信息"><a href="#原文信息" class="headerlink" title="原文信息"></a><strong>原文信息</strong></h1><ol>
+<li>文章标题：Toward security as a service: A trusted cloud service architecture with policy customization</li>
+<li>文章中文翻译：安全即服务:具有策略定制的可信云服务架构</li>
+<li>文章等级：CCF B</li>
+<li>文章发表时间：2021</li>
+<li>文章作者：De Oliveira Nunes I, Jakkamsetti S, Rattanavipanon N, et al.</li>
+<li>完整引用：De Oliveira Nunes I, Jakkamsetti S, Rattanavipanon N, et al. On the TOCTOU problem in remote attestation[C]&#x2F;&#x2F;Proceedings of the 2021 ACM SIGSAC Conference on Computer and Communications Security. 2021: 2921-2936.</li>
+<li>全文请查看：<a target="_blank" rel="noopener" href="https://dl.acm.org/doi/pdf/10.1145/3460120.3484532">全文链接</a></li>
+</ol>
+<h1 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a><strong>摘要</strong></h1><p>随着对云的安全性和私密性的关注，“安全随需应变”服务模式根据云客户的特定安全需求，动态地为其提供可信的计算环境。然而，实现这一目标仍然面临着重大挑战:(1)将可审计的、抗篡改的信任管理机制集成到云基础设施中;(2)构建协议以保证虚拟机(VM)迁移期间客户策略的一致性。本研究开发了一种新的安全按需框架，称为“策略自定义可信云服务”(PC-TCS)架构，由两个核心组件组成:基于属性签名(ABS)的远程认证方案，通过定制安全策略实现可信远程认证;基于ABS和区块链的虚拟机迁移协议，支持策略自定义可信迁移。为了证明该体系结构的有效性，我们实现了一个基于Xen Hypervisor的PC-TCS原型，结果表明:(1)PC-TCS可以作为可信计算基础的一部分集成到云基础设施中;(2)云用户可在PC-TCS支持下定制计算环境安全策略，并在整个服务生命周期内验证其实施;(3) PC-TCS可以支持策略自定义的远程认证和策略自定义的迁移，对性能的影响最小。</p>
+<h1 id="1-介绍"><a href="#1-介绍" class="headerlink" title="1 介绍"></a><strong>1 介绍</strong></h1><p>越来越多的公司和个人正在将他们的数据和计算迁移到云上，以利用其按需使用的特性[20,24]。不幸的是，这种便利的代价是失去对数据和计算环境的控制，这导致了安全事件，限制了云服务的广泛采用和接受[33,36]。安全随需应变服务(security- demand service，简称[17])是针对云客户的特定安全需求，动态地为其提供可信的计算环境。 云客户的安全需求是对应于不同应用环境的各种安全属性，是与云服务主体和对象安全相关的约束或配置。典型的安全属性包括访问者身份、提供者信任级别、操作系统安全性、数据中心位置等。云客户的安全属性需求构成了云客户的安全策略。安全的计算环境与可靠的服务提供者和安全、可信的云基础设施有关。到目前为止，云基础设施中还没有任何标准化的、可审计的、防篡改的信任管理机制供客户评估服务提供商、虚拟机和物理主机。 然而，安全计算平台的可用性只是说服云客户将他们的敏感数据和代码转移到云[48]的必要而不是充分的解决方案。云客户往往需要进一步的保证，以使他们相信安全措施确实部署了，并且工作正常。 新的密码算法和机制的发展使这个问题有了新的解决方案。例如，牛津myTrustedCloud项目[39]和策略密封的数据抽象[34]开辟了构建可信云服务的新途径。属性加密(Attribute-based encryption, ABE)通过密钥策略属性加密(key-policy Attribute-based encryption, KP-ABE)[47]，密文策略属性加密(CP-ABE)[5,13,44]和属性签名(Attribute-based signature, ABSs)[16,26,35]保护数据和安全策略。完全同态加密保证了数据所有者的隐私，并支持多方计算[11,23]。区块链技术以其可审计性、可追溯性和不可抵赖性在云安全中被用于审计、计费、数据共享等领域[2,22,43]。然而，到目前为止，这仍然是一个有待学者和开发人员探索的开放问题。 综上所述，实现安全随需应变的目标仍面临重大挑战:(1)将可审计的、抗篡改的信任管理机制集成到云基础设施中;(2)构建协议以保证虚拟机(VM)迁移期间客户策略的一致性。 在本文中，我们将区块链技术和ABS引入到我们之前在[13]中使用ABE进行远程认证的工作中，提出了一种基于ABS和区块链的策略定制可信云服务(PC-TCS)体系结构，ABS的匿名性和不可追踪性优于KP-ABE和CP-ABE，更适合云计算。云客户可以自定义计算环境的安全策略，通过ABS验证是否满足安全策略，在PC-TCS中通过区块链技术对整个VM生命周期内云服务提供商的行为和信誉进行审计，主要集中在以下三个方面：</p>
+<ul>
+<li>可用性：云客户可以自定义计算环境的安全策略，云提供商可以对不同安全级别的虚拟机和物理服务器进行分区和配置。云客户可以在可信的云基础设施的支持下，自定义和强制执行计算环境的安全属性，如中央处理器(CPU)、内存、磁盘、服务提供商信任级别、操作系统安全、数据中心位置等。</li>
+<li>可信性：云客户可以验证当前的计算环境是否满足定制的安全策略。云基础设施中需要一种可审计的、抗篡改的信任管理机制。同时也要考虑到双方的隐私，云平台的具体配置或属性不能在认证阶段过度暴露。</li>
+<li>一致性：虚拟机迁移操作满足客户的安全策略要求。与物理机器不同，虚拟机可能会在物理节点之间迁移，改变物理主机和虚拟机，并可能破坏计算环境的安全属性。因此，为了保证客户在虚拟机迁移过程中策略的一致性，需要建立可信的虚拟机迁移协议。</li>
+</ul>
+<p><strong>为了实现第一个目标</strong>，我们在PC-CTS中引入了定制化的安全策略，将用户的安全期望与云服务的安全属性联系起来。PC-TCS通过增加接口，为云客户定制安全策略。通过改进虚拟机调度器，支持安全策略与虚拟机的匹配，以及基于安全策略的部署。ABSs增强了可信计算技术[27]的核心——远程认证机制，成为将可信计算机制集成到云计算体系结构中的有效方案，为云客户提供远程验证云服务可靠性的能力[34,39]。它们还减少了当前远程认证机制中的信息泄漏，如平台配置信息和属性信息。 <strong>为了实现第二个目标</strong>，我们在远程认证领域引入了ABSs和区块链机制，这样客户就可以通过验证计算环境的属性签名来评估云服务的可信性。同时，所有客户的安全政策和服务提供商的行为都会在区块链的生命周期内进行审计，以便在此基础上建立声誉系统。然而，客户在认证阶段能够获得的信息仅是当前计算环境的安全属性是否满足其自定义安全策略。当自定义安全策略或物理节点的安全属性发生变化时，或者由于负载均衡的原因导致虚拟机迁移。虚拟机迁移操作对客户是透明的，特别是实时迁移。现有的虚拟机迁移认证由云管理员进行，其可信性无法满足客户的需求。 <strong>为了实现第三个目标</strong>，我们提出了一个vm迁移协议，它支持定制的迁移策略和迁移认证。为了证明PC-TCS架构的可用性，我们设计并实现了一个原型，该原型支持定制的安全策略和VM-migration协议，该协议支持定制的迁移策略和基于开源Xen Hypervisor的验证。我们通过实验对迁移延迟进行了评估，结果表明，该认证方案在保持客户安全需求的同时，不会明显降低虚拟机迁移性能。 本文的主要贡献如下:</p>
+<ul>
+<li>PC-TCS体系结构，支持定制的安全策略和远程认证;</li>
+<li>支持定制安全策略的远程认证方案;</li>
+<li>支持定制迁移策略的虚拟机迁移协议;</li>
+<li>开源Xen Hypervisor中远程认证和虚拟机迁移协议的原型实现。</li>
+</ul>
+<p>我们的实现和实验结果表明:(1)PC-TCS可以作为可信计算基础的一部分集成到云基础设施中;(2)云用户可在PC-TCS支持下定制计算环境安全策略，并在整个服务生命周期内验证其实施;(3) PC-TCS可以支持策略自定义的远程认证和策略自定义的迁移，对性能的影响最小。 本文的其余部分组织如下。第2节介绍了远程认证和ABS的背景，第3节介绍了PC-TCS体系结构。第4节描述了PC-TCS体系结构的实现。第5节介绍安全性和初步性能。最后，第六部分总结并指出了未来研究的重点。</p>
+<h1 id="2-背景及相关工作"><a href="#2-背景及相关工作" class="headerlink" title="2 背景及相关工作"></a><strong>2 背景及相关工作</strong></h1><h2 id="2-1-远程证明"><a href="#2-1-远程证明" class="headerlink" title="2.1 远程证明"></a><strong>2.1 远程证明</strong></h2><p>云服务提供商的成功取决于客户是否愿意将自己的数据委托给云服务。加强客户信任的一个关键因素是提供云基础设施完整性的强有力保证。可信计算技术可以在提供这些保证方面发挥基本作用。为此，它为云客户提供了“远程验证”的能力，这被定义为允许远程客户根据其完整性哈希测量测试目标系统的完整性。 基于TPM (Trusted platform module)的认证是由TCG (Trusted Computing Group)提出的，可以验证远程服务器平台的完整性。目标服务器使用TPM来计算平台配置的二进制散列值，并将它们发送给客户。客户将这些值与参考配置进行比较(可能通过可信的第三方评估器)，并确定平台的状态是否未被修改(良好)。在虚拟化平台环境中，虚拟可信平台模块(vTPM)[28]被设计用于向vm提供与硬件TPM相同的使用模型和服务，允许通过vTPM实例直接在客户和他们的vm之间进行远程认证。然而，基于vtpm的认证[12,21,40]可能会过度暴露云平台的特定配置，从而产生安全问题。 理论上，基于属性的认证是为了验证系统[31]的各种属性、功能和行为。它引入了一个可信的第三方来将平台的安全度量转换为属性，反之亦然，并确定平台的条件是否满足一组给定的属性。但是，基于属性的认证不支持客户的自定义安全策略。本文通过引入ABSs来解决这些问题，它使客户能够定义一组安全属性，并且不会过度暴露属性信息。</p>
+<h2 id="2-2-基于属性的加密和区块链"><a href="#2-2-基于属性的加密和区块链" class="headerlink" title="2.2 基于属性的加密和区块链"></a><strong>2.2 基于属性的加密和区块链</strong></h2><p>ABE最初由Sahai和Waters[32]提出，是实现细粒度访问控制和高效加密数据共享[10]的一种有用的密码原语。区块链是日本学者中本聪在2008年创立的开源项目“比特币”中开发出来的，其价值远远超过了比特币。区块链技术具有去中心化、安全性和信任等优点，已被广泛应用于[1]应用中。由于ABE和区块链技术的优点，许多人将它们结合起来，以增强它们的优点，克服它们的缺陷。在[45]中，将区块链技术与ABE方案相结合，既保证了数据的完整性和不可否认性，又实现了密文的快速生成和属性不可见性。在[30]中，将区块链和CP-ABE加密技术结合在并行市场和假冒问题上，帮助中小企业保护自己的品牌。reference .[14]提出了一个基于私有-公共区块链方法的ABE安全解决方案，以解决对私有区块链解决方案的过度依赖和公共块解决方案的利用不足。其他研究人员利用ABE方案和区块链技术实现了细粒度的访问控制，增强了物联网[29]、云计算[18,37,46]、电子健康记录[19,42]、自动驾驶汽车[4]和大数据[6,7,41]中的可追溯性和可视性。</p>
+<h2 id="2-3-基于属性的签名Attribute-based-signatures"><a href="#2-3-基于属性的签名Attribute-based-signatures" class="headerlink" title="2.3 基于属性的签名Attribute-based signatures"></a><strong>2.3 基于属性的签名Attribute-based signatures</strong></h2><p>ABS是一种通用原语，它允许一方对标识信息[25]进行细粒度控制来签名消息。在ABS中，拥有来自某个机构的一组属性的签名者可以用该机构属性所满足的谓词对消息进行签名。签名只显示一个签名者用户，其某些属性满足谓词和关于签名者的任何标识信息。图1给出了多属性权威的通用ABS结构。 <img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1655637630001.png" srcset="/img/loading.gif" lazyload alt="image-1655637630001"></p>
+<blockquote>
+<p>图1所示。基于属性的签名(ABS)构造。属性权威(aa)监督属性集和私钥之间的转换，以签署消息。证明者可以通过使用私钥签署消息来证明自己(即满足挑战者的策略)。挑战者可以通过验证签名来验证验证方是否满足策略。</p>
+</blockquote>
+<p>ABS的构建涉及四个实体:注册中心、挑战者、验证者和属性权威(AA)。在ABS构建方案中，注册中心是受信任的管理器。AAs监督属性集和私钥之间的转换以签署消息。验证者可以通过使用私钥签署消息来证明自己(即满足挑战者的策略)。挑战者可以通过验证签名来验证验证方是否满足策略。ABS的构建包括系统初始化和签名两个阶段。 <strong>第一阶段:系统初始化</strong> (1)注册中心运行ABS.RSetup算法，输出一对密钥(PK, RSK); $$(PK, RSK ) ← ABS.RSetup$$ (2) AA运行ABS.ASetup算法，分别输出一对密钥(APKi、ASKi); $$(APK_i, ASK_i) ← ASetup$$ (3)挑战者向注册中心发送唯一标识ID; (4)注册中心运行ABS.Register算法，输出唯一的token τ; $$τ ← TRegister(id, TSK )$$ (5)验证方发送待应用于对应AA的属性µ; (6) AA接收到属性µ后，运行ABS.AttrGen算法，输出私钥Kµ; $$K_µ ← AttrGen(ASK, τ , µ)$$ <strong>第二阶段:签名</strong> (7)挑战者生成一个nonce和policy Υ，发送给验证者; (8)验证者运行ABS.Sign功能，输出签名σ，发送给挑战者; $$σ←Sign(PK, APK_i, K_µ，nonce， σ)$$ (9)挑战者运行 ABS.Verify 功能，接收到签名σ后输出签名是否有效; $$Y&#x2F;N ← Verify(PK, APK_i, nonce, Υ , σ )$$</p>
+<h1 id="3-策略自定义可信云服务-PC-TCS-架构"><a href="#3-策略自定义可信云服务-PC-TCS-架构" class="headerlink" title="3 策略自定义可信云服务(PC-TCS)架构"></a><strong>3 策略自定义可信云服务(PC-TCS)架构</strong></h1><p>在本节中，我们将介绍PC-TCS体系结构。首先，3.1节讨论了PC-TCS的威胁模型。第二，3.2部分通过分析涉及的实体及其之间的关系概述了体系结构。第三，VM生命周期中的三个关键操作说明了PC-TCS的细节:初始VM部署、客户认证和VM迁移。 第3.3节说明了初始VM部署。第3.4节介绍了云客户进行远程认证的过程，以及提出的策略定制的远程认证(PC-RA)协议。虚拟机迁移和策略自定义虚拟机迁移协议请参见3.5节。最后，第3.6节展示了客户如何从区块链审计员的信任管理中获益。</p>
+<h2 id="3-1-威胁模型"><a href="#3-1-威胁模型" class="headerlink" title="3.1 威胁模型"></a><strong>3.1 威胁模型</strong></h2><p>威胁模型是运行在同一云服务器上的恶意虚拟机或运行在虚拟机内部的恶意应用程序或服务，以破坏其数据或代码的保密性或完整性。它们还可能试图破坏其可用性，尽管云提供商已将其请求的资源分配给VM。我们假设云管理器、注册中心和AA是可信的，因为它们是通过安全的启动正确实现的，并且在运行时受到保护。但是，除了每个服务器中的TPM硬件和vTPM外，服务器集群不需要被信任。请注意，受信任的服务器、云管理器和AA可以通过冗余保护来保证可靠性和安全性，它们只占云数据中心所有服务器的一小部分。 <img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1655637671553.png" srcset="/img/loading.gif" lazyload alt="image-1655637671553"> 表1显示了云服务的可能对手，它们利用两个维度来利用云服务。一种是计算环境的类型，包括VM、服务器和云。每个人都可能成为被剥削的目标。另一个维度是每个计算环境中受到威胁的对象。在VM级别，对手可以危害应用程序、其他应用程序，甚至操作系统。在服务器层，完全控制VM的对手可以在逃离VM后进一步利用其他VM和VMM (Virtual Machine Monitor)，甚至攻击同一服务器中的硬件。在云级别上，如果云基础设施受到威胁，对手可以威胁云管理器、同一云中的其他服务器，甚至云之外的实体。 我们关注两种类型的对抗能力：</p>
+<ul>
+<li>(1)利用客户虚拟机中的漏洞，无论是来自虚拟机内部还是来自同一服务器上的其他恶意虚拟机：</li>
+<li>(2)完全控制不同服务器之间的网络，如标准的Dolev-Yao威胁模型[3]。</li>
+</ul>
+<p>在后一种情况下，对手可以窃听和伪造认证消息，向客户发送伪造的认证报告，而客户没有发现任何可疑的东西。</p>
+<h2 id="3-2-体系结构概述"><a href="#3-2-体系结构概述" class="headerlink" title="3.2 体系结构概述"></a><strong>3.2 体系结构概述</strong></h2><p>PC-TCS旨在保证客户安全策略的可用性、可靠性和一致性。如图2所示，PC-TCS的架构基于IaaS云计算范式，将虚拟机出租给云客户。这包括6个实体:云客户、云管理器、注册中心、AA、服务器集群和区块链审计器。注册表和AA的存在是为了构造ABS方案。</p>
+<ul>
+<li>云客户：云客户可自定义计算环境的安全策略和物理资源需求，然后向云管理器申请，实现物理资源和安全的双重需求。客户请求被记录在区块链审计器中，客户可以通过访问区块链审计器中的信任管理模块来监督整个过程。</li>
+<li>云管理器：云管理器相当于云管理员；也就是说，它们负责处理来自云客户的请求。策略验证模块根据客户请求选择合适的VM和物理节点来构建计算环境。计算环境应同时满足物理资源和安全性的要求。部署模块将选定的虚拟机部署在物理服务器上，然后启动虚拟机。在适当的服务器上部署VM之后，每个部署的VM都进入一个安全生命周期。云管理器的每个操作都要求记录在区块链审计器中，并且可以在区块链审计器中访问服务器的可信性和历史记录。</li>
+<li>属性权威：AAs是ABS构建的组成部分，它将服务器和虚拟机的测量值转换为定义良好、有意义的安全属性信息。首先，提供属性信息供策略验证模块检索。其次，将属性信息转换为签名私钥，并反馈给服务器或VM。注意，TPM可以提供硬件和管理程序的测量值，vTPM可以提供整个计算环境的测量值，其中包括硬件、管理程序和VM。</li>
+<li>注册中心（registry）：注册中心是ABS构建的一部分。它接收来自服务器和VM的注册。</li>
+<li>服务器集群：每台服务器基于可信任的云架构，TPM。每个虚拟机都基于vTPM的可信计算架构。改进后的vTPM还提供了定制安全策略的接口，包括客户认证和虚拟机迁移认证。改进后的vTPM可以保证定制安全策略的保密性和完整性。服务器集群的每个操作都被请求记录在区块链审计器中，并且每个服务器或VM的可信性和历史都可以在区块链审计器中访问。</li>
+<li>区块链auditor：区块链auditor用于审计PT-CTS中的所有操作，管理所有实体的可信性，包括一个审计模块和一个信任管理模块。审计模块为每个用户的请求保留一个操作链，记录所有相关实体的不可否认日志。信任管理模块支持从统计历史记录中查询每个操作的过程和每个实体的信誉。</li>
+</ul>
+<p><img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1655637793567.png" srcset="/img/loading.gif" lazyload alt="image-1655637793567"></p>
+<blockquote>
+<p>图2所示。策略定制可信云服务(PC-TCS)架构概述。PC-TCS基于IaaS云计算范式，在这种范式中，虚拟机出租给云客户。PC-TCS包括6个实体:云客户、云管理器、注册中心、AA、服务器集群和区块链审计器。注册表和AA的存在是为了构造ABS方案。</p>
+</blockquote>
+<h2 id="3-3-初始部署"><a href="#3-3-初始部署" class="headerlink" title="3.3 初始部署"></a><strong>3.3 初始部署</strong></h2><p>如图3所示，初始部署包括三个阶段。(1)注册表和AA初始化，就像在ABS构造中一样。(2) AA收集各服务器基于TPM的测量值，并转换为签名密钥。签名密钥反馈到对应的服务器。(3)当云客户首次请求VM时，云管理器会构建一个合适的计算环境和一个安全策略，该策略定义了VM请求的期望安全级别。<img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1655638286531.png" srcset="/img/loading.gif" lazyload alt="image-1655638286531"></p>
+<blockquote>
+<p>图3所示。初始化部署分为三个阶段:(1)在初始化阶段，注册表和AA初始化;(2)在属性授权阶段，AA收集每个服务器基于tp的测量值并转换为签名密钥，然后将签名密钥反馈给相应的服务器;(3)在VM部署阶段，当云客户首次请求VM时，云管理器构建一个合适的计算环境和一个安全策略，该策略定义了VM请求的期望安全级别。</p>
+</blockquote>
+<p>第一阶段:初始阶段</p>
+<ul>
+<li>(1)注册中心运行ABS.RSetup算法，输出一对密钥(PK, RSK);</li>
+<li>(2) AA运行ABS.ASetup算法，输出一对密钥(APKi, ASKi)。</li>
+</ul>
+<p>第二阶段:属性授权</p>
+<ul>
+<li>(3)服务器向注册中心发送唯一标识vID;</li>
+<li>(4)注册中心运行ABS.Register算法，将唯一的token τ输出到对应的服务器;</li>
+<li>(5)服务器将由TPM通过AIK签名的平台配置寄存器(PCR)值、存储测量日志(SML)和token τ发送给每个AA;</li>
+<li>(6)每个AA首先通过PCR值验证SML的完整性，将SML中的测量值转换为属性信息，根据通用标准将属性信息转换为评估值µ，运行ABS.AttrGen算法，输出私钥Kµ，最后通过基于TPM的密封功能将Kµ与PCR值绑定，根据通用标准输出加密的密钥值µ，运行ABS.AttrGen算法。将私钥EKµ输出到对应的服务器;</li>
+<li>(7) AA将每个服务器的属性评估值发送给云管理器中的策略验证模块。</li>
+</ul>
+<p>第三阶段:VM部署</p>
+<ul>
+<li>(8)云客户根据定制的物理资源需求和安全策略请求VM，并在区块链审计员中记录请求;</li>
+<li>(9)策略验证模块选择合适的VM和服务器构建计算环境，分配定制的物理资源，最终启动计算环境。云管理器的所有操作都同步记录在区块链审计器中。</li>
+</ul>
+<p>虚拟机部署在适当的服务器上，每个部署的虚拟机都进入一个安全生命周期，支持来自云客户的基于 vTPM 的证明。</p>
+<h2 id="3-4-策略定制的远程证明"><a href="#3-4-策略定制的远程证明" class="headerlink" title="3.4 策略定制的远程证明"></a><strong>3.4 策略定制的远程证明</strong></h2><p>为了在远程认证中实现客户定制策略，我们提出了策略定制远程认证(policy-customized remote authentication, PC-RA)，如图4所示。我们假设云客户已经定义了存储在vtpm中的安全策略，这些策略可以保证vtpm的完整性。PC-RA由两个阶段组成：(1)AA会收集每个虚拟机基于vtpm的测量值，然后将属性签名密钥反馈给对应的虚拟机；(2)虚拟机验证当前的计算环境满足客户定制的策略。第一阶段发生在VM的启动阶段。第二个阶段由云客户在vm运行阶段启动。 <img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1655638214976.png" srcset="/img/loading.gif" lazyload alt="image-1655638214976"></p>
+<blockquote>
+<p>图4所示。策略自定义远程认证(PC-RA)。PC-RA由两个阶段组成:(1)在属性授权阶段，AA收集每个VM基于vtpm的测量值，然后将属性签名密钥反馈给对应的VM;(2)在验证-实现阶段，虚拟机证明当前的计算环境满足客户定制的策略。</p>
+</blockquote>
+<p>第一阶段：属性授权</p>
+<ul>
+<li>(1)VM向注册中心发送唯一标识vID;</li>
+<li>(2)注册中心运行ABS.Register算法，将唯一的token τ输出到对应的VM;</li>
+<li>(3) VM将vAIK、SML和token τ签名的vTPM的PCR值发送给每个AA;</li>
+<li>(4)每个AA首先通过PCR值验证SML的完整性，将SML中的测量值转换为属性信息，根据通用标准将属性信息转换为评估值µ，运行ABS.AttrGen算法，输出私钥Kµ，最后通过基于vtpm的密封功能将Kµ与PCR值绑定，输出加密后的密钥EKµ到VM。</li>
+</ul>
+<p>第二阶段：认证实施</p>
+<ul>
+<li>(5)云客户发起认证；</li>
+<li>(6)首先，VM 通过基于 vTPM 的 unseal 函数将 EKµ 与当前 PCR 值解除绑定，如果 PCR 值没有变化，则输出 Kµ，然后 VM 在 vTPM 中运行 ABS.Sign 算法，该算法输出签名 σ 并馈送签名 σ 返回给云客户。 最后，客户运行 ABS.Verify 算法来验证签名 σ，其输出结果“是”或“否”。</li>
+</ul>
+<p>与传统的TPM 2.0远程认证相比，PC-RA有两个优点:一是通过对PCR值进行ABS加密，避免了远程认证过程中平台配置的泄露；二是支持PCR值以外的复杂属性信息的认证，如安全配置等。</p>
+<h2 id="3-5-策略定制的迁移协议"><a href="#3-5-策略定制的迁移协议" class="headerlink" title="3.5 策略定制的迁移协议"></a><strong>3.5 策略定制的迁移协议</strong></h2><p>与物理机不同，基于 vTPM 的 VM 可以在物理节点之间迁移。现有的基于 vTPM 的 VM 迁移方案通常由云管理员采用基于 TPM 的远程证明，如第 2.1 节所述，因为 VM 迁移对云用户是透明的。这引发了云用户对虚拟机迁移是否符合定制策略的担忧。为了保证VM迁移的可信度，我们提出了一种策略定制迁移协议（PC-MP），如图5所示。迁移协议发生在以下几个阶段：<img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1655638247201.png" srcset="/img/loading.gif" lazyload alt="image-1655638247201"></p>
+<blockquote>
+<p>图5所示。策略定制迁移协议(Policy-customized migration protocol, PC-MP)。为了保证虚拟机迁移的可靠性，提出了PC-MP算法。当客户虚拟机接收到迁移请求时，会通过ABS检查目标服务器的可靠性，只有在验证目标服务器的安全属性完全满足客户虚拟机的安全请求时，才允许迁移。</p>
+</blockquote>
+<ul>
+<li>(1)源服务器从云管理器（Cloud Manager）接收迁移命令;</li>
+<li>(2)源服务器向对应的guest VM发送迁移请求；</li>
+<li>(3)guest VM生成nonce η，然后将η和policy ρ发送给目标服务器；</li>
+<li>(4) 首先，目的服务器通过基于TPM的解封函数将EKµ与当前PCR值解绑，如果PCR值没有变化则输出Kµ，然后运行ABS.Sign算法，输出签名σ。最后，目的服务器将签名σ发送给guest VM；</li>
+<li>(5)guest VM运行ABS.Verify算法来验证签名。如果签名有效，则允许迁移；否则，拒绝；</li>
+<li>(6) 源服务器获得迁移许可后，与目的服务器进行迁移；</li>
+<li>(7) 迁移完成后，源服务器将迁移结果反馈给云管理器；</li>
+<li>(8) 云管理器在区块链审计器中记录迁移动作。该记录包含来宾 VM 和目标服务器的签名，以保持安全属性的一致性，防止云管理器的不当行为。</li>
+</ul>
+<h2 id="3-6-基于区块链的信任管理"><a href="#3-6-基于区块链的信任管理" class="headerlink" title="3.6 基于区块链的信任管理"></a><strong>3.6 基于区块链的信任管理</strong></h2><p>在PC-TCS中，区块链审计器被设计为信任管理组件，它记录客户和云管理器的所有请求和操作。为了更好地服务于云客户和云管理人员的信任管理目的，我们在设计中采用了被授权的区块链模型(如超账本结构)，整个被授权的区块链网络充当受信任的第三方。在我们看来，受许可的区块链对于大多数私有云服务和混合云服务而言，就其性能和可管理性而言是一个更好的选择。 PC-TCS中的每个审计事件都可以视为区块链中的一个事务。由于作为VM部署和VM迁移的可审计事件通常保持较低的速率，因此在可接受的成本下，一个有权限的区块链的性能足以满足企业级审计[38]。除了使用分布式账本来跟踪用户和云提供商的历史活动外，智能合约还可以用于声明和执行安全性和VM迁移策略，从而实现自动化和可信的管理。PC-TCS中的信任关系如图6所示。 <img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1655638367308.png" srcset="/img/loading.gif" lazyload alt="image-1655638367308"></p>
+<blockquote>
+<p>图6所示。PC-TCS中的信任关系。主要的信任实体是云客户、云管理器、基于ABS的云基础设施和区块链审计员。实线说明了它们之间的信任关系和行动。虚线表示功能模块之间的内部关系。</p>
+</blockquote>
+<ul>
+<li>存在四个信任实体：云客户、云管理器、基于ABS的云基础设施和区块链审计器。实线说明了它们之间的信任关系和行动。区块链审计员：区块链审计员是信任管理机制的核心。它被设计为受可信第三方监督的公共区块链或区块链。分布式账本用于为云客户和云基础设施提供审计和信誉信息。</li>
+<li>云客户：默认情况下，云客户信任区块链审计员，它提供审计事件、服务提供商声誉和云基础设施属性。然而，云管理器却不受客户的信任。通过与云管理器设置自定义的安全策略和智能合约，保证云管理器的任务可信执行。</li>
+<li>云管理器：云管理器代表受信任管理机制限制和激励的云服务提供商。它应该遵循为客户提供可信服务的规则，并审计对区块链的操作。其不当行为可由区块链审计员进行审计，降低其可信度。</li>
+<li>基于ABS的云基础设施：基于ABS的云基础设施是可信云计算的基础。TPM可以保证平台和ABS相关属性的完整性，PC-RA和PC-MP支持可信迁移和远程认证。</li>
+</ul>
+<p>通过对区块链审计器的信任管理，客户可以从以下两个方面受益:</p>
+<ul>
+<li>(1)对当前请求和历史请求进行监控和审计，验证虚拟机在整个生命周期内是否实现了安全策略。一方面，云客户可以通过ABS验证当前的计算环境是否满足安全策略，另一方面，通过访问区块链审计器中的信任管理模块，可以对VM请求、分配、迁移的所有当前和历史操作的完整性和可靠性进行监控和审计。</li>
+<li>(2)对云管理或服务提供商进行评估和排名。随着历史记录的积累，区块链审核员的信任管理模块可以在PC-TCS中建立信誉和排名系统。已有许多成熟的算法和解决方案[8,9]，用户可以根据自己的需求，量化评估云管理人员的可信度和排名。</li>
+</ul>
+<h1 id="4-实现和案例研究"><a href="#4-实现和案例研究" class="headerlink" title="4 实现和案例研究"></a><strong>4 实现和案例研究</strong></h1><h2 id="4-1-实现"><a href="#4-1-实现" class="headerlink" title="4.1 实现"></a><strong>4.1 实现</strong></h2><p>我们在 Xen 4.7 管理程序 [3] 上实现了我们的 PC-RA 和 PC-MP。 我们修改并添加了一些关键模块和数据路径，如图 7 所示，以支持 PC-RA 和 PC-MP。 原型实现指的是四种虚拟机：host、guest、vtpm-stubdom 和 vtpmmgr-stubdom。基于mini-OS内核的Stubdom（’’stub domain’’）可以看作是一种轻量级的’’service’’或’’driver’’ domain来运行设备模型和实现dom0的技术 分解。 XenBus 描述了 XenStore 的接口，XenStore 是 Xen 来宾之间共享的存储系统。 在更一般的情况下，它描述了一种用于连接到构建在 XenStore 之上的设备驱动程序的协议。 <img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1655638551580.png" srcset="/img/loading.gif" lazyload alt="image-1655638551580"></p>
+<blockquote>
+<p>图 7. 证明和迁移的实现。 原型实现涉及四种虚拟机：host、guest、vtpm-stubdom 和 vtpmmgrstubdom。 基于mini-OS内核的Stubdom（’’stub domain’’）可以看作是一种轻量级的’’service’’或’’driver’’ domain来运行设备模型和实现dom0的技术 分解。 XenBus 描述了 XenStore 的接口，Xen 来宾之间共享的存储系统</p>
+</blockquote>
+<ul>
+<li>主机：主机是面向管理员的管理平台，以XL 作为Xen 管理工具。我们修改了迁移控制模块 (MCM) 以在迁移之前添加一个证明阶段。迁移证明服务 (MAS) 可以在成为目标服务器时通过运行签名算法来证明其自身的安全属性满足客户的策略。</li>
+<li>来宾VM：来宾VM 是面向客户的计算平台。我们添加了 PCS，为客户提供自定义安全策略的接口。我们还添加了 CAS 以使客户能够执行 CPBA。 MAE 通过 XenBus 与 MCM 通信从主机接收 VM 迁移请求，然后通过套接字与 MAS 通信验证目标服务器。Xen&#x2F;tpmback 是 Linux 内核虚拟 TPM 前端驱动程序。此驱动程序提供对来宾 VM 的 vTPM 访问。</li>
+<li>vtpm-stubdom：实现vTPM 的mini-OS 存根域。在系统上运行的 vtpm-stubdom 实例和逻辑 vTPM 之间存在一对一的映射。策略存储处理存储来自客户的定制策略。 ABS引擎提供ABS构造的签名和验证算法。 mini-OS&#x2F;tpmback 是 mini-OS TPM 后端驱动程序。 Linux 前端驱动程序连接到此后端驱动程序，以促进 Linux 客户机与其 vTPM 之间的通信。 vtpmmgr-stubdom 也使用此驱动程序与 vtpm-stubdom 进行通信。 Xen&#x2F;tpmfront 是 mini-OS TPM 前端驱动程序。 vtpm-stubdom 使用此驱动程序与 vtpmmgr-stubdom 进行通信。</li>
+<li>vtpmmgr-stubdom：实现vTPM 管理器的mini-OS 域。只有一个 vTPM 管理器，它应该在机器的整个生命周期内运行。此域管理对系统上物理 TPM 的访问，并保护每个 vTPM 的持久状态。</li>
+</ul>
+<h2 id="4-2-虚拟机迁移的案例研究"><a href="#4-2-虚拟机迁移的案例研究" class="headerlink" title="4.2 虚拟机迁移的案例研究"></a><strong>4.2 虚拟机迁移的案例研究</strong></h2><p>我们使用云中的一个典型的vm迁移案例来演示PC-MP的实现。如图8所示，4个虚拟机运行在一个数据中心上，云管理器试图将运行中的虚拟机迁移到空闲服务器node，这是云中的典型负载均衡场景。一旦一个新节点被添加到云中，它就会共享其他节点的负载以获得更好的性能。在传统云环境下，所有迁移都能成功，而PC-MP环境下，只有满足定制策略的迁移才能成功，这说明了PC-TCS的有效性。<img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1655638702284.png" srcset="/img/loading.gif" lazyload alt="image-1655638702284"></p>
+<blockquote>
+<p>图 8. 策略定制的 VM 迁移场景。 假设四个虚拟机在五个服务器节点上运行，并且云管理器正在尝试根据使用 PC-MP 定制的用户策略将虚拟机迁移到免费 Noded</p>
+</blockquote>
+<p>首先，云管理器或服务提供商向云客户提供可能的服务器属性来配置迁移策略，如表2所示。其次，云客户可以根据服务器属性为其虚拟机定义安全策略。表3显示了相应的定制策略。表4根据表2中的云管理器数据显示了源节点的状态。表5显示了目标节点的状态。<img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1655638822455.png" srcset="/img/loading.gif" lazyload alt="image-1655638822455"><img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1655638747928.png" srcset="/img/loading.gif" lazyload alt="image-1655638747928">根据上文定义的自定义策略和服务器属性，对图8中的四种迁移操作进行如下分析: (1) 如果云客户设置了迁移控制策略‘‘P1:migration_allow &#x3D; N’’，即不允许VM迁移，则VM1从Node1到Noded的迁移操作失败。 (2) 如果云客户设置出迁移控制策略’’Pout : cpu_load_degree &gt; 2 OR memory_load_degree &gt; 2’’，则VM2从Node2迁移到Noded的操作失败，因为Noded的属性’’PT src: cpu_load_degree &#x3D; 1; memory_load_degree &#x3D; 1’’ 不满足自定义策略。 (3) 如果云客户设置传入的迁移控制策略’’Pin: security_level &gt;&#x3D; 3’’，那么VM3从Node3到Node4的迁移操作失败，因为Noded的属性’’PT dst: security_level &#x3D; 2’’ 不满足自定义策略 P3。 (4) 从Node4到Noded的迁移操作成功，因为定制的策略P4得到满足。</p>
+<h1 id="5-评价"><a href="#5-评价" class="headerlink" title="5 评价"></a><strong>5 评价</strong></h1><p>本节在改变属性数量时评估PC-TCS的安全性和性能。在第5.1节和第5.2节中，我们分别讨论了其安全问题的两个方面：保护PC-TCS本身免受可能的威胁，以及提高云安全以应对使用PC-TCS的典型攻击。第5.3节评估了虚拟机迁移的性能开销。</p>
+<h2 id="5-1-安全分析"><a href="#5-1-安全分析" class="headerlink" title="5.1 安全分析"></a><strong>5.1 安全分析</strong></h2><p>通过PC-TCS框架，客户可以自行选择安全选项，为租用的虚拟机定制安全策略，同时验证当前计算环境与定制策略是否一致。但是，重要的是框架的操作是安全的，关键模块是受保护的。 根据第3节的线程模型，需要考虑对手的攻击和服务提供商的恶意行为。我们的PC-TCS与传统的可信计算共享相同的安全模型。在可信计算基础(Trusted Computing Base)中增加了ABS和Migration相关模块。传统的远程认证协议用我们的PC-RA协议进行了更新。在这种情况下，PC-TCS的安全性与传统可信计算相同。因此，云[15]中的平台安全机制和信任管理框架可以无缝地应用到PC-TCS中。 对于线程模型中的威胁，平台安全机制可以抵御针对VM和VMM的攻击，ABS等网络安全机制可以抵御对网络的攻击，如冒充攻击、中间人攻击等。对于服务提供商的恶意行为，PC-TCS能够监控和遏制风险。一方面，基于ABS的远程认证和虚拟机迁移可以加强用户安全策略的部署和实施。另一方面，区块链审计将对服务提供者的操作进行审计，以降低风险。 该框架需要在三个方面进行安全保护：</p>
+<ul>
+<li>(1)安全收集和服务客户的虚拟机请求；</li>
+<li>(2)可信的认证机制和协议；</li>
+<li>(3)安全迁移虚拟机。</li>
+</ul>
+<p><strong>对客户的VM请求进行安全收集和服务</strong>。攻击者可能试图收集或更改客户非法定制的策略。所以VM请求的收集必须是安全的，可以通过云客户的认证和授权来实现。VM安全请求存储在区块链Auditor中，它能够阻止未经授权的访问和修改。此外，负责处理和执行VM安全请求的控制模块(即Nova-Schedule模块)受到可信计算技术的保护，以保证其代码的完整性。 <strong>可信的认证机制和协议</strong>。攻击者可能会从两个方面对系统进行攻击：(1)对虚拟机或物理节点等云服务器进行攻击和破坏；(2)破解远程认证机制，为客户提供虚假的认证报告。PC-TCS中的ABS签名和验证算法是在vtpm-stubdom中进行的，可以保证认证机制和协议的可信性。同时，采用提供的PCR值对签名密钥进行密封操作，保证了认证特性和计算环境的一致性。 <strong>安全的虚拟机迁移</strong>。在虚拟机迁移时，攻击者可能试图侵入系统篡改代码或收集敏感数据。为此，我们提出了PC-MP来保证安全策略的一致性和云计算平台的完整性，并对敏感数据进行加密，以抵御迁移过程中攻击者的篡改。</p>
+<h2 id="5-2-安全案例研究"><a href="#5-2-安全案例研究" class="headerlink" title="5.2 安全案例研究"></a><strong>5.2 安全案例研究</strong></h2><p>在本节中，我们将通过三个案例研究简要分析架构构造的安全性: <strong>案例研究I:控制平面</strong> 示例攻击:攻击者可能会将许多来宾vm迁移到合法的受害VMM中，从而导致中断或拒绝服务。攻击者还可能将客户vm迁移到攻击者的机器上，并获得对它们的完全控制。攻击者通过虚假地发布可用资源，可以影响控制平面，将来宾虚拟机迁移到攻击者的机器上。 安全分析：基于区块链的信任管理和PC-MP可以有效防止控制平面的攻击，如恶意的流出和流入迁移。基于vTPM的信任链可以保证用户策略的安全性和执行。当且仅当源节点和目标节点的指定属性满足云用户的策略时，开始迁移。基于区块链的信任管理可以帮助客户选择可信的服务，并监督服务提供商的行为，以获得更好的可信性。 <strong>案例II:数据平面</strong> 攻击示例：攻击者通过监控迁移的传输路径和相关的网络流，从迁移虚拟机的内存中提取密码、密钥、应用程序数据和其他受保护的资源等信息。 安全分析：迁移过程中传输的数据使用会话密钥K进行加密，策略迁移认证可以保证会话密钥K的保密性。 <strong>案例研究III:迁移控制模块</strong> 示例攻击：通过利用MCM漏洞(如堆栈、堆和整数溢出)，攻击者可以破坏VMM，在VMM中运行的任何来宾虚拟机也可能受到攻击。 安全分析：TPM可以为云客户提供VMM和vTPM完整性的硬件级保障。vTPM可以保证云客户虚拟机的完整性。</p>
+<h2 id="5-3-性能评估"><a href="#5-3-性能评估" class="headerlink" title="5.3 性能评估"></a><strong>5.3 性能评估</strong></h2><p>我们考虑VM迁移的性能开销，同时改变云节点属性的数量。我们的实验场景是源节点和目标节点之间基于NFS共享存储的实时迁移。每个节点配置一个3.40 GHz的4核CPU和8G的RAM。每个虚拟机配置1核的vCPU和1024m的RAM。VM-migration时延包括认证阶段和数据传输阶段的时间。我们的评估不计算初始部署的时间，因为初始化只需要运行一次。该阶段的主要成本是为ABS生成签名密钥的时间，随着属性的增加，签名密钥的生成时间呈线性增长；例如，生成一个具有10个属性的签名密钥大约需要0.12秒。在我们的设计中，签名密钥被缓存并重用以提高总体性能。总的来说，与云服务的长期运行相比，这是微不足道的。 表6显示了远程认证的时延和VM迁移的传输时延。<img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1655639093291.png" srcset="/img/loading.gif" lazyload alt="image-1655639093291"> 图9显示VM迁移的延迟与属性的数量成比例地增加。<img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1655639103110.png" srcset="/img/loading.gif" lazyload alt="image-1655639103110"></p>
+<blockquote>
+<p>图9所示。策略自定义可信云服务(PC-TCS)迁移操作延迟。结果表明，与传统的虚拟机迁移相比，新的认证方案几乎没有明显的性能开销。</p>
+</blockquote>
+<p>数据传输阶段的持续时间通常大于12s，但认证阶段的持续时间小于1s；也就是说，与传统的VM迁移相比，新的认证方案几乎没有明显的性能开销。</p>
+<h1 id="6-结论与未来工作"><a href="#6-结论与未来工作" class="headerlink" title="6 结论与未来工作"></a><strong>6 结论与未来工作</strong></h1><p>在本文中，我们提出了一种新的基于ABS和区块链的PC-TCS体系结构，其中包括基于ABS的远程认证方案和定制的虚拟机迁移协议。 PC-TCS为云客户提供三大功能:</p>
+<ul>
+<li>定制和执行云计算环境的安全策略;</li>
+<li>验证当前的计算环境或虚拟机迁移操作是否满足其自定义安全策略;</li>
+<li>在VM 的整个生命周期中使用区块链中的不知名记录器审计其当前和历史请求的安全性。</li>
+</ul>
+<p>为了证明PC-TCS架构的可用性，我们在开源Xen Hypervisor的基础上实现了PC-TCS原型，包括PC-RA和PC-MP组件。我们的评估表明，PC-TCS能够满足设计目标，其对性能的影响是可以接受的。 PC-TCS可以在TPM 2.0中补充和增强传统的远程认证。配置PC-TCS的节点既可以实现PC-RA认证，也可以实现传统的远程认证，而没有PC-TCS的节点只能通过交换PCR值进行传统的远程认证。 尽管我们的框架有很多优点，但是在实际的云计算中应用PC-TCS仍然面临着技术上的困难。需要升级云基础设施，在硬件层支持TPM。然后VMM需要打补丁以支持PC-RA和PC-MP，这可能涉及到更新到流行的VMM工具，如Xen、KVM等。需要向云基础设施引入可信的区块链。最后，需要在应用层更改使用云服务的方式。 未来，我们计划进一步优化PC-TCS中ABS和区块链机制的性能，并将其重新设计为OpenStack的服务级协议。也可以对Docker这样的容器应用基于ABS的远程认证。在容器中设计虚拟可信计算之后，可以使用PC-TCS这样的设计。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%8F%AF%E4%BF%A1%E8%AE%A1%E7%AE%97/" class="category-chain-item">可信计算</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E8%BF%9C%E7%A8%8B%E8%AF%81%E6%98%8E/" class="print-no-link">#远程证明</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>远程证明_07_安全即服务:具有策略定制的可信云服务架构</div>
+      <div>http://example.com/0007.html</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>landery</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2023年3月7日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/0033.html" title="Halo joe2.0 文章嵌入pdf 解决跨域问题-腾讯云对象存储">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Halo joe2.0 文章嵌入pdf 解决跨域问题-腾讯云对象存储</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/0006.html" title="远程证明_06_论远程证明中的TOCTOU问题">
+                        <span class="hidden-mobile">远程证明_06_论远程证明中的TOCTOU问题</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"GK4nuH8jdXDcw4IJIVShjMtA-gzGzoHsz","appKey":"7P0B0kJFdaLY6eDQ93Lhcv8J","path":"window.location.pathname","placeholder":"建议使用QQ邮箱，评论头像采用QQ头像","avatar":"retro","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":true,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":true,"bg":null,"count":true},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+    <!-- 备案信息 ICP for China -->
+    <div class="beian">
+  <span>
+    <a href="http://beian.miit.gov.cn/" target="_blank" rel="nofollow noopener">
+      蜀ICP备2022011502号
+    </a>
+  </span>
+  
+    
+      <span>
+        <a
+          href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=51012202001227"
+          rel="nofollow noopener"
+          class="beian-police"
+          target="_blank"
+        >
+          
+            <span style="visibility: hidden; width: 0">|</span>
+            <img src="/img/police_beian.png" srcset="/img/loading.gif" lazyload alt="police-icon"/>
+          
+          <span>川公网安备51012202001227号</span>
+        </a>
+      </span>
+    
+  
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/DynamicRibbon.min.js"></script>
+<script src="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/love.min.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

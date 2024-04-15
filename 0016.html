@@ -1,0 +1,855 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="landery">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="title: 操作系统_01_BIOS、UEFI等基础概念 date: 2022-04-13 14:54:54.0 updated: 2022-05-05 22:33:12.703 url: &#x2F;archives&#x2F;os01 categories:  操作系统 tags: BIOS 操作系统 UEFI MBR   1 概述本文只是简单介绍一些基本知识，包括BIOS、UEFI、MB">
+<meta property="og:type" content="article">
+<meta property="og:title" content="操作系统_01_BIOS、UEFI等基础概念">
+<meta property="og:url" content="http://example.com/0016.html">
+<meta property="og:site_name" content="landery小站">
+<meta property="og:description" content="title: 操作系统_01_BIOS、UEFI等基础概念 date: 2022-04-13 14:54:54.0 updated: 2022-05-05 22:33:12.703 url: &#x2F;archives&#x2F;os01 categories:  操作系统 tags: BIOS 操作系统 UEFI MBR   1 概述本文只是简单介绍一些基本知识，包括BIOS、UEFI、MB">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://b3logfile.com/file/2022/04/image-ef2f8c0c.png">
+<meta property="og:image" content="https://b3logfile.com/file/2022/04/image-f0d49771.png">
+<meta property="og:image" content="https://b3logfile.com/file/2022/04/image-f8324ec5.png">
+<meta property="og:image" content="https://b3logfile.com/file/2022/04/image-f6792622.png">
+<meta property="article:published_time" content="2023-03-07T13:28:12.000Z">
+<meta property="article:modified_time" content="2024-04-15T10:18:15.009Z">
+<meta property="article:author" content="landery">
+<meta property="article:tag" content="UEFI">
+<meta property="article:tag" content="BIOS">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://b3logfile.com/file/2022/04/image-ef2f8c0c.png">
+  
+  
+  
+  <title>操作系统_01_BIOS、UEFI等基础概念 - landery小站</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/scroll.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"GK4nuH8jdXDcw4IJIVShjMtA-gzGzoHsz","app_key":"7P0B0kJFdaLY6eDQ93Lhcv8J","server_url":"https://api.landery.cn","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>landery 小站</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/links/" target="_self">
+                <i class="iconfont icon-link-fill"></i>
+                <span>友链</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/remark/" target="_self">
+                <i class="iconfont icon-twitch-fill"></i>
+                <span>留言板</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/image/bg/001.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="操作系统_01_BIOS、UEFI等基础概念"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2023-03-07 21:28" pubdate>
+          2023年3月7日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          4.9k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          42 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">操作系统_01_BIOS、UEFI等基础概念</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <hr>
+<p>title: 操作系统_01_BIOS、UEFI等基础概念 date: 2022-04-13 14:54:54.0 updated: 2022-05-05 22:33:12.703 url: &#x2F;archives&#x2F;os01 categories:</p>
+<ul>
+<li>操作系统 tags:</li>
+<li>BIOS</li>
+<li>操作系统</li>
+<li>UEFI</li>
+<li>MBR</li>
+</ul>
+<hr>
+<h1 id="1-概述"><a href="#1-概述" class="headerlink" title="1 概述"></a><strong>1 概述</strong></h1><p>本文只是简单介绍一些基本知识，包括BIOS、UEFI、MBR、GPT、GRUB等。</p>
+<h1 id="2-BIOS-CMOS"><a href="#2-BIOS-CMOS" class="headerlink" title="2 BIOS&#x2F;CMOS"></a><strong>2 BIOS&#x2F;CMOS</strong></h1><h2 id="2-1-BIOS和CMOS的基本概念和区别"><a href="#2-1-BIOS和CMOS的基本概念和区别" class="headerlink" title="2.1 BIOS和CMOS的基本概念和区别"></a><strong>2.1 BIOS和CMOS的基本概念和区别</strong></h2><p>BlOS（Basic Input Output System）从字义上称为“基本输出输入系统”，专门负责系统硬件各种参数设定，本质上是“程序”，也就是一组“代码”。 BIOS芯片，是特指存储BIOS程序的一块特定的ROM芯片。ROM，只读存储器，一般写入后只能读，不能更改，但也有可擦除只读存储器。 ROM芯片是一个实体物品，本质就是一个储存器，是主板上一颗小小的快闪EEPROM内存模块板中的长方形或正方形芯片，这一类芯片可以存储BIOS程序，也可以存储其它程序、代码。 CMOS通常读作C-mo-se（中文发音“瑟模室”），是电脑主板上的一块可读写的RAM芯片，用来保存当前系统的硬件配置情况和用户对某些参数的设定。CMOS芯片由主板上的充电电池供电，即使系统断电，参数也不会丢失。CMOS芯片只有保存数据的功能，而对CMOS中各项参数的修改要通过BIOS的设定程序来实现。 <strong>总结：BIOS</strong> <strong>是程序，存放在ROM</strong> <strong>芯片上，而CMOS</strong> <strong>是芯片，而且是可读写的RAM</strong> <strong>芯片，用来存放系统硬件配置情况以及参数等，BIOS</strong> <strong>会对CMOS</strong> <strong>操作。</strong></p>
+<h2 id="2-2-BIOS功能"><a href="#2-2-BIOS功能" class="headerlink" title="2.2 BIOS功能"></a><strong>2.2 BIOS功能</strong></h2><p>BIOS管理功能包括：</p>
+<ol>
+<li><strong>POST上电自检</strong> ：微机接通电源后，系统首先由(Power On Self Test,上电自检)程序来对内部各个设备进行检查。通常完整的POST自检将包括对CPU,640K基本内存,1M以上的扩展内存,ROM,主板,CMOS存储器,串并口,显示卡,软硬盘子系统及键盘进行测试，一旦在自检中发现问题，系统将给出提示信息或鸣笛警告。</li>
+<li><strong>BIOS系统启动自举程序</strong> ：系统完成POST自检后，ROM BIOS就首先按照系统CMOS设置中保存的启动顺序搜索软硬盘驱动器及CD-ROM,网络服务器等有效地启动驱动器，读入操作系统引导记录，然后将系统控制权交给引导记录，并由引导记录来完成系统的顺序启动。</li>
+<li><strong>BIOS中断服务程序</strong> 实质上是微机系统中软件与硬件之间的一个可编程接口，主要用于程序软件功能与微机硬件之间对接。例如,WINDOWS98对软驱,光驱,硬盘等管理,中断的设置等服务、程序。</li>
+<li><strong>BIOS系统设置程序</strong> ：微机部件配置记录是放在一块可写的CMOS RAM芯片中的，主要保存着系统的基本情况,CPU特性,软硬盘驱动器等部件的信息。在BIOS ROM 芯片中装有“系统设置程序”，主要来设置CMOS RAM中的各项参数。这个程序在开机时按某个键就可进入设置状态，并提供良好的界面。（可以设置CMOS参数）</li>
+</ol>
+<h2 id="2-3-BIOS启动流程"><a href="#2-3-BIOS启动流程" class="headerlink" title="2.3 BIOS启动流程"></a><strong>2.3 BIOS启动流程</strong></h2><ol>
+<li>POST自检：系统加电后，BIOS程序首先检查，计算机硬件能否满足运行的基本条件，这叫做”硬件自检”（Power-On Self-Test），缩写为POST。如果硬件出现问题，主板会发出不同含义的蜂鸣，启动中止。如果没有问题，屏幕就会显示出CPU、内存、硬盘等信息。</li>
+<li>初始化：系统完成POST后读取CMOS RAM中的系统参数等进行初始化，包括创建中断向量、设置寄存器、对一些外部设备进行初始化和检测等，其中很重要的一部分是BIOS设置，主要是对硬件设置的一些参数，当计算机启动时会读取这些参数，并和实际硬件设置进行比较，如果不符合，会影响系统的启动。</li>
+<li>寻找下一阶段启动程序：硬件自检完成后，BIOS把控制权转交给下一阶段的启动程序。这时，BIOS需要知道，”下一阶段的启动程序”具体存放在哪一个设备。也就是说，BIOS需要有一个外部储存设备的排序，排在前面的设备就是优先转交控制权的设备。这种排序叫做”启动顺序”（Boot Sequence）。打开BIOS的操作界面，里面有一项就是”设定启动顺序”。</li>
+<li>按照启动顺序，寻找设备引导记录：BIOS按照”启动顺序”， BIOS先从启动顺序设置的设备的开始扇区读取引导记录，如果没有找到，可能会跳过该设备，继续寻找下一个设备，如果最后也没找到则会在显示器上显示没有引导设备，如果找到引导记录会把计算机的控制权转给引导记录，由引导记录把操作系统装入计算机，在计算机启动成功后，BIOS的这部分任务就完成了。</li>
+</ol>
+<h1 id="3-UEFI-BIOS"><a href="#3-UEFI-BIOS" class="headerlink" title="3 UEFI&#x2F;BIOS"></a><strong>3 UEFI&#x2F;BIOS</strong></h1><h2 id="3-1-UEFI基本概念"><a href="#3-1-UEFI基本概念" class="headerlink" title="3.1 UEFI基本概念"></a><strong>3.1 UEFI基本概念</strong></h2><p>UEFI一般指统一可扩展固件接口。 统一可扩展固件接口（英语：Unified Extensible Firmware Interface，缩写UEFI）是一种个人电脑系统规格，用来定义操作系统与系统固件之间的软件界面，作为BIOS的替代方案。 总结：UEFI就是BIOS的替代方案，提到BIOS也可以指传统BIOS，也有UEFI BIOS的说法。以下说的BIOS指传统BIOS。 例如：可以在windows win+R输入msinfo32查看系统信息，可以看到BIOS模式，本机就是UEFI模式启动的。 <img src="https://b3logfile.com/file/2022/04/image-ef2f8c0c.png" srcset="/img/loading.gif" lazyload alt="image.png"></p>
+<h2 id="3-2-BIOS和UEFI共同点"><a href="#3-2-BIOS和UEFI共同点" class="headerlink" title="3.2 BIOS和UEFI共同点"></a><strong>3.2 BIOS和UEFI共同点</strong></h2><p>PC的启动引导流程本质上没有改变，BIOS和UEFI 启动本身都是要经历以下三个步骤：</p>
+<ol>
+<li><strong>ROM Stage</strong> :在这个阶段没有内存，需要在ROM上运行代码。这时因为没有内存，没有C语言运行需要的栈空间，开始往往是汇编语言，直接在ROM空间上运行。在找到个临时空间(Cache空间用作RAM，Cache As Ram, CAR)后，C语言终于可以粉墨登场了，后期用C语言初始化内存和为这个目的需要做的一切服务。</li>
+<li><strong>RAM Stage</strong> :在经过ROM阶段的困难情况后，我们终于有了可以大展拳脚的内存，很多额外需要大内存的东西可以开始运行了。在这时我们开始进行初始化芯片组、CPU、主板模块等等核心过程。</li>
+<li><strong>Find something to boot Stage:</strong> 终于要进入正题了，需要启动，我们找到启动设备。就要枚举设备，发现启动设备，并把启动设备之前需要依赖的节点统统打通。然后开始移交工作，Windows或者Linux的时代开始。</li>
+</ol>
+<h2 id="3-3-BIOS和UEFI不同点"><a href="#3-3-BIOS和UEFI不同点" class="headerlink" title="3.3 BIOS和UEFI不同点"></a><strong>3.3 BIOS和UEFI不同点</strong></h2><p>那UEFI为什么能取代传统BIOS呢？就是因为<strong>标准接口、开放统一、开源。</strong> UEFI扫除了<strong>传统****BIOS</strong> <strong>割裂的生态</strong> ，打通了PC固件之间的鸿沟，并提供统一的接口给操作系统，而不关心操作系统是什么;它能够更好的完成PC固件的终极目的:初始化硬件和提供硬件的软件抽象，和启动操作系统。如果说有什么东西帮助UEFI打败了传统BIOS，那这些东西就是:<strong>标准接口、开放统一和开源了</strong> 。 传统BIOS由IBM主导，当时由于激烈的商战导致接口无法统一，要写个驱动，让它不同BIOS厂商那里都能跑是不可能的。 而UEFI是Intel推动，一开始就将标准公开，并拉上了微软，强势统一了江湖。在近20年的深耕下，统一了固件启动阶段基础框架Spec: Pl Spec与操作系统的接口Spec: UEFI Spec，并将抽象硬件的原语性Spec: ACPI Spec也拉入这个大家庭，都变成UEFI Forum的一份子。现在只要符合UEFI driver model的驱动都可以在各个BIOS上运行，打通了各个BIOS厂商之间的栅栏;与此同时，符合UEFI标准的操作系统都可以流畅的在各种主板上运行，无论是Windows，还是Linux各种发行版，甚至是Android。实际上，PC生态圈的繁荣，和UEFI的推广和被广泛接受是分不开的。 UEFI采用PE&#x2F;COFF格式作为UEFI驱动和应用的标准。</p>
+<h2 id="3-4-UEFI架构"><a href="#3-4-UEFI架构" class="headerlink" title="3.4 UEFI架构"></a><strong>3.4 UEFI架构</strong></h2><p>TPM CLIEN文章中的UEFI架构： <img src="https://b3logfile.com/file/2022/04/image-f0d49771.png" srcset="/img/loading.gif" lazyload alt="image.png"> 可以看到，UEFFI服务包含引导时服务和运行时服务。</p>
+<h2 id="3-5-UEFI实现"><a href="#3-5-UEFI实现" class="headerlink" title="3.5 UEFI实现"></a><strong>3.5 UEFI实现</strong></h2><h3 id="3-5-1-SEC，PEI和DXE"><a href="#3-5-1-SEC，PEI和DXE" class="headerlink" title="3.5.1 SEC，PEI和DXE"></a><strong>3.5.1 SEC，PEI和DXE</strong></h3><p><a target="_blank" rel="noopener" href="https://b3logfile.com/file/2022/04/image-7092aa1b.png">image.png</a> <strong>SEC</strong> <strong>：</strong> PI平台启动的安全（Security，简称SEC）阶段必须处理不同类型的平台重置（Reset）事件。 SEC还是系统的信任根，它为系统上进一步启动固件提供了控制点（Control Point）。 SEC阶段的优点在于：它可以提供一个锚点，基于这个锚点来构建一个已验证的引导过程。一旦临时存储器可用，SEC必须找到引导进程的下一个阶段：EFI预初始化（Pre-EFI Initialization简称PEI）阶段，并将控制权限移交。当然，根据PEI代码的位置以及平台策略，PEI代码必须在执行之前经过认证。 <strong>PEI</strong> <strong>：</strong> PEI阶段的目标是为PEI模块的执行搭建合适的环境。 因此，在PEI阶段初期，PEI调度器就已启动。 PEI模块通常对设备和芯片组的底层平台进行初始化，例如串行端口和内存的初始化。 该阶段的的另一个职责是搜索平台信息，在切换块（hand-off blocks，简称HOB）中为此信息创建数据库，并将数据库传递给平台引导的下一阶段：DXE阶段。 和上一阶段相同的是，PEI模块也必须在运行模块之前进行验证。 一般来说，PEI模块是平台的核心固件的一部分，并且对于特定平台模型，可以认为这个模块是静态且可信的。 不过，在PI规范中没有关于PEI模块位置的要求，因此可以存在其中一些或所有PEI模块将需要被认证以维持平台完整性的平台。有些平台为了维持其完整性，会对所有的PEI模块进行验证。 <strong>DXE</strong> <strong>：</strong> 当PEI阶段找到并开始执行DXE的初始化程序加载时，标志着引导程序进入了PI规范要求的最终阶段。DXE阶段通过HOB来查询平台的相关信息，并为驱动程序搭建一个更加完整的环境。 DXE调度程序负责查找和启动DXE驱动程序，这些驱动程序可能有很多来源。但PI代码和UEFI核心仅来自系统板制造商，并且不能由第三方任意扩展。平台制造商必须为符合PI规范而且采用了UEFI服务的固件负责，保障其从生产到交付后的真实性和安全性。 为了保持平台完整性，对固件的更改必须处于平台制造商的控制监督之下。在不同的平台下，这一控制的实现或许会有所不同，但不管是什么平台，都必须实现散列和加密认证等方式，否则其安全性无法得以真正保障。 在较新版本的UEFI规范中，都提供了一些用于固件更新的工具。 对安全引导来说，固件更新必须是受控的。固件受控对于TCG测量引导（TCG Measured Boot）也同样必要。</p>
+<h3 id="3-5-2-BDS，OS-loader和RT"><a href="#3-5-2-BDS，OS-loader和RT" class="headerlink" title="3.5.2 BDS，OS loader和RT"></a><strong>3.5.2 BDS，OS loader和RT</strong></h3><p><img src="https://b3logfile.com/file/2022/04/image-f8324ec5.png" srcset="/img/loading.gif" lazyload alt="image.png"> BDS：在DXE结束后，BDS得以运行。<strong>BDS</strong> <strong>（Boot Device Select</strong> <strong>），顾名思义，就是发现引导设备（全部或者部分），</strong> 并作出选择（用户选择或者根据设定）。它负责初始化所有启动OS所需的设备（输入、输出和存储）。在更高层面上讲，它负责执行所有符合UEFI驱动模型（UEFI driver model）的驱动。这是一个发现并一个个连接的过程。譬如，首先发现PCI root，接着发现PCI bus，在PCI bus下发现SATA controller和USB controller……一个个启动设备被发现，其设备路径（device path）也被连接起来。在万事俱备后，一个界面被显示出来（嵌入式系统上可以没有），供用户进行设置和选择启动设备，这就是大家熟悉的BIOS界面。 <strong>RT</strong> <strong>：</strong> 在用户选择或者用预设的设备被挑出来后，BDS加载OS loader，而OS loader负责找到并运行OS。在OS启动后，所有的启动时服务都不可用了，只有运行时服务得以留存。</p>
+<h1 id="4-MBR-GPT"><a href="#4-MBR-GPT" class="headerlink" title="4 MBR&#x2F;GPT"></a><strong>4 MBR&#x2F;GPT</strong></h1><h2 id="4-1-MBR"><a href="#4-1-MBR" class="headerlink" title="4.1 MBR"></a><strong>4.1 MBR</strong></h2><h3 id="4-1-1-MBR介绍"><a href="#4-1-1-MBR介绍" class="headerlink" title="4.1.1 MBR介绍"></a><strong>4.1.1 MBR介绍</strong></h3><p>MBR（Master Boot Record）分区分析： MBR的意思是“主引导记录”，它有自己的启动器，也就是启动代码，一旦启动代码被破坏，系统就没法启动，只有通过修复才能启动系统。最大支持2TB容量，在容量方面存在着极大的瓶颈，那么GPT在今后的发展就会越来越占优势，MBR也会逐渐被GPT取代。</p>
+<h3 id="4-1-2-MBR作用"><a href="#4-1-2-MBR作用" class="headerlink" title="4.1.2 MBR作用"></a><strong>4.1.2 MBR作用</strong></h3><p>接着2.3 BIOS启动流程，BIOS按照”启动顺序”，把控制权转交给排在第一位的储存设备。 这时，计算机读取该设备的第一个扇区，也就是读取最前面的512个字节。如果这512个字节的最后两个字节是0x55和0xAA，表明这个设备可以用于启动；如果不是，表明设备不能用于启动，控制权于是被转交给”启动顺序”中的下一个设备。 这最前面的<strong>512</strong> <strong>个字节，就叫做”</strong> <strong>主引导记录”</strong> <strong>（Master boot record</strong> <strong>，缩写为MBR</strong> <strong>）</strong> 。 “主引导记录”只有512个字节，放不了太多东西。它的主要作用是，<strong>告诉计算机到硬盘的哪一个位置去找操作系统</strong> 。 主引导记录由三个部分组成： （1） 第1-446字节：调用操作系统的机器码。 （2） 第447-510字节：分区表（Partition table）。 （3） 第511-512字节：主引导记录签名（0x55和0xAA）。 因为采用MBR这种方式的，一个硬盘最多只能分四个一级分区，又叫做”主分区”，并且4个主分区里，只有一个是激活的，如果还要更多的分区，需要进行扩展分区。因此当计算机的控制权就要转交给硬盘的某个分区了，又分成三种情况： <strong>1</strong> <strong>、情况A</strong> <strong>、卷引导记录。</strong> 四个主分区里面，只有一个是激活的。计算机会读取激活分区的第一个扇区，叫做”卷引导记录”（Volume boot record，缩写为VBR）。 “卷引导记录”的主要作用是，告诉计算机，操作系统在这个分区里的位置。然后，计算机就会加载操作系统了。 <strong>2</strong> <strong>、情况B</strong> <strong>、扩展分区和逻辑分区。</strong> 随着硬盘越来越大，四个主分区已经不够了，需要更多的分区。但是，分区表只有四项，因此规定有且仅有一个区可以被定义成”扩展分区”（Extended partition）。所谓”扩展分区”，就是指这个区里面又分成多个区。这种分区里面的分区，就叫做”逻辑分区”（logical partition）。 计算机先读取扩展分区的第一个扇区，叫做”扩展引导记录”（Extended boot record，缩写为EBR）。它里面也包含一张64字节的分区表，但是最多只有两项（也就是两个逻辑分区）。 计算机接着读取第二个逻辑分区的第一个扇区，再从里面的分区表中找到第三个逻辑分区的位置，以此类推，直到某个逻辑分区的分区表只包含它自身为止（即只有一个分区项）。因此，扩展分区可以包含无数个逻辑分区。 但是，似乎很少通过这种方式启动操作系统。如果操作系统确实安装在扩展分区，一般采用下一种方式启动。 <strong>3、情况C、启动管理器</strong> 在这种情况下，计算机读取”主引导记录”前面446字节的机器码之后，不再把控制权转交给某一个分区，而是运行事先安装的”启动管理器”（boot loader），由用户选择启动哪一个操作系统。 Linux环境中，目前最流行的启动管理器是GRUB。 以下是Linux操作系统启动的全过程。<img src="https://b3logfile.com/file/2022/04/image-f6792622.png" srcset="/img/loading.gif" lazyload alt="image.png"></p>
+<h2 id="4-2-GPT"><a href="#4-2-GPT" class="headerlink" title="4.2 GPT"></a><strong>4.2 GPT</strong></h2><p>GPT（GUID Partition Table）分区分析： GPT意为GUID分区表，这是一个正逐渐取代MBR的新标准，它由UEFI辅住而形成的，这样就有了UEFI用于取代老旧的BIOS，而GPT则取代老旧的MBR。这个标准没有MBR的那些限制。磁盘驱动器容量可以大得多，大到操作系统和文件系统都没法支持。它同时还支持几乎无限个分区数量，限制只在于操作系统，Windows支持最多128个GPT分区。通过UEFI，所有的64位的win0，win8，win7和Vista，以及所对应的服务器都能从GPT启动。</p>
+<h2 id="4-3-MBR和GPT区别"><a href="#4-3-MBR和GPT区别" class="headerlink" title="4.3 MBR和GPT区别"></a><strong>4.3 MBR和GPT区别</strong></h2><p>1、MBR的局限性，它是存在于驱动器开始部分的一个特殊的启动扇区。这个扇区包含了已安装的操作系统的启动加载器和驱动器的逻辑分区信息。所谓启动加载器，是一小段代码，用于加载驱动器上其他分区上更大的加载器。如果你安装了Windows，Windows启动加载器的初始信息就放在这个区域里——如果MBR的信息被覆盖导致Windows不能启动，你就需要使用Windows的MBR修复功能来使其恢复正常。如果你安装了Linux，则位于MBR里的通常会是GRUB加载器； 2、MBR支持最大2TB磁盘，它无法处理大于2TB容量的磁盘。MBR还只支持最多4个主分区——如果你想要更多分区，你需要创建所谓【扩展分区】，并在其中创建逻辑分区； 3、GPT意为GUID分区表。（GUID意为全局唯一标识符）。这是一个正逐渐取代MBR的新标准，它和UEFI相辅相成——UEFI用于取代老旧的BIOS，而GPT则取代老旧的MBR。之所以叫做【GUID分区表】，是因为你的驱动器上的每个分区都有一个全局唯一的标识符（globally unique identifier，GUID）——这是一个随机生成的字符串，可以保证为地球上的每一个GPT分区都分配完全唯一的标识符；</p>
+<h1 id="5-GRUB"><a href="#5-GRUB" class="headerlink" title="5 GRUB"></a><strong>5 GRUB</strong></h1><p>GNU GRUB（GRand Unified Bootloader简称“GRUB”）是一个来自GNU项目的多操作系统启动程序。GRUB是多启动规范的实现，它允许用户可以在计算机内同时拥有多个操作系统，并在计算机启动时选择希望运行的操作系统。 GRUB加载流程： 当计算机加电自检后，ROM　BIOS加载MBR（主引导扇区，即硬盘第一扇区）中的代码到内存中，这个扇区一共512字节，前446字节内容存放grub（bootloader）的关键引导程序，接着64字节放置硬盘分区表DPT（Disk Partition Table）。当BIOS把引导程序加载到内存后就把控制权交给grub，而后grub的剩余代码将完成其它代码的加载和搬移以及文件系统初始化查找等工作，最终加载内核映像文件，从而把控制权交给真正的内核运行。</p>
+<h1 id="6-参考链接"><a href="#6-参考链接" class="headerlink" title="6 参考链接"></a><strong>6 参考链接</strong></h1><ul>
+<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/25941528">UEFI架构 - 知乎 (</a><a target="_blank" rel="noopener" href="http://zhihu.com/">zhihu.com</a><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/25941528">)</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.w3cschool.cn/bioswqsc/exfrob.html">BIOS与CMOS_w3cschool</a></li>
+<li><a target="_blank" rel="noopener" href="http://www.ruanyifeng.com/blog/2013/02/booting.html">计算机是如何启动的？ - 阮一峰的网络日志 (</a><a target="_blank" rel="noopener" href="http://ruanyifeng.com/">ruanyifeng.com</a><a target="_blank" rel="noopener" href="http://www.ruanyifeng.com/blog/2013/02/booting.html">)</a></li>
+</ul>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/" class="category-chain-item">操作系统</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/UEFI/" class="print-no-link">#UEFI</a>
+      
+        <a href="/tags/BIOS/" class="print-no-link">#BIOS</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>操作系统_01_BIOS、UEFI等基础概念</div>
+      <div>http://example.com/0016.html</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>landery</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2023年3月7日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/0017.html" title="操作系统_02_Linux文件系统">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">操作系统_02_Linux文件系统</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/0028.html" title="mongodb学习_01_相关概念基础知识">
+                        <span class="hidden-mobile">mongodb学习_01_相关概念基础知识</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"GK4nuH8jdXDcw4IJIVShjMtA-gzGzoHsz","appKey":"7P0B0kJFdaLY6eDQ93Lhcv8J","path":"window.location.pathname","placeholder":"建议使用QQ邮箱，评论头像采用QQ头像","avatar":"retro","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":true,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":true,"bg":null,"count":true},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+    <!-- 备案信息 ICP for China -->
+    <div class="beian">
+  <span>
+    <a href="http://beian.miit.gov.cn/" target="_blank" rel="nofollow noopener">
+      蜀ICP备2022011502号
+    </a>
+  </span>
+  
+    
+      <span>
+        <a
+          href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=51012202001227"
+          rel="nofollow noopener"
+          class="beian-police"
+          target="_blank"
+        >
+          
+            <span style="visibility: hidden; width: 0">|</span>
+            <img src="/img/police_beian.png" srcset="/img/loading.gif" lazyload alt="police-icon"/>
+          
+          <span>川公网安备51012202001227号</span>
+        </a>
+      </span>
+    
+  
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/DynamicRibbon.min.js"></script>
+<script src="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/love.min.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

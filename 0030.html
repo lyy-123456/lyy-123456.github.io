@@ -1,0 +1,889 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="landery">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="判断文件类型1、对于一个二进制文件：file可能会输出： 12[root@qemuswtpmsm4 seabios-tpm]# file &#x2F;usr&#x2F;bin&#x2F;file&#x2F;usr&#x2F;bin&#x2F;file: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked (uses shared libs), for GNU&#x2F;Lin">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux判断文件类型以及查看ELF文件结构">
+<meta property="og:url" content="http://example.com/0030.html">
+<meta property="og:site_name" content="landery小站">
+<meta property="og:description" content="判断文件类型1、对于一个二进制文件：file可能会输出： 12[root@qemuswtpmsm4 seabios-tpm]# file &#x2F;usr&#x2F;bin&#x2F;file&#x2F;usr&#x2F;bin&#x2F;file: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked (uses shared libs), for GNU&#x2F;Lin">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/wp-content/uploads/2023/05/image-griq.png">
+<meta property="og:image" content="http://example.com/wp-content/uploads/2023/05/image-oxhv.png">
+<meta property="og:image" content="http://example.com/wp-content/uploads/2023/05/image-gzvp.png">
+<meta property="og:image" content="http://example.com/wp-content/uploads/2023/05/image-lusc.png">
+<meta property="article:published_time" content="2023-05-27T04:54:36.000Z">
+<meta property="article:modified_time" content="2024-04-15T10:20:37.089Z">
+<meta property="article:author" content="landery">
+<meta property="article:tag" content="文件系统">
+<meta property="article:tag" content="elf">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://example.com/wp-content/uploads/2023/05/image-griq.png">
+  
+  
+  
+  <title>Linux判断文件类型以及查看ELF文件结构 - landery小站</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/scroll.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"GK4nuH8jdXDcw4IJIVShjMtA-gzGzoHsz","app_key":"7P0B0kJFdaLY6eDQ93Lhcv8J","server_url":"https://api.landery.cn","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>landery 小站</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/links/" target="_self">
+                <i class="iconfont icon-link-fill"></i>
+                <span>友链</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/remark/" target="_self">
+                <i class="iconfont icon-twitch-fill"></i>
+                <span>留言板</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/image/bg/001.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Linux判断文件类型以及查看ELF文件结构"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2023-05-27 12:54" pubdate>
+          2023年5月27日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2.1k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          18 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Linux判断文件类型以及查看ELF文件结构</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h2 id="判断文件类型"><a href="#判断文件类型" class="headerlink" title="判断文件类型"></a>判断文件类型</h2><p>1、对于一个二进制文件：file可能会输出：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@qemuswtpmsm4 seabios-tpm]# file /usr/bin/file<br>/usr/bin/file: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked (uses shared libs), for GNU/Linux 2.6.32, BuildID[sha1]=58f6c8b82ee70887d7136a7181ffc8fa18030cde, stripped<br></code></pre></td></tr></table></figure>
+
+<p>其中，<code>/usr/bin/file</code> 是文件名，<code>ELF 64-bit LSB executable</code> 表示文件类型为 ELF 64 位可执行文件。</p>
+<p>2、对于一个文本文件它的结果为：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@qemuswtpmsm4 seabios-tpm]# file test.txt<br>test.txt: ASCII text<br></code></pre></td></tr></table></figure>
+
+<p>3、对于一个图片文件，他的结果为：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@qemuswtpmsm4 ~]# file f1c2c7d2f335ce7a67f315433a53e0fec9997bdd.jpg<br>f1c2c7d2f335ce7a67f315433a53e0fec9997bdd.jpg: JPEG image data, JFIF standard 1.01<br></code></pre></td></tr></table></figure>
+
+<p>可以看出他是jpg格式的文件。</p>
+<p>4、于是，可以使用 file命令：查看seabios编译后产生的bios.bin文件的类型</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@qemuswtpmsm4 seabios-tpm]# file out/bios.bin<br>out/bios.bin: data<br></code></pre></td></tr></table></figure>
+
+<p>根据 <code>file</code> 命令的输出结果 <code>out/bios.bin: data</code>，可以看出 <code>out/bios.bin</code> 文件的类型为 data，即数据文件。这意味着 <code>file</code> 命令无法确定该文件的具体类型，因为该文件不属于任何已知的文件类型。</p>
+<h2 id="elf文件"><a href="#elf文件" class="headerlink" title="elf文件"></a>elf文件</h2><p>ELF（Executable and Linkable Format）是一种<strong>可执行文件</strong>和<strong>可链接文件</strong>的文件格式标准，常用于 Unix 和 Linux 等操作系统上的可执行文件和库文件。ELF 文件具有可移植性、可扩展性和安全性等优点，已经成为主流的可执行文件和库文件格式之一。</p>
+<p>ELF主要包括三种类型文件：</p>
+<ul>
+<li><code>可重定位文件(relocatable)</code>：编译器和汇编器产生的.o文件，被Linker所处理</li>
+<li><code>可执行文件(executable)</code>：Linker对.o文件进行处理输出的文件，进程映像</li>
+<li><code>共享对象文件(shared object)</code>：动态库文件.so</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta prompt_">#</span><span class="language-bash">include &amp;lt;stdio.h&amp;gt;</span><br><br>int add(int a,int  b)<br>&#123;<br>    printf(&amp;quot;Number are added together\n&amp;quot;);<br>    return a + b;<br>&#125;<br><br>int main()<br>&#123;<br>    int a,b;<br>    a = 3;<br>    b = 4;<br>    int ret = add(a,b);<br>    printf(&amp;quot;Result:%u\n&amp;quot;,ret);<br>    exit(0);<br>&#125;<br><br>gcc test.c -o test #生成可执行文件<br>gcc test.c -c -o test.o # -c参数表示“生成目标文件，不生成可执行文件”，此时只编译了，未链接<br></code></pre></td></tr></table></figure>
+
+<p>查看一个可重定位文件：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@qemuswtpmsm4 ~]# file test.o<br>test.o: ELF 64-bit LSB relocatable, x86-64, version 1 (SYSV), not stripped<br></code></pre></td></tr></table></figure>
+
+<p>查看可执行文件：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@qemuswtpmsm4 ~]# file /usr/bin/file<br>/usr/bin/file: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked (uses shared libs), for GNU/Linux 2.6.32, BuildID[sha1]=58f6c8b82ee70887d7136a7181ffc8fa18030cde, stripped<br></code></pre></td></tr></table></figure>
+
+<p>使用file命令查看一个库文件：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@qemuswtpmsm4 ~]# file /usr/lib64/libgdbm.so.4.0.0<br>/usr/lib64/libgdbm.so.4.0.0: ELF 64-bit LSB shared object, x86-64, version 1 (SYSV), dynamically linked, BuildID[sha1]=8883331bdb71df9fbd10305b90f89a8f830ea182, stripped<br></code></pre></td></tr></table></figure>
+
+<h3 id="ELF文件结构"><a href="#ELF文件结构" class="headerlink" title="ELF文件结构"></a>ELF文件结构</h3><p>一个典型的ELF文件布局如下：</p>
+<p><img src="/wp-content/uploads/2023/05/image-griq.png" srcset="/img/loading.gif" lazyload alt="1E586701BB476D23DB08C85919910967"></p>
+<p>它包含：</p>
+<ul>
+<li>一个ELF文件头（ELF Header）：该文件头，始终从文件偏移量0处开始，其定义了文件使用32位还是64位地址，以及程序头表和节头表的偏移量等。</li>
+<li>一个程序头表（Program Header Table）：是一组数据结构，规定了系统运行时如何创建进程镜像，每一个数据结构描述了系统准备执行程序所需要的段（Segment）或其他信息，仅针对的是可执行文件或者可重定位目标文件。</li>
+<li>一个节头表（Section Header Table）：定义了文件的所有节（Section）的位置，记录了二进制文件中每个节到文件起始位置的字节偏移量。</li>
+</ul>
+<p>文件格式定义的所有数据结构有可能包含显示填充，以确保对象的4字节对齐，强制要求数据结构大小为4的倍数。</p>
+<h3 id="查看elf文件内容"><a href="#查看elf文件内容" class="headerlink" title="查看elf文件内容"></a>查看elf文件内容</h3><p>1、使用readelf工具（也可以使用objdump，这里就不说了）查看ELF文件头：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@qemuswtpmsm4 ~]# readelf -h test<br>ELF Header:<br>  Magic:   7f 45 4c 46 02 01 01 00 00 00 00 00 00 00 00 00 #ELF 文件的魔数，用于标识该文件是否为 ELF 格式文件。<br>  Class:                             ELF64 <br>  Data:                              2&amp;#039;s complement, little endian #ELF 文件的字节序，这里是小端字节序。<br>  Version:                           1 (current)<br>  OS/ABI:                            UNIX - System V #ELF 文件所运行的操作系统和 ABI，这里是 UNIX - System V。<br>  ABI Version:                       0<br>  Type:                              EXEC (Executable file)<br>  Machine:                           Advanced Micro Devices X86-64 #ELF 文件所运行的 CPU 架构，这里是 AMD X86-64。<br>  Version:                           0x1<br>  Entry point address:               0x4004d0<br>  Start of program headers:          64 (bytes into file) #程序头表的起始位置，即程序头表相对于文件开头的偏移量，这里是 64 字节。<br>  Start of section headers:          6568 (bytes into file) #节头表的起始位置，即节头表相对于文件开头的偏移量，这里是 6568 字节。<br>  Flags:                             0x0<br>  Size of this header:               64 (bytes) #ELF 头部的大小，这里是 64 字节。<br>  Size of program headers:           56 (bytes) #程序头表中程序头的大小，这里是 56 字节。<br>  Number of program headers:         9 #程序头表中程序头的数量，这里是 9。<br>  Size of section headers:           64 (bytes) #节头表中单个节头的大小，这里是 64 字节。<br>  Number of section headers:         30 # 节头数量<br>  Section header string table index: 29 # 节头表中 “节区名称字符串表” 的索引。<br></code></pre></td></tr></table></figure>
+
+<p>由此可见，这个 ELF 头部信息描述了一个 64 位小端字节序的可执行文件，该文件是一个 AMD X86-64 架构的可执行文件，程序入口地址是 0x4004d0，包含了 9 个程序头部和 30 个节区头部，其中第 29 个节区是节区名称字符串表。该可执行文件的程序头部表起始位置相对于文件开头的偏移量是 64 字节，节区头部表的起始位置相对于文件开头的偏移量是 6568 字节。</p>
+<p>使用hexdump查看test字节码，可以看到文件头部对应。</p>
+<p><img src="/wp-content/uploads/2023/05/image-oxhv.png" srcset="/img/loading.gif" lazyload alt="image-20230525103558082"></p>
+<p>上图中，字节码0x19a8&#x3D;6568，代表节头表起始位置，最后的0x001d&#x3D;29，代表节头表中“节区名称字符串表” 的索引。依次对应。</p>
+<p>2、查看程序头表：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><code class="hljs shell">[root@qemuswtpmsm4 ~]# readelf -l test -W<br><br>Elf file type is EXEC (Executable file)<br>Entry point 0x4004d0<br>There are 9 program headers, starting at offset 64<br><br>Program Headers:<br>  Type           Offset   VirtAddr           PhysAddr           FileSiz  MemSiz   Flg Align<br>  PHDR           0x000040 0x0000000000400040 0x0000000000400040 0x0001f8 0x0001f8 R E 0x8<br>  INTERP         0x000238 0x0000000000400238 0x0000000000400238 0x00001c 0x00001c R   0x1<br>      [Requesting program interpreter: /lib64/ld-linux-x86-64.so.2]<br>  LOAD           0x000000 0x0000000000400000 0x0000000000400000 0x00083c 0x00083c R E 0x200000<br>  LOAD           0x000e10 0x0000000000600e10 0x0000000000600e10 0x000234 0x000238 RW  0x200000<br>  DYNAMIC        0x000e28 0x0000000000600e28 0x0000000000600e28 0x0001d0 0x0001d0 RW  0x8<br>  NOTE           0x000254 0x0000000000400254 0x0000000000400254 0x000044 0x000044 R   0x4<br>  GNU_EH_FRAME   0x0006e8 0x00000000004006e8 0x00000000004006e8 0x00003c 0x00003c R   0x4<br>  GNU_STACK      0x000000 0x0000000000000000 0x0000000000000000 0x000000 0x000000 RW  0x10<br>  GNU_RELRO      0x000e10 0x0000000000600e10 0x0000000000600e10 0x0001f0 0x0001f0 R   0x1<br><br> Section to Segment mapping:<br>  Segment Sections...<br>   00<br>   01     .interp<br>   02     .interp .note.ABI-tag .note.gnu.build-id .gnu.hash .dynsym .dynstr .gnu.version .gnu.version_r .rela.dyn .rela.plt .init .plt .text .fini .rodata .eh_frame_hdr .eh_frame<br>   03     .init_array .fini_array .jcr .dynamic .got .got.plt .data .bss<br>   04     .dynamic<br>   05     .note.ABI-tag .note.gnu.build-id<br>   06     .eh_frame_hdr<br>   07<br>   08     .init_array .fini_array .jcr .dynamic .got<br></code></pre></td></tr></table></figure>
+
+<p>这是一个 ELF 可执行文件或共享库的程序头部表中各个字段的含义：</p>
+<ul>
+<li><code>Type</code>：程序头部类型，描述了该程序头部的用途和内容，如 ELF 文件头部、代码段、数据段等等。常见的程序头部类型包括：<code>PHDR</code>（程序头部表）、<code>LOAD</code>（可加载的段）、<code>DYNAMIC</code>（动态链接信息段）等等。</li>
+<li><code>Offset</code>：该程序头部在 ELF 文件中的偏移量，即该程序头部相对于 ELF 文件开头的字节偏移量。</li>
+<li><code>VirtAddr</code>：该程序头部的虚拟地址，即该程序头部在被加载到内存中时在进程虚拟地址空间中的地址。</li>
+<li><code>PhysAddr</code>：该程序头部的物理地址，即该程序头部在被加载到内存中时在物理地址空间中的地址（对于可执行文件，通常与虚拟地址相同）。</li>
+<li><code>FileSiz</code>：该程序头部在 ELF 文件中的大小，即该程序头部占用的字节数。</li>
+<li><code>MemSiz</code>：该程序头部在内存中的大小，即该程序头部被加载到内存中后占用的字节数，通常大于或等于 <code>FileSiz</code>。</li>
+<li><code>Flg</code>：该程序头部的标志位，用于描述该程序头部的属性和特征，如可执行、可写、可读等等。</li>
+<li><code>Align</code>：该程序头部的对齐方式，即该程序头部在 ELF 文件中和内存中的起始地址要按照多少字节对齐。</li>
+</ul>
+<p>以下是该 ELF 可执行文件或共享库的各个程序头部的含义：</p>
+<ul>
+<li><code>PHDR</code>：程序头部表，描述 ELF 文件中所有程序头部的位置和大小信息。</li>
+<li><code>INTERP</code>：动态链接器路径，描述 ELF 文件使用的动态链接器路径。</li>
+<li><code>LOAD</code>：可加载的段，描述 ELF 文件中可加载的代码和数据段信息。该可执行文件中包含两个 <code>LOAD</code> 类型的程序头部，分别对应代码段和数据段，<code>FileSiz</code> 和 <code>MemSiz</code> 字段的值相同，代表在 ELF 文件中和内存中占用的空间大小相同。</li>
+<li><code>DYNAMIC</code>：动态链接信息段，描述 ELF 文件中动态链接器需要读取的信息，如动态链接表、符号表等信息。</li>
+<li><code>NOTE</code>：注释段，描述 ELF 文件中的注释信息。</li>
+<li><code>GNU_EH_FRAME</code>：GCC 增强型异常处理框架，描述 ELF 文件中的异常处理框架信息。</li>
+<li><code>GNU_STACK</code>：栈段，描述 ELF 文件中栈的起始地址和大小。</li>
+<li><code>GNU_RELRO</code>：重定位只读段，描述 ELF 文件中只读数据段的重定位信息。</li>
+</ul>
+<p>我们分析这个ELF文件中的代码段和数据段就是<code>LOAD</code>这个类型指示的，其中代码段是只读可执行的：如下图所示，</p>
+<p><img src="/wp-content/uploads/2023/05/image-gzvp.png" srcset="/img/loading.gif" lazyload alt="image-20230524170802954"></p>
+<p>该文件代码段起始与ELF的0x000000，大小位0x00083c，标志E代表可执行。</p>
+<p>改代码段包含以下节：</p>
+<p><img src="/wp-content/uploads/2023/05/image-lusc.png" srcset="/img/loading.gif" lazyload alt="image-20230524170923512"></p>
+<p>分别是：.interp .note.ABI-tag .note.gnu.build-id .gnu.hash .dynsym .dynstr .gnu.version .gnu.version_r .rela.dyn .rela.plt .init .plt .text .fini .rodata .eh_frame_hdr .eh_frame</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/" class="category-chain-item">操作系统</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/" class="print-no-link">#文件系统</a>
+      
+        <a href="/tags/elf/" class="print-no-link">#elf</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Linux判断文件类型以及查看ELF文件结构</div>
+      <div>http://example.com/0030.html</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>landery</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2023年5月27日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/0022.html" title="查看真实的qcow2镜像中二进制数据-以MBR为例">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">查看真实的qcow2镜像中二进制数据-以MBR为例</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/043.html" title="openstack- DiskNotFound No disk at">
+                        <span class="hidden-mobile">openstack- DiskNotFound No disk at</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"GK4nuH8jdXDcw4IJIVShjMtA-gzGzoHsz","appKey":"7P0B0kJFdaLY6eDQ93Lhcv8J","path":"window.location.pathname","placeholder":"建议使用QQ邮箱，评论头像采用QQ头像","avatar":"retro","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":true,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":true,"bg":null,"count":true},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+    <!-- 备案信息 ICP for China -->
+    <div class="beian">
+  <span>
+    <a href="http://beian.miit.gov.cn/" target="_blank" rel="nofollow noopener">
+      蜀ICP备2022011502号
+    </a>
+  </span>
+  
+    
+      <span>
+        <a
+          href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=51012202001227"
+          rel="nofollow noopener"
+          class="beian-police"
+          target="_blank"
+        >
+          
+            <span style="visibility: hidden; width: 0">|</span>
+            <img src="/img/police_beian.png" srcset="/img/loading.gif" lazyload alt="police-icon"/>
+          
+          <span>川公网安备51012202001227号</span>
+        </a>
+      </span>
+    
+  
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/DynamicRibbon.min.js"></script>
+<script src="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/love.min.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

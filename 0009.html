@@ -1,0 +1,872 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="landery">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="1 I&#x2F;O虚拟化前面我们已经讲过CPU的虚拟化技术，而I&#x2F;O虚拟化，也是虚拟化技术中之分重要的一部分。虚拟化包含CPU、内存、I&#x2F;O设备（网络属于特殊的IO设备）的虚拟化。前面我们也提到了，I&#x2F;O设备虚拟化也分为全虚拟化、半虚拟化以及硬件辅助的虚拟化。 2 知识回顾虚拟化分类早期有两种模型host模型和hypervisor模型，这两种模型的划分其实是来自于">
+<meta property="og:type" content="article">
+<meta property="og:title" content="云计算_02_虚拟化技术_I&#x2F;O虚拟化">
+<meta property="og:url" content="http://example.com/0009.html">
+<meta property="og:site_name" content="landery小站">
+<meta property="og:description" content="1 I&#x2F;O虚拟化前面我们已经讲过CPU的虚拟化技术，而I&#x2F;O虚拟化，也是虚拟化技术中之分重要的一部分。虚拟化包含CPU、内存、I&#x2F;O设备（网络属于特殊的IO设备）的虚拟化。前面我们也提到了，I&#x2F;O设备虚拟化也分为全虚拟化、半虚拟化以及硬件辅助的虚拟化。 2 知识回顾虚拟化分类早期有两种模型host模型和hypervisor模型，这两种模型的划分其实是来自于">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://b3logfile.com/file/2022/04/image-b0cf5674.png">
+<meta property="og:image" content="https://b3logfile.com/file/2022/04/image-cd81f207.png">
+<meta property="og:image" content="https://b3logfile.com/file/2022/04/solo-fetchupload-16768431353293598248-974a2811.jpeg">
+<meta property="og:image" content="https://b3logfile.com/file/2022/04/solo-fetchupload-15904759936678890355-91b0f264.png">
+<meta property="og:image" content="https://b3logfile.com/file/2022/04/image-1401b4a7.png">
+<meta property="og:image" content="https://b3logfile.com/file/2022/04/solo-fetchupload-3564000190077047494-f7a4f21e.jpeg">
+<meta property="og:image" content="https://b3logfile.com/file/2022/04/solo-fetchupload-5048239728373337256-cca4a779.png">
+<meta property="og:image" content="https://b3logfile.com/file/2022/04/solo-fetchupload-11460338417772294778-5c682eba.webp">
+<meta property="article:published_time" content="2023-03-07T13:08:31.000Z">
+<meta property="article:modified_time" content="2024-04-15T10:16:12.289Z">
+<meta property="article:author" content="landery">
+<meta property="article:tag" content="I&#x2F;O虚拟化">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://b3logfile.com/file/2022/04/image-b0cf5674.png">
+  
+  
+  
+  <title>云计算_02_虚拟化技术_I/O虚拟化 - landery小站</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/scroll.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"GK4nuH8jdXDcw4IJIVShjMtA-gzGzoHsz","app_key":"7P0B0kJFdaLY6eDQ93Lhcv8J","server_url":"https://api.landery.cn","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>landery 小站</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/links/" target="_self">
+                <i class="iconfont icon-link-fill"></i>
+                <span>友链</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/remark/" target="_self">
+                <i class="iconfont icon-twitch-fill"></i>
+                <span>留言板</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/image/bg/001.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="云计算_02_虚拟化技术_I/O虚拟化"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2023-03-07 21:08" pubdate>
+          2023年3月7日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          3.9k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          33 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">云计算_02_虚拟化技术_I/O虚拟化</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <hr>
+<h1 id="1-I-O虚拟化"><a href="#1-I-O虚拟化" class="headerlink" title="1 I&#x2F;O虚拟化"></a><strong>1 I&#x2F;O虚拟化</strong></h1><p>前面我们已经讲过CPU的虚拟化技术，而I&#x2F;O虚拟化，也是虚拟化技术中之分重要的一部分。虚拟化包含CPU、内存、I&#x2F;O设备（网络属于特殊的IO设备）的虚拟化。前面我们也提到了，I&#x2F;O设备虚拟化也分为全虚拟化、半虚拟化以及硬件辅助的虚拟化。</p>
+<h1 id="2-知识回顾"><a href="#2-知识回顾" class="headerlink" title="2 知识回顾"></a><strong>2 知识回顾</strong></h1><p>虚拟化分类早期有两种模型host模型和hypervisor模型，这两种模型的划分其实是来自于早期VMware的ESX和GSX。 <img src="https://b3logfile.com/file/2022/04/image-b0cf5674.png" srcset="/img/loading.gif" lazyload alt="image.png"> 上述两种虚拟技术类型，其中 Type1 的HyperVisor独立于硬件之上，但是个人理解，HyperVisor不可能脱离OS（Operating System）去独立地进行硬件的操作，Type1中的HyperVisor也包含了一个最简单的OS内核，无非就是这个内核上不能跑其他的应用罢了。因此可以将Type1的HyperVisor理解为 Mini OS+VMM（Virtual Machine Manager），而Type2的HyperVisor可以理解为单独的VMM。但是目前主流的HyperVisor产品之一KVM的出现已经打破了这种简单的划分方式，对虚拟化技术还未有更精确的分类方式出现。</p>
+<h1 id="3-I-O虚拟化分类"><a href="#3-I-O虚拟化分类" class="headerlink" title="3 I&#x2F;O虚拟化分类"></a><strong>3 I&#x2F;O虚拟化分类</strong></h1><p>在详细介绍各个分类之前，我们先考虑一下，在没有虚拟化技术之前，操作系统是怎么对I&#x2F;O请求进行处理的。当某个应用或者进程发出I&#x2F;O请求，会通过系统调用的方式进入内核，调用相应的设备驱动程序，请求到具体的I&#x2F;O设备，最后再将结果返回给进程。 那么存在虚拟机的情况，又怎么让每个虚拟机都有自己的一套宿主机上的I&#x2F;O设备呢？ 常见的I&#x2F;O虚拟化实现方案分为以下三类： <img src="https://b3logfile.com/file/2022/04/image-cd81f207.png" srcset="/img/loading.gif" lazyload alt="image.png"> 分别是整体模型、服务VM模型、直通模型。 第一种情况是整体模型，它将I&#x2F;O服务和设备驱动都直接装载在HyperVisor的Mini OS上，所有VM的I&#x2F;O请求都会被VMM捕获，然后通过软件模拟的方式，将结果返回给Guest OS。<strong>图中说这种方式拥有较高的性能，据我个人理解，应该是和第二种模型进行比较，因为该种方式是因为所有的I&#x2F;O请求都必须通过VMM层软件进行模拟，上下切换频繁，性能并不一定高。</strong> 但是确定却很明显，Hypervisor会很大，代表产品就是VMWare的ESX和ESXi，另一个缺点就是对新设备的驱动加载不够方便，有时需要升级整个Hypervisor，比如ESXi直到5.0版本才能识别出Qlogic驱动的CNA网卡。如果采用这种方案，一定要先确认好Hypervisor的支持驱动列表再进行安装。 第二种服务VM模型，从图中可以看到，它通过加载一个服务系统（如Domain 0）来减少Hypervisor的负担，所有的产品驱动都安装在服务系统上，这样便于其他外设硬件的管理和增加，同时减小了Hypervisor，越小意味着越安全，降低了故障的风险。缺点是性能相较于第一种，性能不好，因为所有的服务调用都要经过服务系统。典型代表就是Xen和Hyper-V。KVM有些类似，但是不完全一样，因为KVM的Hypervisor和服务系统使用同一个Linux内核，而Xen和Hyper-V使用的各自精简的内核，与服务系统不同，之后会介绍。</p>
+<blockquote>
+<p>提到这里有必要讲一下有些公开资料上提到的I&#x2F;O 全虚拟化、半虚拟化了，我参考的这篇文章作者提到上述两种模型又被称为I&#x2F;O Full-virtualization（全虚拟化）和I&#x2F;O Para-Virtualization（半虚拟化），但是与此同时，我在网上公开中找到的I&#x2F;O全虚拟化、半虚拟化技术的解释完全不同，他们都说I&#x2F;O全虚拟化技术性能不高，半虚拟化技术性能相较于全虚拟化技术有所提高。由于没找到上述图片的出处，倒是在中兴公司的云计算技术PPt中找到了上述三个模型的分类，在IBM的开发社区中也找了类似的说法，到那时IBM中描述的是设备仿真架构，一个是基于Hypervisor的设备仿真（对应于第一种整体模型），一个是用户空间的设备仿真（对应第二种服务VM模型），他们都说的是第二种比第一种安全性稿、性能差，并不像《从半空看虚拟化》文章中提到的，上述两种可以被称之为全虚拟化和半虚拟化。这点我们先留个疑问，后续章节详细介绍一下，这两种分类的区别。</p>
+</blockquote>
+<p>第三种直通模型则是从硬件层面已经将各个设备进行了划分，分配给不同的VM使用，由每个VM自行维护其使用的IO和设备驱动。Hypervisor只提供通道，不再对I&#x2F;O和设备驱动进行管理。这样做的好处是可以达到最高的性能和最小的代码量(Hypervisor），但缺点是设备非完全共享且对VM迁移提出了一定挑战。这种方案只有在对I&#x2F;O操作要求较高的特定场景下使用，不具备普适性。部署时I&#x2F;O设备支持逻辑划分技术如SR IOV( Single RootI&#x2F;o virtualization）等即可，对 Hypervisor没有什么特殊要求，前面说的几款主流产品都提供了此种工作方式。 Intel的VT-d技术作为一种平台结构在硬件层面可以有效的对上面三种方案全部提供支持。其根本目的就是为了多个VM在对虚拟设备进行I&#x2F;O操作时，能够对其DMA和中断处理进行隔离保护与提升性能。</p>
+<h1 id="4-另一种分类方式"><a href="#4-另一种分类方式" class="headerlink" title="4 另一种分类方式"></a><strong>4 另一种分类方式</strong></h1><p>在网上可以查到的公开资料中，大家又将I&#x2F;O虚拟化分为全虚拟化、半虚拟化、I&#x2F;O直通或透传技术三种。这三种技术，最终经过查证，我认为上节中的前两种模型和全虚拟化、半虚拟化联系并不大，全虚拟化、半虚拟化区分角度应该是是否需要修改Guest OS。因为全虚拟化、半虚拟化都是通过软件的方式来进行模拟。下面我们简单介绍一下，这种分类方式。</p>
+<h2 id="4-1-I-O-全虚拟化"><a href="#4-1-I-O-全虚拟化" class="headerlink" title="4.1 I&#x2F;O 全虚拟化"></a><strong>4.1 I&#x2F;O 全虚拟化</strong></h2><p>全虚拟化即不修改Guest OS，通过VMM来实现模拟IO设备。全虚拟化，既可以是上节中的第一种模型，也可以是第二种模型。全虚拟化和半虚拟化可以通过观察是否修改了Guest OS来划分。 在全虚拟化情况下，Guest OS所能看到的就是一组统一的I&#x2F;O设备。下面我们以KVM和Xen的两种IO全虚拟化模型为例介绍全虚拟化，相信大家可以找到I&#x2F;O全虚拟化的共同点。</p>
+<h3 id="4-1-1-KVM-QEMU"><a href="#4-1-1-KVM-QEMU" class="headerlink" title="4.1.1 KVM-QEMU"></a><strong>4.1.1 KVM-QEMU</strong></h3><p>下面以KVM的全虚拟化I&#x2F;O为例 ，KVM 在 IO 虚拟化方面，传统或者默认的方式是使用 QEMU 纯软件的方式来模拟 I&#x2F;O 设备，包括键盘、鼠标、显示器，硬盘 和 网卡 等。模拟设备可能会使用物理的设备，或者使用纯软件来模拟。模拟设备只存在于软件中。 <img src="https://b3logfile.com/file/2022/04/solo-fetchupload-16768431353293598248-974a2811.jpeg" srcset="/img/loading.gif" lazyload title="KVM I/O全虚拟化"> 过程：</p>
+<ol>
+<li>客户机的设备驱动程序发起 I&#x2F;O 请求操作请求</li>
+<li>KVM 模块中的 I&#x2F;O 操作捕获代码拦截这次 I&#x2F;O 请求</li>
+<li>经过处理后将本次 I&#x2F;O 请求的信息放到 I&#x2F;O 共享页 （sharing page），并通知用户空间的 QEMU 程序。</li>
+<li>QEMU 程序获得 I&#x2F;O 操作的具体信息之后，交由硬件模拟代码来模拟出本次 I&#x2F;O 操作。</li>
+<li>完成之后，QEMU 将结果放回 I&#x2F;O 共享页，并通知 KMV 模块中的 I&#x2F;O 操作捕获代码。</li>
+<li>KVM 模块的捕获代码读取 I&#x2F;O 共享页中的操作结果，并把结果放回客户机。</li>
+</ol>
+<blockquote>
+<p>注意：当客户机通过DMA （Direct Memory Access）访问大块I&#x2F;O时，QEMU 模拟程序将不会把结果放进共享页中，而是通过内存映射的方式将结果直接写到客户机的内存中共，然后通知KVM模块告诉客户机DMA操作已经完成。</p>
+</blockquote>
+<h3 id="4-1-2-Xen"><a href="#4-1-2-Xen" class="headerlink" title="4.1.2 Xen"></a><strong>4.1.2 Xen</strong></h3><p>我们再看一下基于I&#x2F;O全虚拟化的Xen的模型： <img src="https://b3logfile.com/file/2022/04/solo-fetchupload-15904759936678890355-91b0f264.png" srcset="/img/loading.gif" lazyload> <strong>当虚拟机访问虚拟设备时，访问请求被虚拟机监视器截获，然后监视器程序将 I&#x2F;O 请求交由 domain 0 来模拟完成，最后将结果返回给虚拟机</strong> 。</p>
+<h3 id="4-1-3-I-O-全虚拟化总结"><a href="#4-1-3-I-O-全虚拟化总结" class="headerlink" title="4.1.3 I&#x2F;O 全虚拟化总结"></a><strong>4.1.3 I&#x2F;O 全虚拟化总结</strong></h3><p>可以看出，不论是KVM还是Xen的IO全虚拟化实现，都是修改Hypervisor层的东西，并没有修改Guest OS，都是通过软件模拟设备的方式，因此可移植性与兼容性很好，这也是它被广泛使用的主要原因。但是 I&#x2F;O 全虚拟化有一个很大的不足之处，就是性能较差，主要原因有两方面：</p>
+<ul>
+<li>第一、模拟方式是用软件行为进行模拟，这种方式本身就无法得到很高的性能；</li>
+<li>第二、这种模型下 I&#x2F;O 请求的完成需要虚拟机与监视器程序多次的交互，产生大量的上下文切换，造成巨大开销。</li>
+</ul>
+<p>讲了那么多，可以发现，全虚拟化与第三节中提到的整体模型和服务VM模型都有重合的点。</p>
+<h2 id="4-2-I-O-半虚拟化"><a href="#4-2-I-O-半虚拟化" class="headerlink" title="4.2 I&#x2F;O 半虚拟化"></a><strong>4.2 I&#x2F;O 半虚拟化</strong></h2><p>众多公开资料中都显示，I&#x2F;O半虚拟化是采用前后端驱动的方式来实现，相较于全虚拟化，半虚拟化提高了性能。而其原因为：</p>
+<ol>
+<li>采用 I&#x2F;O 环机制，使得 Guest 端和 Host 端可以共享内存，减少了虚拟机与 VMM 之间的交互；</li>
+<li>采用事件和回调的机制来实现 Guest 与 Host VMM 之间的通信。这样，在进行中断处理时，就可以直接采用事件和回调机制，无需进行上下文切换，减少了开销。</li>
+</ol>
+<p>下面，我们同样也以KVM和Xen两种实现的不同I&#x2F;O半虚拟化作为例子来介绍。</p>
+<h3 id="4-2-1-KVM-QEMU"><a href="#4-2-1-KVM-QEMU" class="headerlink" title="4.2.1 KVM-QEMU"></a><strong>4.2.1 KVM-QEMU</strong></h3><p>先以KVM为例，针对 I&#x2F;O 全虚拟化纯软件模拟性能不高这一点，I&#x2F;O 半虚拟化前进了一步。它提供了一种机制，使得 Guest 端与 Host 端可以建立连接，直接通信，摒弃了VMM截获模拟这种方式，从而获得较高的性能。 <img src="https://b3logfile.com/file/2022/04/image-1401b4a7.png" srcset="/img/loading.gif" lazyload alt="image.png"> 这种方式类似C&#x2F;S通信的方式，在Guest中添加前端驱动，Host的Qemu中添加后端驱动，前后端通过通向内存的方式传递数据。KVM使用的就是Virtio这个Linux上的设备驱动标准框架来实现。这里提一下，KVM&#x2F;QEMU 的 virtio 实现采用在 Guest OS 内核中安装前端驱动 （Front-end driver）和在 QEMU 中实现后端驱动（Back-end）的方式。前后端驱动通过 vring 直接通信，这就绕过了经过 KVM 内核模块的过程，达到提高 I&#x2F;O 性能的目的。 <img src="https://b3logfile.com/file/2022/04/solo-fetchupload-3564000190077047494-f7a4f21e.jpeg" srcset="/img/loading.gif" lazyload> 显然这种方式需要修改Guest OS内核，因此是半虚拟化。</p>
+<h3 id="4-2-2-Xen"><a href="#4-2-2-Xen" class="headerlink" title="4.2.2 Xen"></a><strong>4.2.2 Xen</strong></h3><p>下图是Xen的IO半虚拟化模型，可以看到和KVM的基本类似，只是Xen的Domain 0 是作为服务系统，其前后端驱动通过共享内存等方式，优化了性能。 <img src="https://b3logfile.com/file/2022/04/solo-fetchupload-5048239728373337256-cca4a779.png" srcset="/img/loading.gif" lazyload></p>
+<h3 id="4-2-3-I-O半虚拟化总结"><a href="#4-2-3-I-O半虚拟化总结" class="headerlink" title="4.2.3 I&#x2F;O半虚拟化总结"></a><strong>4.2.3 I&#x2F;O半虚拟化总结</strong></h3><p>通过上述描述，可以看出半虚拟化方式，相较于全虚拟化方式提升了性能，这跟第三节中的前两种模型也是互有交叉，不能把半虚拟化等同于服务VM模型、全虚拟化等同与整体模型，因为半虚拟化性能相较于全虚拟化性能提升，而整体模型性能优于服务VM模型。 对于I&#x2F;O半虚拟化，性能提升是其主要的有点，但是由于它要修改操作系统内核以及驱动程序，因此会存在移植性和适用性方面的问题，导致其使用受限。</p>
+<h2 id="4-3-I-O直通或透传技术"><a href="#4-3-I-O直通或透传技术" class="headerlink" title="4.3 I&#x2F;O直通或透传技术"></a><strong>4.3 I&#x2F;O直通或透传技术</strong></h2><p>也有的称为硬件辅助虚拟化。 上面两种虚拟化方式，还是从软件层面上来实现，性能自然不会太高。最好的提高性能的方式还是从硬件上来解决。如果让虚拟机独占一个物理设备，像宿主机一样使用物理设备，那无疑性能是最好的。I&#x2F;O 直通技术就是提出来完成这样一件事的。它通过硬件的辅助可以让虚拟机直接访问物理设备，而不需要通过 VMM 或被 VMM 所截获。 X86主要设备厂商Intel和 AMD 都在其较新的处理器架构中提供对I&#x2F;O直通的支持（除了辅助虚拟机管理程序的新指令之外）。Intel 将其称为_Technology for Directed I&#x2F;O_ (VT-d) , 而 AMD 则将其称为 <em>I&#x2F;O Memory Management Unit_（IOMMU）。不论是哪一种，新的 CPU 都提供了将 PCI 物理地址映射到Guest 虚拟地址的方法。发生此映射时，硬件负责访问（和保护），并且客户机操作系统可以使用设备，就好像它是非虚拟化系统一样。除了将Guest映射到物理内存之外，还提供了隔离，以便阻止其他Guest（或虚拟机管理程序）访问它。 在IBM开发者中心提到，有一种技术叫做_Message Signaled Interrupts</em> (MSI)，可以用于中断大量虚拟机，将中断更容易虚拟化，并且允许隔离中断源，IBM甚至称这是I&#x2F;O虚拟化的理想选择，感兴趣的同学可以在文末参考文献中找到。 <img src="https://b3logfile.com/file/2022/04/solo-fetchupload-11460338417772294778-5c682eba.webp" srcset="/img/loading.gif" lazyload> 可以看到I&#x2F;O直通技术可以让当虚拟机独占物理设备，这样虽然性能提升了，但是一个设备只能被一个虚拟器使用，降低了设备使用率。为了实现一个物理设备能被多个虚拟机共享，学术界和工业界都为此作了大量的改进，于是PCI-SIG 发布了 SR-IOV (Single Root I&#x2F;O Virtualizmion) 规范，其中详细阐述了硬件供应商在多个虚拟机中如何共享单个 I&#x2F;O 设备硬件。这里也不详细介绍SR-IOV了，有机会再去深究。</p>
+<h1 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a><strong>参考文献</strong></h1><ul>
+<li>《从半空看虚拟化》</li>
+<li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/7a656326c439">I&#x2F;O 虚拟化的三种形式 - 简书 (</a><a target="_blank" rel="noopener" href="http://jianshu.com/">jianshu.com</a><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/7a656326c439">)</a></li>
+<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/72491679">Linux云计算底层技术之 I&#x2F;O 虚拟化的三种形式 - 知乎 (</a><a target="_blank" rel="noopener" href="http://zhihu.com/">zhihu.com</a><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/72491679">)</a></li>
+<li><a target="_blank" rel="noopener" href="https://slidesplayer.com/slide/14035570/">虚拟化技术. - ppt download (</a><a target="_blank" rel="noopener" href="http://slidesplayer.com/">slidesplayer.com</a><a target="_blank" rel="noopener" href="https://slidesplayer.com/slide/14035570/">)</a></li>
+<li><a target="_blank" rel="noopener" href="https://developer.ibm.com/tutorials/l-pci-passthrough/">Linux virtualization and PCI passthrough - IBM Developer</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/fc40104eba23">浅谈网络I&#x2F;O全虚拟化、半虚拟化和I&#x2F;O透传 - 简书 (</a><a target="_blank" rel="noopener" href="http://jianshu.com/">jianshu.com</a><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/fc40104eba23">)</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/dion-90/articles/8522718.html">KVM 介绍（3）：I&#x2F;O 全虚拟化和准虚拟化 - dion至君 - 博客园 (</a><a target="_blank" rel="noopener" href="http://cnblogs.com/">cnblogs.com</a><a target="_blank" rel="noopener" href="https://www.cnblogs.com/dion-90/articles/8522718.html">)</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/lkn910907/article/details/41866109">(49条消息) IO虚拟化及虚拟化模型_暗夜公爵LKN的博客-CSDN博客_io虚拟化</a></li>
+<li>胡冷非, 李小勇. 基于 Xen 的 I&#x2F;O 准虚拟化驱动研究[J]. 计算机工程, 2009, 35(23): 258-259.</li>
+<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/337213808">Linux 下检查 VT-d &#x2F; IOMMU 是否开启 - 知乎 (</a><a target="_blank" rel="noopener" href="http://zhihu.com/">zhihu.com</a><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/337213808">)</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.51cto.com/gzsamlee/1876890">虚拟化技术之虚拟化技术介绍及Xen的应用实现_Opensamlee的技术博客_51CTO博客</a></li>
+</ul>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E8%99%9A%E6%8B%9F%E5%8C%96/" class="category-chain-item">虚拟化</a>
+  
+  
+
+      </span>
+    
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E4%BA%91%E8%AE%A1%E7%AE%97/" class="category-chain-item">云计算</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/I-O%E8%99%9A%E6%8B%9F%E5%8C%96/" class="print-no-link">#I/O虚拟化</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>云计算_02_虚拟化技术_I/O虚拟化</div>
+      <div>http://example.com/0009.html</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>landery</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2023年3月7日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/0010.html" title="云计算_03_虚拟化技术_内存虚拟化">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">云计算_03_虚拟化技术_内存虚拟化</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/0008.html" title="云计算_01_虚拟化技术_CPU虚拟化">
+                        <span class="hidden-mobile">云计算_01_虚拟化技术_CPU虚拟化</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"GK4nuH8jdXDcw4IJIVShjMtA-gzGzoHsz","appKey":"7P0B0kJFdaLY6eDQ93Lhcv8J","path":"window.location.pathname","placeholder":"建议使用QQ邮箱，评论头像采用QQ头像","avatar":"retro","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":true,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":true,"bg":null,"count":true},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+    <!-- 备案信息 ICP for China -->
+    <div class="beian">
+  <span>
+    <a href="http://beian.miit.gov.cn/" target="_blank" rel="nofollow noopener">
+      蜀ICP备2022011502号
+    </a>
+  </span>
+  
+    
+      <span>
+        <a
+          href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=51012202001227"
+          rel="nofollow noopener"
+          class="beian-police"
+          target="_blank"
+        >
+          
+            <span style="visibility: hidden; width: 0">|</span>
+            <img src="/img/police_beian.png" srcset="/img/loading.gif" lazyload alt="police-icon"/>
+          
+          <span>川公网安备51012202001227号</span>
+        </a>
+      </span>
+    
+  
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/DynamicRibbon.min.js"></script>
+<script src="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/love.min.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

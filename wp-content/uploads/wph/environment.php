@@ -1,0 +1,2 @@
+<?php if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+$environment_variable = '{"theme":{"folder_name":"lolimeow-master","mapped_name":""},"allowed_paths":["\/var\/www\/html\/wordpress\/wp-content\/themes"],"cache_path":"\/var\/www\/html\/wordpress\/wp-content\/cache\/wph\/","wordpress_directory":"","site_relative_path":"\/"}'; ?>

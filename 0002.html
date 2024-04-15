@@ -1,0 +1,855 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="landery">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="title: 远程证明_02_TRIGLA V：公共云中虚拟机运行时完整性的远程验证_自我总结 date: 2022-05-15 23:08:18.466 updated: 2022-05-15 23:10:34.113 url: &#x2F;archives&#x2F;yczm02zj categories:  可信计算 tags: 可信计算 远程证明   1《TRIGLAV: Remote">
+<meta property="og:type" content="article">
+<meta property="og:title" content="远程证明_02_TRIGLA V：公共云中虚拟机运行时完整性的远程验证_自我总结">
+<meta property="og:url" content="http://example.com/0002.html">
+<meta property="og:site_name" content="landery小站">
+<meta property="og:description" content="title: 远程证明_02_TRIGLA V：公共云中虚拟机运行时完整性的远程验证_自我总结 date: 2022-05-15 23:08:18.466 updated: 2022-05-15 23:10:34.113 url: &#x2F;archives&#x2F;yczm02zj categories:  可信计算 tags: 可信计算 远程证明   1《TRIGLAV: Remote">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1652627004628.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1652627040144.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1652627056056.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1652627073980.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1652627110745.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1652627127646.png">
+<meta property="article:published_time" content="2023-03-07T13:35:01.000Z">
+<meta property="article:modified_time" content="2024-04-15T10:15:35.087Z">
+<meta property="article:author" content="landery">
+<meta property="article:tag" content="远程证明">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1652627004628.png">
+  
+  
+  
+  <title>远程证明_02_TRIGLA V：公共云中虚拟机运行时完整性的远程验证_自我总结 - landery小站</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/scroll.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"GK4nuH8jdXDcw4IJIVShjMtA-gzGzoHsz","app_key":"7P0B0kJFdaLY6eDQ93Lhcv8J","server_url":"https://api.landery.cn","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>landery 小站</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/links/" target="_self">
+                <i class="iconfont icon-link-fill"></i>
+                <span>友链</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/remark/" target="_self">
+                <i class="iconfont icon-twitch-fill"></i>
+                <span>留言板</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/image/bg/001.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="远程证明_02_TRIGLA V：公共云中虚拟机运行时完整性的远程验证_自我总结"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2023-03-07 21:35" pubdate>
+          2023年3月7日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2.6k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          22 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">远程证明_02_TRIGLA V：公共云中虚拟机运行时完整性的远程验证_自我总结</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <hr>
+<p>title: 远程证明_02_TRIGLA V：公共云中虚拟机运行时完整性的远程验证_自我总结 date: 2022-05-15 23:08:18.466 updated: 2022-05-15 23:10:34.113 url: &#x2F;archives&#x2F;yczm02zj categories:</p>
+<ul>
+<li>可信计算 tags:</li>
+<li>可信计算</li>
+<li>远程证明</li>
+</ul>
+<hr>
+<h1 id="1《TRIGLAV-Remote-Attestation-of-the-Virtual-Machine’s-Runtime-Integrity-in-Public-Clouds》，-CCFC，2021。"><a href="#1《TRIGLAV-Remote-Attestation-of-the-Virtual-Machine’s-Runtime-Integrity-in-Public-Clouds》，-CCFC，2021。" class="headerlink" title="1《TRIGLAV: Remote Attestation of the Virtual Machine’s Runtime Integrity in Public Clouds》， CCFC，2021。"></a><strong>1《TRIGLAV: Remote Attestation of the Virtual Machine’s Runtime Integrity in Public Clouds》， CCFC，2021。</strong></h1><h2 id="1-1-要解决的问题"><a href="#1-1-要解决的问题" class="headerlink" title="1.1 要解决的问题"></a><strong>1.1 要解决的问题</strong></h2><p>这篇论文提出了一种协议TRIGLAV，可以让租户建立VM中软件及其软件配置的运行时完整性的信任。 文章中提到，vTPM不能直接运用在云中，因为攻击者可以篡改vTPM和VM之间的通信，例如重新配置网络，发动中间人攻击，重置TPM。 这篇文章提出的这种远程证明协议，可以在不改动VM中运行的程序，可以限制主机操作系统中管理员的活动，租户可以使用不支持可信硬件的设备连接到VM进行认证，当租户通过SSH登录到VM时，隐式的发生了对虚拟机的认证。 传统vTPM设计中所存在的问题： <img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1652627004628.png" srcset="/img/loading.gif" lazyload alt="image-1652627004628"></p>
+<ul>
+<li>1）Hypervisor通过4个字节的标识符标识vTPM，通过Hypervisor将VM的通信路由到对应的vTPM实例上，攻击者可以修改网络包，实现vTPM的错误路由，这个链路不安全，该篇文章提出使用TLS解决这个问题（图1a）。</li>
+<li>2）要经过Hypervisor，但是Hypervisor和vTPM之间缺乏认证，存在中间人攻击， 攻击者可以配置hypervisor，使其通过中介软件与vTPM进行通信，从而拦截通信（图1b）。然后，可以放弃任意的测量或执行TPM重置攻击。</li>
+<li>3）攻击者还可以入侵客户机操作系统，伪装成正常的VM，修改其中的TPM驱动，将TPM请求重定向到远程的TPM上。这种情况下，验证者无法知道，连接到的是底层的vTPM还是远程的TPM，因为在虚拟机内的验证者无法与vTPM建立安全通信。该文通过了TEE认证协议，在vTPM和验证者之间建立了一个安全的信道，并利用它交换了一个秘密，验证者就可以唯一地识别vTPM实例了。</li>
+</ul>
+<h2 id="1-2-TRIGLAV-架构"><a href="#1-2-TRIGLAV-架构" class="headerlink" title="1.2 TRIGLAV 架构"></a><strong>1.2 TRIGLAV 架构</strong></h2><p><img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1652627040144.png" srcset="/img/loading.gif" lazyload alt="image-1652627040144"> 它由以下四个部分组成。(A)虚拟机VM，(B)管理虚拟机的Hypervisor，使其能够访问物理资源并与其他虚拟机隔离，(C)实现管理程序运行时完整性执行和认证的可信计算组件，(D)TRIGLAV，在TEE内执行的软件，允许租户认证并执行虚拟机的完整性。文章中采用的可信执行环境TEE是SGX。</p>
+<ul>
+<li>1）云服务提供者先启动云节点，启动TRIGLAV。然后在租户的请求下，创建一个虚拟机VM实例。</li>
+<li>2）接下来，租户tenant首先与TRIGLAV建立信任，这是远程证明第一个被信任的组件。（如何建立信任？）租户请求TRIGLAV检查虚拟机监控程序Hypervisor是否符合策略。（这个策略下面会提到）该策略包含租户特定的信任约束，例如完整性度量等。</li>
+<li>3）TRIGLAV使用IMA和TPM来验证平台的运行时完整性是否符合策略，然后生成虚拟机VM的公私钥，并将公钥返回给租户。TRIGLAV保护对私钥的访问，即仅当平台与策略中定义的状态匹配时，它才允许VM使用私钥。</li>
+<li>4）最后，租户和VM建立信任。租户通过验证VM是否可以使用与之前获得的公钥相对应的私钥。对于VM认证租户，使用租户的SSH私钥以标准方式进行身份验证。将租户的SSH公钥嵌入到虚拟机的映像中，或在虚拟机部署期间提供。</li>
+</ul>
+<h2 id="1-3-VM启动过程"><a href="#1-3-VM启动过程" class="headerlink" title="1.3 VM启动过程"></a><strong>1.3 VM启动过程</strong></h2><p>上述架构中如何解决Hypervisor和vTPM之间的问题，如何避免中间人攻击呢？因为Hypervisor不像TRIGLAV在TEE内，所以TRIGLAV无法使用TEE证明来验证Hypervisor的身份，因此该篇文章提出，TRIGLAV通过要求管理程序在建立连接时出示一个秘密来确认管理程序的身份。这个秘密是TRIGLAV在TEE内生成的一个秘密，并使用硬件TPM密封。 TRIGLAV 在TEE需要生成多个模拟TPM，因为多个VM不能共享一个硬件的TPM。当TRIGLAV被Hypervisor请求时，会生成一个新的模拟vTPM实例，该实例通过一个单独的TCP端口访问。Hypervisor会将连接到的模拟TPM，并将其作为一个标准的字符设备暴露给虚拟机VM。 <img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1652627056056.png" srcset="/img/loading.gif" lazyload alt="image-1652627056056"> 总结如下：</p>
+<ul>
+<li>1）在管理程序生成一个虚拟机之前，它命令TRIGLAV生成一个模拟TPM。</li>
+<li>2）TRIGLAV创建一个新的模拟TPM，生成一个秘密，使用硬件TPM将秘密密封。之后TRIGLAV将TCP端口和密封的秘密返回给管理程序。</li>
+<li>3）管理者从硬件TPM中解封秘密。</li>
+<li>4）并用这个秘密建立一个与模拟TPM的TLS连接。</li>
+<li>5）Hypervisor创建了一个虚拟机。虚拟机启动后，固件和IMA会将完整性度量发送给模拟TPM。</li>
+<li>6）为了防止回滚攻击，每次完整性测量都会导致模拟TPM增加基于硬件的单调计数器（MC），并将当前MC值存储在模拟TPM内存中（⑥）。</li>
+</ul>
+<h2 id="1-4-信任如何建立"><a href="#1-4-信任如何建立" class="headerlink" title="1.4 信任如何建立"></a><strong>1.4 信任如何建立</strong></h2><p>租户通过三个步骤建立起对云中虚拟机的信任：</p>
+<ol>
+<li>他验证TRIGLAV在TEE内执行，并在真正的硬件（提供TEE功能的CPU）上运行。</li>
+<li>他通过利用TRIGLAV验证和执行主机和客户操作系统的运行时完整性，将信任扩展到管理程序和虚拟机。</li>
+<li>他连接到虚拟机，确保它是由TRIGLAV提供和控制的虚拟机。</li>
+</ol>
+<p>第一步信任建立使用基于TLS的SGX认证，通过第三方CA签署证书认证。 <img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1652627073980.png" srcset="/img/loading.gif" lazyload alt="image-1652627073980"> 上述步骤中，租户需要验证VM是拥有SSH私钥的VM，而私钥从没有离开过TRIGLAV，相当于TRIGLV需要认证VM的来源，由VM来实现对VM的运行时完整性度量认证。 一旦握手成功，就相当于租户建立了对VM的信任。</p>
+<h2 id="1-5-策略如何确保运行时完整性"><a href="#1-5-策略如何确保运行时完整性" class="headerlink" title="1.5 策略如何确保运行时完整性"></a><strong>1.5 策略如何确保运行时完整性</strong></h2><p>通过1.4描述可以知道TRIGLAV通过策略实施机制来确保VM运行时的完整性符合策略。 在主机操作系统上，TRIGLAV依靠IMA来防止主机内核加载到未经数字签名的内存文件中。具体来说，文件系统中的每个文件都有一个存储在其扩展属性中的数字签名。 在内核将文件加载到内存之前，IMA 会验证云提供商发出的签名。 签名验证所需的证书从 initramfs（由 DRTM 测量）加载到内核的密钥环。存在问题。 在Guest操作系统中，Guest OS内核中的IMA需要TRIGLAV批准才能将文件加载到内存中。</p>
+<h2 id="1-6-如何制定策略呢"><a href="#1-6-如何制定策略呢" class="headerlink" title="1.6 如何制定策略呢"></a><strong>1.6 如何制定策略呢</strong></h2><p>我们现在知道，一个VM的完整性、策略是和一对SSH公私钥绑定的。每个租户都可以通过公私钥确定VM的完整性。 <img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1652627110745.png" srcset="/img/loading.gif" lazyload alt="image-1652627110745"> 作者给了一个策略清单的示例： <img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1652627127646.png" srcset="/img/loading.gif" lazyload alt="image-1652627127646"> 它包含了Host和Guest两个部分， 包含硬件TPM制造商的证书链的白名单（第4行），证书链被用来建立对底层硬件TPM的信任。Host内核的DRTM完整性度量（第6-8行），Guest内核的完整性度量（第14行），以及Guest OS 的合法运行时完整性度量（第16-18行，22行）。TRIGLAV将DRTM完整性度量值与TPM认证的PCR值进行比较，以确保加载具有启用完整性强化机制的正确的Hypervisor。TRIGLAV使用运行时完整性测量来验证是否只有预期的文件和软件被加载到客户操作系统内存中。专用证书（第22行）使完整性强制机制变得实用，因为它允许更多的文件被加载到内存中而不需要重新部署策略。具体来说，只要用相应的私钥对允许执行的软件进行签名，就可以让软件通过完整性强化机制（这个机制指的就是策略实施机制，因为不满足策略的软件是不会被加载入内存的）。<strong>额外的证书（第11、23行）允许操作系统的更新。</strong></p>
+<h2 id="1-7-具体实现"><a href="#1-7-具体实现" class="headerlink" title="1.7 具体实现"></a><strong>1.7 具体实现</strong></h2><p>Qemu+KVM作为Hypervisor，使用SGX作为TEE技术。 具体的TRIGLAV分为三个组件：监控服务、模拟TPM和单调计数器服务。</p>
+<ul>
+<li>1）监控服务是利用Linux IMA和硬件TPM来收集主机操作系统的完整性测量的组件。每个主机操作系统只有一个监控服务在运行。在一个端口上暴露出由TLS保护的API，由租户来部署策略。这部分还包括，生成秘密、密封秘密、提供秘密给模拟TPM。</li>
+<li>2）模拟TPM：一个基于软件的TPM仿真器，基于libtpms库。它暴露了一个基于TLS的API，允许QEMU进行连接。这个秘密就是1）中的秘密。</li>
+<li>3）单调计数器服务（MCS）提供对硬件单调计数器（MC）的访问。他利用硬件TPM来提供MC功能。MCS依靠TPM证明与提供硬件MC的TPM芯片建立信任，并依靠加密和认证的通信渠道来保护与TPM芯片从飞地通信的完整性和保密性。MCS通过TLS暴露了一个REST API，允许其他enclave远程增加和读取硬件单调的计数器。</li>
+</ul>
+<h2 id="1-8-存在问题"><a href="#1-8-存在问题" class="headerlink" title="1.8 存在问题"></a><strong>1.8 存在问题</strong></h2><p>1）感觉他是通过DRTM来实现完整性度量，然后每次租户通过SSH访问时，就隐式的进行了认证。之前的远程证明都是有一个基准值库用来比对，他这个远程证明好像是验证系统完整性是否符合预期的策略。 2）对策略定义这块讲解的比较少，比如运行操作系统更新、允许软件加载进入内存这块不太清晰。</p>
+<h1 id="2-下篇论文预告"><a href="#2-下篇论文预告" class="headerlink" title="2 下篇论文预告"></a><strong>2 下篇论文预告</strong></h1><p>下周打算看一下可信执行环境TEE、以及SGX的相关技术。 论文：《2021 CCFB Remote attestation and integrity measurements with Intel SGX for virtual machines》</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%8F%AF%E4%BF%A1%E8%AE%A1%E7%AE%97/" class="category-chain-item">可信计算</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E8%BF%9C%E7%A8%8B%E8%AF%81%E6%98%8E/" class="print-no-link">#远程证明</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>远程证明_02_TRIGLA V：公共云中虚拟机运行时完整性的远程验证_自我总结</div>
+      <div>http://example.com/0002.html</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>landery</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2023年3月7日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/0003.html" title="远程证明_03_使用Intel SGX对虚拟机进行远程认证和完整性测量">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">远程证明_03_使用Intel SGX对虚拟机进行远程认证和完整性测量</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/0001.html" title="远程证明_01_云数据中心的大规模虚拟机的远程证明">
+                        <span class="hidden-mobile">远程证明_01_云数据中心的大规模虚拟机的远程证明</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"GK4nuH8jdXDcw4IJIVShjMtA-gzGzoHsz","appKey":"7P0B0kJFdaLY6eDQ93Lhcv8J","path":"window.location.pathname","placeholder":"建议使用QQ邮箱，评论头像采用QQ头像","avatar":"retro","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":true,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":true,"bg":null,"count":true},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+    <!-- 备案信息 ICP for China -->
+    <div class="beian">
+  <span>
+    <a href="http://beian.miit.gov.cn/" target="_blank" rel="nofollow noopener">
+      蜀ICP备2022011502号
+    </a>
+  </span>
+  
+    
+      <span>
+        <a
+          href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=51012202001227"
+          rel="nofollow noopener"
+          class="beian-police"
+          target="_blank"
+        >
+          
+            <span style="visibility: hidden; width: 0">|</span>
+            <img src="/img/police_beian.png" srcset="/img/loading.gif" lazyload alt="police-icon"/>
+          
+          <span>川公网安备51012202001227号</span>
+        </a>
+      </span>
+    
+  
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/DynamicRibbon.min.js"></script>
+<script src="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/love.min.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

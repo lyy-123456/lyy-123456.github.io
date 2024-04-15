@@ -1,0 +1,915 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="landery">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="title: 远程证明_01_云数据中心的大规模虚拟机的远程证明 date: 2022-05-12 00:29:12.443 updated: 2022-05-22 22:10:06.922 url: &#x2F;archives&#x2F;yczm01 categories:  论文阅读 远程证明 tags: 可信计算 远程证明   原文信息 文章标题：Remote Attestation o">
+<meta property="og:type" content="article">
+<meta property="og:title" content="远程证明_01_云数据中心的大规模虚拟机的远程证明">
+<meta property="og:url" content="http://example.com/0001.html">
+<meta property="og:site_name" content="landery小站">
+<meta property="og:description" content="title: 远程证明_01_云数据中心的大规模虚拟机的远程证明 date: 2022-05-12 00:29:12.443 updated: 2022-05-22 22:10:06.922 url: &#x2F;archives&#x2F;yczm01 categories:  论文阅读 远程证明 tags: 可信计算 远程证明   原文信息 文章标题：Remote Attestation o">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1652285443375.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1652286192326.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1652336051104.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1652336783614.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1652337605041.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1652337699095.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1652338162627.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1652339870435.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1652340063510.png">
+<meta property="article:published_time" content="2023-03-07T13:34:26.000Z">
+<meta property="article:modified_time" content="2024-04-15T10:15:30.050Z">
+<meta property="article:author" content="landery">
+<meta property="article:tag" content="远程证明">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1652285443375.png">
+  
+  
+  
+  <title>远程证明_01_云数据中心的大规模虚拟机的远程证明 - landery小站</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/scroll.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"GK4nuH8jdXDcw4IJIVShjMtA-gzGzoHsz","app_key":"7P0B0kJFdaLY6eDQ93Lhcv8J","server_url":"https://api.landery.cn","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>landery 小站</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/links/" target="_self">
+                <i class="iconfont icon-link-fill"></i>
+                <span>友链</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/remark/" target="_self">
+                <i class="iconfont icon-twitch-fill"></i>
+                <span>留言板</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/image/bg/001.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="远程证明_01_云数据中心的大规模虚拟机的远程证明"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2023-03-07 21:34" pubdate>
+          2023年3月7日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          6.1k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          51 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">远程证明_01_云数据中心的大规模虚拟机的远程证明</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <hr>
+<p>title: 远程证明_01_云数据中心的大规模虚拟机的远程证明 date: 2022-05-12 00:29:12.443 updated: 2022-05-22 22:10:06.922 url: &#x2F;archives&#x2F;yczm01 categories:</p>
+<ul>
+<li>论文阅读</li>
+<li>远程证明 tags:</li>
+<li>可信计算</li>
+<li>远程证明</li>
+</ul>
+<hr>
+<h1 id="原文信息"><a href="#原文信息" class="headerlink" title="原文信息"></a><strong>原文信息</strong></h1><ol>
+<li>文章标题：Remote Attestation of Large-scale Virtual Machines in the Cloud Data Center</li>
+<li>文章中文翻译：云数据中心的大规模虚拟机的远程证明</li>
+<li>文章等级：CCF C</li>
+<li>文章发表时间：2021</li>
+<li>文章作者：Jie Cheng, Kun Zhang and Bibo Tu</li>
+<li>完整引用：Cheng J, Zhang K, Tu B. Remote Attestation of Large-scale Virtual Machines in the Cloud Data Center[C]&#x2F;&#x2F;2021 IEEE 20th International Conference on Trust, Security and Privacy in Computing and Communications (TrustCom). IEEE, 2021: 180-187.</li>
+<li>全文请查看：<a target="_blank" rel="noopener" href="https://ieeexplore.ieee.org/abstract/document/9724484">全文链接</a></li>
+</ol>
+<h1 id="0-摘要中的信息"><a href="#0-摘要中的信息" class="headerlink" title="0 摘要中的信息"></a><strong>0 摘要中的信息</strong></h1><h2 id="0-1-文章要解决的问题"><a href="#0-1-文章要解决的问题" class="headerlink" title="0.1 文章要解决的问题"></a><strong>0.1 文章要解决的问题</strong></h2><p>在云数据中心中，如果进行大规模虚拟化环境的验证会造成TPM瓶颈和网络拥塞，导致远程验证效率低下。</p>
+<h2 id="0-2-文章提出解决方法"><a href="#0-2-文章提出解决方法" class="headerlink" title="0.2 文章提出解决方法"></a><strong>0.2 文章提出解决方法</strong></h2><p>该文提出了 CloudTA，一种可扩展的远程证明架构。</p>
+<ol>
+<li>CloudTA 对每个云服务器上的所有虚拟机进行分组，并引入完整性测量组（IMG）来测量虚拟机并按组生成可信证据。</li>
+<li>随后，云服务器上报物理平台和VM组的可信证据进行组验证，减少延迟，提高效率。</li>
+<li>此外，CloudTA设计了一个混合高并发通信框架，通过结合主动请求和定期报告来支持大规模虚拟机的远程证明。</li>
+</ol>
+<p>评估结果表明，CloudTA具有良好的效率和可扩展性，可以支持万台虚拟机的远程认证。</p>
+<h1 id="1-引入原因"><a href="#1-引入原因" class="headerlink" title="1 引入原因"></a><strong>1 引入原因</strong></h1><p>TPM Quote是一个耗时的操作，使用频繁，成为attestation的瓶颈；此外，很多虚拟机与评估者交互，容易造成网络拥塞，影响鉴证效率。有研究提出了一种基于hypervisor的 VM 远程证明 ，VM 不再直接与评估者交互，而是hypervisor上的代理获取 VM 的个人可信信息。最后，目标平台将其和虚拟机的可信信息发送给评估者进行验证。这种方法通过绑定主机和虚拟机有效地避免了身份问题，并且可以同时验证多个虚拟机，在一定程度上减少了验证冗余，提高了可扩展性。但是，每个 VM 仍然需要 TPM Quote 操作；因此，TPM 的瓶颈影响了证明的效率。总之，目前的方法不支持大规模虚拟机的远程证明。 此外，虚拟机的增加和动态特性对远程认证中的通信框架提出了更高的要求。主动请求的方法是，评估人员向特定平台发起请求，然后平台使用其可信证据进行响应。这种方法保证了及时响应，但无法实现实时验证。同时，主动报告方式是目标平台主动向评估人员报告其可信证据，确保实时验证，但无法及时响应，当大量平台同时报告时，会增加评估人员的负载压力。这两种方法都更适用于目标平台数量较少的场景。 为了支持大规模虚拟机的远程认证，该文提出了一种<strong>可扩展的体系结构CloudTA</strong>。CloudTA将每个云服务器上的VM视为一个组，并<strong>基于Tboot和IMA</strong>，在<strong>云服务器中引入了完整性度量组（IMG）</strong>。IMG通过一个小组来衡量虚拟机的完整性。之后，<strong>它将测量值聚合到TPM的特定PCR</strong>中，并将其记录到虚拟机测量日志（VM ML），建立分层连接，并将信任扩展到VM。此外，在<strong>高并发混合通信框架的支持</strong>下，云服务器将云主机组和物理平台的可信证据一起报告给认证服务器，通过<strong>现有的远程认证协议</strong>进行验证。 总结贡献：</p>
+<ol>
+<li>通过分组IMG实现批量远程证明</li>
+<li>实现了一个高并发混合通信框架CloudTA 可以支持上万虚拟机同时证明</li>
+</ol>
+<h1 id="2-相关工作"><a href="#2-相关工作" class="headerlink" title="2 相关工作"></a><strong>2 相关工作</strong></h1><p>利用了IMA，二进制完整性度量。</p>
+<h2 id="2-1-远程证明"><a href="#2-1-远程证明" class="headerlink" title="2.1 远程证明"></a><strong>2.1 远程证明</strong></h2><p>远程认证使评估人员能够验证目标平台的完整性。首先，评估师发送一个包含随机数（nonce）的认证请求。当收到此请求时，目标平台中的认证代理将收集可信证据，包括通过对PCR和nonce执行TPM Quote操作获得的ML和签名。平台随后将该证据报告给评估人员。然后，评估人员验证签名的正确性，以确定身份并获得可信的PCR。接下来，通过模拟PCR扩展并将模拟结果与可信的PCR 10匹配，可以进一步确定ML的真实性。如果验证结果是肯定的，评估人员通过将可信的ML与从原始正确系统收集的期望值进行比较，进一步判断平台的可信度。</p>
+<blockquote>
+<p>PCR 10时IMA默认使用的PCR。</p>
+</blockquote>
+<h2 id="2-2-虚拟机的远程证明"><a href="#2-2-虚拟机的远程证明" class="headerlink" title="2.2 虚拟机的远程证明"></a><strong>2.2 虚拟机的远程证明</strong></h2><p>在基于虚拟机监控程序的虚拟化环境中，设计并实现了vTPM（例如基于软件的vTPM、基于硬件的vTPM、基于para-vTPM、基于KVM的vTPM和基于属性的vTPM），以将信任扩展到虚拟机，并提供与物理TPM相同的使用模型和接口。通过vTPM为每个虚拟机构建一个独立的信任根，远程认证可以为虚拟机工作。然而，VM认证需要满足分层连接。换句话说，VM认证应该连接到其底层组件（例如，虚拟机监控程序或主机操作系统）的认证；否则，恶意虚拟机监控程序可能会损害VM的可信度，导致错误的验证结论。</p>
+<blockquote>
+<p>VM的远程证明，需要将底层的宿主机一起证明，因为VM的可信不代表底层的可信，底层的hypervisor也需要得到证明。</p>
+</blockquote>
+<p>三种虚拟机远程证明方法：</p>
+<ol>
+<li>第一种方法是评估者<strong>分别验证 VM 和Hypervisor</strong>。 通过在 VM 和Host中部署证明代理，评估人员可以使用传统的远程证明协议独立验证它们。 这两个证明共同确保了整个平台的可信度。 这种方法不需要太多更改，因此很容易集成到现有系统中。 但是，由于虚拟机和主机之间缺乏绑定，可能会出现身份问题。 TVP-PCA 使用链式信任决策算法和 MAC 地址决策算法来解决身份问题。 此外，每次验证VM时，这种方法都需要验证主机，导致频繁使用TPM Quote操作。 但是，TPM Quote 是一项耗时的操作。 频繁使用成为证明的瓶颈，影响效率。</li>
+<li>第二种方法是<strong>深度证明</strong>，评估者<strong>通过 VM 间接验证底层Hypervisor</strong>。 它将Hypervisor的完整性信息映射到虚拟机，然后通过虚拟机和评估者之间的远程证明来验证虚拟机和虚拟机管理程序。 这种方法绑定了主机和虚拟机来解决身份问题。 不幸的是，它提供的证据不够新鲜。</li>
+<li>第三种方法是<strong>基于Hypervisor的认证</strong>，评估人员通过Hypervisor验证Hypervisor和它之上的虚拟机集合。它在主机操作系统或虚拟机监控程序（Hypervisor）中添加了一个代理，以收集虚拟机的各个完整性信息。随后，主机将其自身和虚拟机的完整性信息报告给评估人员进行验证。这种方法将主机和虚拟机绑定在一起以避免身份问题，并且不需要像上述两种方法那样在每个虚拟机中部署认证代理，从而减少资源浪费。一个认证可以同时验证多个虚拟机，这也避免了主机验证的冗余。在[18]中，Hagen等人提出了这个框架，但没有给出具体的实现，该框架忽略了虚拟机及其可信证据之间的相关性。在[19]中，Wang等人提出了一种基于VMI的实现，通过虚拟机内省（VMI）获取虚拟机监控程序中虚拟机的可信证据。然而，这两种方案都需要在每个VM上执行TPM_Quote操作；因此，仍然存在物理TPM瓶颈问题，影响认证效率。</li>
+</ol>
+<blockquote>
+<p>注：Hypervisor &#x3D; 虚拟机监控程序</p>
+</blockquote>
+<h2 id="2-3-认证方法"><a href="#2-3-认证方法" class="headerlink" title="2.3 认证方法"></a><strong>2.3 认证方法</strong></h2><p>两个主要的远程认证开源项目是英特尔开放认证（OAT）和IBM认证客户机服务器（ACS）</p>
+<ol>
+<li>OAT采用主动请求（<strong>被动报告</strong>）方式；也就是说，认证服务器首先主动发送请求，然后目标平台用其可信证据进行响应。这种方法可以立即验证特定平台，但由于目标平台无法主动报告，因此无法实时检测其可信度的变化。</li>
+<li>ACS采用<strong>主动报告</strong>方式；也就是说，目标平台主动向认证服务器报告其可信证据，确保实时性。但是，当服务器想要立即验证目标平台时，平台无法立即响应。此外，由于服务器需要逐个验证每个平台，当大量目标平台同时报告时，一些平台的活动报告过程可能会被阻塞，无法验证。</li>
+</ol>
+<p>这<strong>两种方法都不支持云数据中心中大规模虚拟机的远程认证</strong>。</p>
+<h2 id="2-4-总结"><a href="#2-4-总结" class="headerlink" title="2.4 总结"></a><strong>2.4 总结</strong></h2><p>综上所述，现有的虚拟机远程认证方案经常使用TPM Quote操作，而物理TPM成为认证的瓶颈，这使得它们只适用于有限数量的虚拟机。此外，基于vTPM的认证需要修改Guest OS，这可能会导致安全问题。它还需要管理大量vTPM，这可能会增加性能开销。因此，基于vTPM的认证不利于实际应用。此外，主动请求或主动报告的通信方式各有优缺点，更适合于少数设备的远程认证场景。总之，需要一种解决方案来实现云数据中心中大规模虚拟机的远程认证。</p>
+<h1 id="3-总体架构"><a href="#3-总体架构" class="headerlink" title="3 总体架构"></a><strong>3 总体架构</strong></h1><blockquote>
+<p>这章介绍了问题的解决方案。</p>
+</blockquote>
+<h2 id="3-1-前提假设"><a href="#3-1-前提假设" class="headerlink" title="3.1 前提假设"></a><strong>3.1 前提假设</strong></h2><ul>
+<li>云服务器配备了TPM，它根据TPM规范工作。</li>
+<li>虚拟机映像可能已损坏，并且在虚拟机启动之前插入了恶意软件。</li>
+<li>具有服务器物理权限的攻击方法（如冷启动攻击、硬件篡改）不在本文考虑的威胁范围内。</li>
+<li>我们相信认证服务器是可信的，也就是说，它被正确地实现，安全地启动，并且在运行时受到保护</li>
+</ul>
+<h2 id="3-2-架构"><a href="#3-2-架构" class="headerlink" title="3.2 架构"></a><strong>3.2 架构</strong></h2><p><img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1652285443375.png" srcset="/img/loading.gif" lazyload alt="image-1652285443375"> 如上图所示，这个架构中它包括两个主要实体：云服务器（Cloud Servers）和认证服务器（Attestation Servers）。</p>
+<ol>
+<li>云服务器：运行许多虚拟机，充当证明者，并提供可信的证据。 图 1 显示了 KVM+Qemu+TPM 的云服务器结构。 云服务器在现有Tboot和IMA的基础上增加了两个模块：Integrity Measurement Group（IMG）和Trusted Attestation Client（TAC）。 IMG 负责按组实施 VM 的完整性测量和管理，并为组生成可信证据。 TAC 主要负责通过收集器收集可信证据。 此外，基于混合高并发通信框架，通过通信模块与认证服务器建立连接，在远程证明中传输消息。</li>
+<li>认证服务器：认证服务器作为认证请求者和评估者，由三个基本模块组成。<ol>
+<li>通信模块（CM）负责建立与基于高并发混合通信框架的云服务器的连接以传递消息。</li>
+<li>Attestation模块负责验证物理平台和VM组的可信证据，并做出证明决策。 此外，它还需要来自隐私证书颁发机构（PCA）的证书来对云服务器进行身份验证。</li>
+<li>管理和报告模块负责管理来自平台管理员的认证请求，并提供可视化界面查看验证结果。</li>
+</ol>
+</li>
+</ol>
+<h2 id="3-3-完整工作流程"><a href="#3-3-完整工作流程" class="headerlink" title="3.3 完整工作流程"></a><strong>3.3 完整工作流程</strong></h2><p><img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1652286192326.png" srcset="/img/loading.gif" lazyload alt="image-1652286192326"> 云服务器完整的完整性度量过程可以分解为以下几个部分：</p>
+<ol>
+<li>云服务器启动的完整性：从启动云服务器开始，到成功加载OS内核结束。它包括BIOS、GRUB和OS内核。</li>
+<li><strong>虚拟机依赖项</strong>的完整性：指虚拟机监视器及其必要的文件或库。</li>
+<li><strong>虚拟机启动的</strong>完整性：指虚拟机启动前的映像和引导配置。</li>
+<li><strong>虚拟机运行时</strong>的完整性：从虚拟机启动开始，到虚拟机关闭结束。它包括虚拟机中运行的所有组件。</li>
+</ol>
+<p>Tboot可以测量云服务器启动的完整性。然后，IMA可以测量应用层的所有组件。在Qemu KVM架构下，每个VM都是一个Qemu进程。因此，虚拟机依赖关系的完整性可以通过IMA来衡量。此外，IMG在虚拟机启动前测量虚拟机映像。最后，在运行时测量VM，这将在将来完成。</p>
+<blockquote>
+<p>最后，<strong>在运行时测量VM</strong>，这将在将来完成 ,还没完成吗? 其次这里，可以看到是将PCR 12用于记录虚拟机 image Files，PCR 13用于 VM?</p>
+</blockquote>
+<p>该体系结构的完整工作流程是：Tboot、IMA和IMG测量从服务器启动到虚拟机启动前的完整性，并生成相应的可信证据（PCRs、ML、VM-ML）。随后，在高并发混合通信框架的保证下，TAC定期收集该可信证据并将其报告给认证服务器。认证服务器收到该证据后，认证模块对其进行验证，管理和报告显示验证结果。</p>
+<h1 id="4-关键技术"><a href="#4-关键技术" class="headerlink" title="4 关键技术"></a><strong>4 关键技术</strong></h1><h2 id="4-1-IMG（Integrity-Measurement-by-Group）"><a href="#4-1-IMG（Integrity-Measurement-by-Group）" class="headerlink" title="4.1 IMG（Integrity Measurement by Group）"></a><strong>4.1 IMG（Integrity Measurement by Group）</strong></h2><p>本小节详细介绍了如何按组测量虚拟机镜像的完整性，以生成虚拟机组的可信证据。在CloudTA中，我们将云服务器中的所有虚拟机分为一个组，并使用IMG对其进行测量。IMG结合了一个虚拟机管理工具（即Libvirt）来拦截所有的虚拟机管理指令并测量虚拟机镜像的完整性。它将这些测量结果存储在虚拟机测量日志（VM ML）中，并将其扩展到特定的PCR中，按组生成可信的证据；其中，VM ML记录了用于组验证的虚拟机的详细测量清单和必要的元数据，PCR保护了VM ML的可信度。 认证是将测量值与期望值进行比较。因为虚拟机管理非常灵活，易于创建、启动、停止和删除。虚拟机的状态可能会发生变化，导致image的变化，而image的变化又会导致期望值的变化。因此，有必要在image变化之前，将测量结果记录为新的期望值。回到IMG，具体工作流程如下： 首先，我们选择当前系统中未使用的特定 PCR。 在本文中，我们选择 PCR 12。 由于 PCR 复位功能只能在云服务器启动时发生，我们记录 PCR 的历史值（PCR 12 history）。 我们还创建了一个空的 VM_ML。 其次，当对云服务器中的任何VM执行管理命令（创建、启动、停止和删除）时，通知IMG测量VM的映像。 随后，IMG 通过公式（1）将测量值（M_Val）扩展到 PCR 12，并通过公式（2）将相关元数据附加到 VM ML，从而为该组生成可信证据 <img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1652336051104.png" srcset="/img/loading.gif" lazyload alt="image-1652336051104"> 在远程验证期间，云服务器向验证服务器报告以下数值。PCR12历史，VM ML，ML，Sign（PCRs，nonce）AIK，其中PCRs包括PCR12。在这种情况下，认证服务器会验证TPM的签名，然后获得可信的PCR12。然后，认证服务器通过执行公式（1）和用返回的摘要值扩展PCR12历史来重新计算模拟值来验证VM ML的可信度。如果模拟值等于可信的PCR12，则确定VM ML的可信度。因此，建立了一个一一对应的保护链，TPM保护PCR12，PCR12进一步保护VM ML。此外，受信任的VM ML被用于虚拟机的分组验证。</p>
+<h2 id="4-2-混合通信框架"><a href="#4-2-混合通信框架" class="headerlink" title="4.2 混合通信框架"></a><strong>4.2 混合通信框架</strong></h2><p>本小节介绍了一个高并发的混合网络通信框架，用于在云服务器和认证服务器之间建立连接，以传输远程认证中的信息。 这种混合框架结合了主动请求和定期报告的通信方式，如图3所示。</p>
+<ol>
+<li>一方面，云服务器主动定期报告，认证服务器被设计成高并发的。云服务器中的报告人设置一个定时器，定期向认证服务器报告可信证据。认证服务器中的接收者收到报告后，通过线程池等技术并发地处理这些报告。</li>
+<li>另一方面，当证明服务器想验证特定云服务器或虚拟机的可信度时，它主动提出请求。认证服务器中的请求者向云服务器发送一个请求。当监听器收到请求时，它会触发报告者向证明服务器回应可信证据。在报告者处理完这个主动请求过程后，它继续等待下一个周期的定期报告。这确保了云服务器一次只能发送一份报告，避免了认证服务器收到报告时的混乱。</li>
+</ol>
+<p><img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1652336783614.png" srcset="/img/loading.gif" lazyload alt="image-1652336783614"> 该框架将活动请求和定期报告相结合。在保证高并发性的前提下，不仅可以充分利用认证服务器的资源，支持大规模设备的验证，而且在需要时可以及时进行验证，实现高可扩展性和及时响应。</p>
+<h2 id="4-3-组验证"><a href="#4-3-组验证" class="headerlink" title="4.3 组验证"></a><strong>4.3 组验证</strong></h2><p>在证明服务器收到可信证据后，它做了一系列验证（更多细节显示在D小节），以确定VM_ML的可信度，它存储了VM组的可信信息。本小节讨论了如何基于可信的VM_ML实现对虚拟机的分组验证。 得出是否信任或不信任虚拟机的结论是验证VM_ML是否符合预期。在云数据中心至少有两台云服务器，每台服务器至少有一个虚拟机，也就是至少有两个虚拟机image。因此，我们构建一个虚拟机image期望搜索树（IET）。IET是一棵以T为根，以云服务器序列为子的搜索树。然后根据云服务器和云服务器上的虚拟机序列来构建搜索树。虚拟机序列与虚拟机image的期望值一一对应。例如，云数据中心有两个云服务器，每个云服务器上有三个虚拟机，如图4所示。其中，S1和S2代表服务器序列，I11和I12等代表虚拟机image的期望。 <img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1652337605041.png" srcset="/img/loading.gif" lazyload alt="image-1652337605041"> 当云服务器向认证服务器注册时，根节点下会生成一个新的子节点S。此后，当证明服务器验证虚拟机的可信度时，它将通过二进制搜索算法从根节点搜索相应云服务器的子节点。在这个子节点下，每个虚拟机image都被更新和验证。目前，分组验证只实现了对虚拟机image的验证，以确保虚拟机启动时的可信度。因此，我们假设虚拟机在运行时是可信任的。如算法1所示，我们的方法根据VM ML条目中的状态来验证和更新VM的image。它在虚拟机启动前验证image的可信度，并在其他状态下更新image的预期。因此，云服务器上的所有虚拟机都根据VM_ML进行验证，以实现群体验证。 <img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1652337699095.png" srcset="/img/loading.gif" lazyload alt="image-1652337699095"></p>
+<blockquote>
+<p>只有虚拟机启动时验证，其他情况都是更新VM的值。</p>
+</blockquote>
+<h2 id="4-4-远程证明的过程"><a href="#4-4-远程证明的过程" class="headerlink" title="4.4 远程证明的过程"></a><strong>4.4 远程证明的过程</strong></h2><p>基于上述三个关键技术，本小节以定期报告过程为例，描述CloudTA的完整远程认证过程，如图5所示。<img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1652338162627.png" srcset="/img/loading.gif" lazyload alt="image-1652338162627"> 在步骤1中，云服务器中的TAC定期向认证服务器发送一个消息，请求一个随机数（nonce）。在步骤2中，认证服务器验证该云服务器是否已经注册。如果已经注册，认证服务器在步骤3中向TAC发送一个包含不可预测的随机数（nonce）的请求。 在步骤4中，TAC收集由Tboot和IMA生成的物理平台的可信证据和由IMG生成的虚拟机组的可信证据。TAC首先通过执行TPM Quote来收集TPM的签名，TPM Quote使用私钥AIKpriv来签署选定的PCRs和nonce，其中PCR指的是PCR0-7（Tboot）、PCR10（IMA）和PCR12（IMG），而nonce最初由认证服务器提供。接下来，TAC还收集了IMA和IMG的测量日志以及PCR12的历史值（即PCR12 history）。TAC在步骤5中对这些证据进行了回应。 在步骤6a中，认证服务器首先检索可信证书_cert_(AIKpub)以确定TPM的身份，然后验证签名以检测PCR的篡改。此外，它通过比较nonce是否与步骤3中的nonce匹配来验证响应的新鲜度，以防止重放攻击。 在步骤6b中，认证服务器通过遍历ML并重新计算PCR（模拟PCR扩展操作），并将模拟PCR与可信PCR10进行比较，来检查ML的可信度。此外，在步骤6c中，认证服务器通过方程（1），用VM ML中的测量值扩展PCR12的历史，计算出模拟PCR值。如果最终的模拟PCR等于可信的PCR12，则VM_ML被信任。 在步骤7中，认证服务器根据其从原始无恶意软件系统中收集到的预期验证ML，以确定物理平台的可信度。最后，认证服务器通过分组验证来验证虚拟机。 图6显示了远程验证的结果，其中另一个镜像用不同的配置替换了虚拟机（instance-00000037）。结果显示，一个证明可以验证多个虚拟机，而虚拟机（instance-00000037）是不被信任的。此外，当点击图6中的请求时，平台管理员会主动验证特定的云服务器。</p>
+<h1 id="5-评估"><a href="#5-评估" class="headerlink" title="5 评估"></a><strong>5 评估</strong></h1><p>本节从效率和可扩展性方面对CloudTA系统进行评估。CloudTA的原型是基于IBM 2.0 ACS[21]。云服务器运行Ubuntu 18.04和64GB内存，集成了TPM模拟器（ibmtpm1637）来模拟TPM的功能，并安装了经过我们修改的Libvirt（4.0.0）来执行分组的完整性测量。验证服务器是Ubuntu 18.04，96GB内存，64个处理器核心。ACS的验证程序被修改以支持我们的分组验证。最后，一个基于半同步&#x2F;半同步模型的混合高并发网络通信框架被实施，它结合了主动请求和定期报告。 本小节通过比较TVP-PCA、VMI RA和CloudTA三种方案来分析其效率。其中，TVP-PCA是一个分别验证虚拟机和管理程序的方案。VMI RA是一个通过VMI实现的基于hypervisor的方案。CloudTA是本文提出的一种基于分组验证的方案。表一显示了这三种方案在完整的虚拟机远程验证中的通信开销、验证的虚拟机数量以及TPM Quote的执行时间。在远程验证中，云服务器和验证服务器之间的数据交换被称为interaction。 <img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1652339870435.png" srcset="/img/loading.gif" lazyload alt="image-1652339870435"> (不考虑连接的创建和释放）。n是云服务器中的虚拟机数量。 <img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1652340063510.png" srcset="/img/loading.gif" lazyload alt="image-1652340063510"> 可以看到TVP-PCA只能验证一个，需要两次TPM_Quote操作，VMI是验证n个虚拟机，需要n+1次，CloudTA则只需要1次。 最后验证了32个线程下的性能，可以支持10000个虚拟机的验证。 <strong>未来打算：将对KVM事件进行分析，并结合机器学习技术，在运行时对虚拟机进行分组验证，构建一个完整的大规模虚拟机远程认证系统。</strong></p>
+<h1 id="6-总结工作"><a href="#6-总结工作" class="headerlink" title="6 总结工作"></a><strong>6 总结工作</strong></h1><ol>
+<li>采用基于Hypervisor的虚拟机的批量远程证明。IMG+TAC。</li>
+<li>做了一个高并发的通信框架，方便传输信息。</li>
+</ol>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E7%AE%97%E6%B3%95%E9%A2%98/" class="category-chain-item">算法题</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E8%BF%9C%E7%A8%8B%E8%AF%81%E6%98%8E/" class="print-no-link">#远程证明</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>远程证明_01_云数据中心的大规模虚拟机的远程证明</div>
+      <div>http://example.com/0001.html</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>landery</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2023年3月7日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/0002.html" title="远程证明_02_TRIGLA V：公共云中虚拟机运行时完整性的远程验证_自我总结">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">远程证明_02_TRIGLA V：公共云中虚拟机运行时完整性的远程验证_自我总结</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/0021.html" title="操作系统_07_Linux 虚拟网络基础知识Tap、tun等">
+                        <span class="hidden-mobile">操作系统_07_Linux 虚拟网络基础知识Tap、tun等</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"GK4nuH8jdXDcw4IJIVShjMtA-gzGzoHsz","appKey":"7P0B0kJFdaLY6eDQ93Lhcv8J","path":"window.location.pathname","placeholder":"建议使用QQ邮箱，评论头像采用QQ头像","avatar":"retro","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":true,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":true,"bg":null,"count":true},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+    <!-- 备案信息 ICP for China -->
+    <div class="beian">
+  <span>
+    <a href="http://beian.miit.gov.cn/" target="_blank" rel="nofollow noopener">
+      蜀ICP备2022011502号
+    </a>
+  </span>
+  
+    
+      <span>
+        <a
+          href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=51012202001227"
+          rel="nofollow noopener"
+          class="beian-police"
+          target="_blank"
+        >
+          
+            <span style="visibility: hidden; width: 0">|</span>
+            <img src="/img/police_beian.png" srcset="/img/loading.gif" lazyload alt="police-icon"/>
+          
+          <span>川公网安备51012202001227号</span>
+        </a>
+      </span>
+    
+  
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/DynamicRibbon.min.js"></script>
+<script src="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/love.min.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

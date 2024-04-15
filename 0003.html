@@ -1,0 +1,962 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="landery">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="title: 远程证明_03_使用Intel SGX对虚拟机进行远程认证和完整性测量 date: 2022-05-20 00:09:09.607 updated: 2022-05-22 22:10:00.748 url: &#x2F;archives&#x2F;yczm03 categories:  论文阅读 远程证明 tags: 可信计算 远程证明   原文信息 文章标题：Remote att">
+<meta property="og:type" content="article">
+<meta property="og:title" content="远程证明_03_使用Intel SGX对虚拟机进行远程认证和完整性测量">
+<meta property="og:url" content="http://example.com/0003.html">
+<meta property="og:site_name" content="landery小站">
+<meta property="og:description" content="title: 远程证明_03_使用Intel SGX对虚拟机进行远程认证和完整性测量 date: 2022-05-20 00:09:09.607 updated: 2022-05-22 22:10:00.748 url: &#x2F;archives&#x2F;yczm03 categories:  论文阅读 远程证明 tags: 可信计算 远程证明   原文信息 文章标题：Remote att">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653015051499.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653014978223.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653017815972.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653025262605.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653029176337.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653029251412.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653030824339.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653031487864.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653033517876.png">
+<meta property="article:published_time" content="2023-03-07T13:35:33.000Z">
+<meta property="article:modified_time" content="2024-04-15T10:15:41.142Z">
+<meta property="article:author" content="landery">
+<meta property="article:tag" content="远程证明">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653015051499.png">
+  
+  
+  
+  <title>远程证明_03_使用Intel SGX对虚拟机进行远程认证和完整性测量 - landery小站</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/scroll.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"GK4nuH8jdXDcw4IJIVShjMtA-gzGzoHsz","app_key":"7P0B0kJFdaLY6eDQ93Lhcv8J","server_url":"https://api.landery.cn","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>landery 小站</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/links/" target="_self">
+                <i class="iconfont icon-link-fill"></i>
+                <span>友链</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/remark/" target="_self">
+                <i class="iconfont icon-twitch-fill"></i>
+                <span>留言板</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/image/bg/001.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="远程证明_03_使用Intel SGX对虚拟机进行远程认证和完整性测量"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2023-03-07 21:35" pubdate>
+          2023年3月7日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          8.1k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          68 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">远程证明_03_使用Intel SGX对虚拟机进行远程认证和完整性测量</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <hr>
+<p>title: 远程证明_03_使用Intel SGX对虚拟机进行远程认证和完整性测量 date: 2022-05-20 00:09:09.607 updated: 2022-05-22 22:10:00.748 url: &#x2F;archives&#x2F;yczm03 categories:</p>
+<ul>
+<li>论文阅读</li>
+<li>远程证明 tags:</li>
+<li>可信计算</li>
+<li>远程证明</li>
+</ul>
+<hr>
+<h1 id="原文信息"><a href="#原文信息" class="headerlink" title="原文信息"></a><strong>原文信息</strong></h1><ol>
+<li>文章标题：Remote attestation and integrity measurements with Intel SGX for virtual machines</li>
+<li>文章中文翻译：使用Intel SGX对虚拟机进行远程认证和完整性测量</li>
+<li>文章等级：CCF B</li>
+<li>文章发表时间：2021</li>
+<li>文章作者：Kucab M, Boryło P, Chołda P.</li>
+<li>完整引用：Kucab M, Boryło P, Chołda P. Remote attestation and integrity measurements with Intel SGX for virtual machines[J]. Computers &amp; Security, 2021, 106: 102300.</li>
+<li>全文请查看：<a target="_blank" rel="noopener" href="https://www.sciencedirect.com/science/article/pii/S0167404821001243">全文链接</a></li>
+</ol>
+<h1 id="0-摘要信息"><a href="#0-摘要信息" class="headerlink" title="0 摘要信息"></a><strong>0 摘要信息</strong></h1><p>基于一组CPU指令，实现了虚拟机的启动时和启动后任何时刻的远程认证，信任等级评估。确定了安全属性，假设小的配置文件、二进制文件和可执行文件是最关键的。</p>
+<blockquote>
+<p>重点看如何实现运行时的远程证明。</p>
+</blockquote>
+<h1 id="1-介绍"><a href="#1-介绍" class="headerlink" title="1 介绍"></a><strong>1 介绍</strong></h1><ol>
+<li>我们提出了一种新的基于Intel SGX的远程认证过程，用于在虚拟机内运行的应用程序。</li>
+<li>我们为流程启用了动态策略，可以对每个认证迭代进行调整。确定应该测试什么以及测试频率的策略文件由外部维护，可以在任何时间点进行调整。</li>
+<li>我们评估了提出的机制引入的性能开销。</li>
+<li>我们将所提出的解决方案的性能作为测量文件大小的函数进行评估。</li>
+<li>我们评估了认证服务器的性能和扩展能力</li>
+</ol>
+<h1 id="2-背景"><a href="#2-背景" class="headerlink" title="2 背景"></a><strong>2 背景</strong></h1><p>先介绍了裸机的远程证明的实现方式 TPM、SGX、TrustZone的，然后引出裸机上的不适合直接运用在虚拟机上，在虚拟机上，有一个VTPM，但是VTPM存在迁移问题。他说的是针对多供应商云环境的迁移问题。 <img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653015051499.png" srcset="/img/loading.gif" lazyload alt="image-1653015051499"> 下面是原文：</p>
+<blockquote>
+<p>上述要求很难在多供应商云环境中得到满足，因为应用供应商可以以类似、统一的方式透明地控制所有云环境中的VM安全方面。对于应用程序供应商来说，这意味着认证功能非常有限，无法避免服务提供商锁定。这也意味着，如果不进行安全权衡，应用程序就无法部署在理想的、最近的云基础设施中。因此，性能和整体最终用户体验可能不太理想，因为用户被重定向到满足应用程序要求的数据中心，而不一定是最接近的数据中心。</p>
+</blockquote>
+<h1 id="3-SGX上的远程证明"><a href="#3-SGX上的远程证明" class="headerlink" title="3 SGX上的远程证明"></a><strong>3 SGX上的远程证明</strong></h1><p>文章说，与VTPM相反，SGX不需要任何额外的组件来创建和维护信任链，所以这使得它成为云部署的一个很好的候选者。 专用的受保护SGX内存（其中存储enclave页和SGX指令）称为enclave页缓存（EPC），其大小有限。对于裸机部署，它仅由操作系统使用，但对于多租户环境，它在所有VM之间共享。具有SGX支持的Hypervisor在创建特定VM后为其分配请求的EPC内存。分配的内存成为Guest VM的飞地。这就为来宾VM上的认证软件实现了绑定到主机硬件的安全执行。 然后，远程验证者可以信任认证过程的结果。在此基础上，验证者评估应用程序信任级别。 基于SGX的虚拟机远程认证过程由两个步骤组成。第一步的目标是在enclave可供认证客户端使用之前，为其提供认证。为此，我们使用了基于IAS的著名机制；但是，如第6节所述，也可以使用其他解决方案。第二步的目标是确保VM的远程认证。为此，我们提出了第3.4节描述的虚拟机远程认证模式。</p>
+<h2 id="3-1-威胁模型"><a href="#3-1-威胁模型" class="headerlink" title="3.1 威胁模型"></a><strong>3.1 威胁模型</strong></h2><p>除了恶意软件、黑客、垃圾邮件发送者等传统对手外，云部署还存在特定于云的威胁。这些威胁包括恶意云提供商、恶意租户或内部人员。我们关注特定于系统的威胁，这些威胁可以直接影响其行为。在Intel SGX威胁模型中，只有enclave是可信的，我们假设对手可以<strong>访问虚拟机、虚拟机监控程序、云基础设施和未部署的硬件组件</strong>。系统软件被认为不可信，但SGX设计阻止其读取enclave内存和数据。这意味着在enclave内执行的任何处理都是安全的，任何不受信任的认证客户端调用都可能被恶意软件或rootkit破坏。当enclave正在查找一些无法直接用于enclave的信息时，需要进行此类调用。如果发生这种情况，建议的系统将检测到不正确的证明结果，并将特定VM表示为承诺的VM。假设对手可以传递给Enclave预期的信息，但在这种情况下，对手的操作必须在文件系统中留下一些痕迹。完整的系统认证检查应揭示这一点，并为此VM发出警报。 需要注意的是，对手不知道测试策略和预期结果。我们可以利用这一事实，还可以<strong>评估度量时间或任何命令执行</strong>，这可以让我们全面了解系统内部发生的情况。作为给定系统的示例，文件X的测量时间应为：$t_{min}&lt;t_{X}&lt;t_{max}$。对于单线程认证客户端，测量一组文件还将生成单个测量时间值的向量：$v&#x3D;t_A、t_B、t_C,….，t_N$。此信息可作为<strong>测试服务器验证的结果指纹使用</strong>。如果测量的时间超出预定义的时间范围，我们可以推断该值被注入。<strong>我们不考虑任何拒绝服务攻击，包括网络层或资源耗尽</strong>。VM仅在功能完备的端到端操作中受信任。由于Liu等人（2016）所述的解决方案，<strong>我们也没有实施任何机制来防止侧通道攻击</strong>；Oleksenko等人（2018年）；Schwarz等人（2020年）可用于缓解这些问题。 总结：</p>
+<ol>
+<li>可能利用度量时间和命令执行来验证系统是否符合预期结果</li>
+<li>未考虑拒绝服务攻击，即使是正常是服务器资源耗尽等情况。</li>
+<li>没有实施任何机制来防止enclave测信道攻击。</li>
+</ol>
+<blockquote>
+<p>如果按照度量时间，那这个范围怎么确定，太大了会导致验证效果差，无法有效验证，太小了又会误判。</p>
+</blockquote>
+<h2 id="3-2-飞地（enclave）的远程证明"><a href="#3-2-飞地（enclave）的远程证明" class="headerlink" title="3.2 飞地（enclave）的远程证明"></a><strong>3.2 飞地（enclave）的远程证明</strong></h2><p>在可以使用enclave之前，还应该证明它是可信的，并向远程实体证明它是可信的。我们利用<strong>IAS</strong>，使用内置enclave和SGX属性，以加密方式证明我们的enclave是合法的。它还评估系统上运行的安全级别检查固件版本。对于标准的非对称加密，每个公钥都有一个对应的私钥，消息发起人的身份是可以确信的。为了保护用户和设备的隐私，使用了增强的隐私ID机制（Sarangdhar和Nemiroff，2014）。由于这种机制，单个公钥可以关联多个私钥。验证者将发起者认证为较大组的成员，以保持其匿名性，并保护用户和设备的隐私。 引起对签名者匿名或潜在服务滥用担忧的IAS（Swami，2017）有其他选择。可以使用基于Intel的DCAP（Scarlata et al.，2018）或OPERA（Chen et al.，2019）的第三方服务。它们允许构建自己的认证服务，并声称可以解决隐私问题和可能出现的大规模分布式部署性能瓶颈。虽然DCAP和OPERA声称的隐私和性能的改善，但该解决方案的完整性要么不明确，要么受到质疑（Swami，2017）。</p>
+<blockquote>
+<p>IAS远程认证服务，是Intel SGX的对enclave的远程认证服务。</p>
+</blockquote>
+<p>当enclave认证完成时，我们知道远程平台在支持Intel SGX的处理器上运行，并且具有已知的TCB级别（DoD 5200.28-M，1985）。还建立了一个经过身份验证的安全通信通道，从那时起，远程服务器可以以安全的方式向enclave提供机密。虚拟机认证过程现在可以开始了，因为它使用了认证的enclave。 总结：<strong>先进行enclave认证，再进行虚拟机认证</strong></p>
+<h2 id="3-3-虚拟机的远程证明"><a href="#3-3-虚拟机的远程证明" class="headerlink" title="3.3 虚拟机的远程证明"></a><strong>3.3 虚拟机的远程证明</strong></h2><p>当enclave由认证服务创建和验证时，它可以用作认证客户端的安全执行环境。在enclave内部，我们使用内置密钥生成私钥，该私钥将用于加密数据，然后再将其暴露在enclave外部。私钥在enclave之外不可用，而相应的公钥与认证服务共享，以启用安全通信通道。通过此通道，可以将加密的策略文件发送到enclave，并执行预定义的文件系统检查。测试完成后，结果将以加密形式发送回认证服务器（AS） 为了评估收到的值，系统必须了解预期值。这些值可以在受信任（和受控）的实验室环境中捕获，然后由认证服务器用作参考值。基于这些知识，可以将远程VM文件系统的评估作为受信任的计算资源。</p>
+<h2 id="3-4-模型描述"><a href="#3-4-模型描述" class="headerlink" title="3.4 模型描述"></a><strong>3.4 模型描述</strong></h2><p>定义如下术语：</p>
+<ul>
+<li><strong>认证客户端</strong>（Attestation client）是一种执行所需测试场景的软件。它安装在虚拟机中。</li>
+<li><strong>认证服务</strong>（Attestation service）是一种控制认证过程并可以评估其结果的软件。它是一个验证器，可以评估安装在受信任和完全控制的环境中的VM信任级别。</li>
+<li><strong>证明过程</strong>（Attestation process）是一系列步骤和操作，允许验证者评估enclave或虚拟机的信任级别。</li>
+</ul>
+<p>enclave认证过程应确认enclave本身是可信的，并且可以安全地用作认证客户端的执行环境。IAS（IAS）验证所创建的enclave，并可以开始正确的VM认证。在较高的级别上，新的过程从保密开始，即生成用于加密的密钥对，并与认证服务共享公钥。加密的策略文件被推送到认证客户端并传递给enclave，enclave可以解密并开始执行测试用例。enclave正在收集测试结果，并为系统调用进行必要的应用程序调用。最后，结果被加密并由认证客户端发送给认证服务，该服务可以在安全级别上进行评估。 总结：先通过IAS认证enclave，确保enclave可信，然后利用enclave生成公私钥，进行认证客户端和服务之间的通信，服务端先传送过来策略文件，认证客户端执行测试用例，最后将结果返回给服务端，服务端进行评估安全级别。</p>
+<h2 id="3-5-模型细节（主要）"><a href="#3-5-模型细节（主要）" class="headerlink" title="3.5 模型细节（主要）"></a><strong>3.5 模型细节（主要）</strong></h2><p><img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653014978223.png" srcset="/img/loading.gif" lazyload alt="image-1653014978223"></p>
+<ol>
+<li>不受信任的认证客户端调用enclave来生成非对称密钥对。密钥由处理器通过EGETKEY指令生成，并密封到当前enclave或enclave签名者。因此，只有相同的enclave或由相同身份签名的enclave才能解封（解密）数据。这允许在enclave外部存储加密数据，并在需要时在enclave内部按需解密。请注意，此操作在启动时由VM应用程序启动，但也可以由认证服务按需远程触发。</li>
+<li>作为对之前操作的响应，enclave将公钥返回给客户端</li>
+<li>客户端通过网络将公钥发送到测试服务器，并请求测试策略。</li>
+<li>AS使用从enclave接收的公钥加密测试策略，并将其发送回客户端。</li>
+<li>认证客户端将加密的策略文件传递给enclave，enclave保存一个与公钥配对的私钥。</li>
+<li>策略文件在enclave内解密，enclave开始执行请求的测试。单个测试可以包括计算文件列表的校验和。</li>
+<li>在计算过程中，如果需要从enclave执行系统调用，enclave必须调用认证客户端（OCall）。此机制可防止在Enclave内执行任何代码和任何操作（例如IO操作、系统或外部库调用）。每个预期的系统OCall都是在应用程序中有意实现的。</li>
+<li>客户端正在执行请求的系统调用，无需任何其他处理。</li>
+<li>系统调用结果将发送回enclave。重复步骤7–10，直到测试过程完成。</li>
+<li>测试结果由私钥加密并重新返回给客户端。</li>
+<li>客户端通过安全通信通道将加密的测试结果发送给认证服务器。</li>
+<li>AS解密结果并将其与已知的适当值进行比较，从而对VM信任级别进行评估。</li>
+<li>认证服务器使客户机和其他系统可以使用评估状态，以便他们可以开始使用VM作为可信的计算资源。</li>
+</ol>
+<p>注意，任何网络通信都应该使用加密和安全的信道（图3中没有描述这一事实）。至少需要TLS通信和网络防火墙。</p>
+<h2 id="3-6-安全属性"><a href="#3-6-安全属性" class="headerlink" title="3.6 安全属性"></a><strong>3.6 安全属性</strong></h2><p>为了能够基于CPU SGX指令对远程虚拟机进行完整性验证，建议的系统提供以下安全属性：</p>
+<ul>
+<li><strong>私钥保护</strong>。Intel SGX保证CPU生成的密钥永远不会在enclave之外共享。每次创建enclave时，都会生成一个新密钥，并且永远不会持久化。这发生在每次VM启动或按需启动时（在稍后启动认证时的任何时间点）。为了泄露密钥，攻击者必须在Intel SGX体系结构或认证客户端中发现漏洞。最近的研究表明，enclave RSA密钥可以在隔离的实验室环境中通过成功的侧信道攻击（Schwarz et al.，2020）重建。在实际部署场景中，这非常具有挑战性；然而，作者提供了可供应用程序开发考虑的对策。</li>
+<li><strong>运行时保护</strong>。enclave就像认证客户的黑盒子；它接收加密数据，并用加密数据进行回复。校验和计算在屏蔽enclave运行时使用加密内存执行。只有简单的系统调用才能在enclave之外执行，从而最大限度地减少滥用的机会。当系统调用被篡改时，认证结果评估将揭示这一点，并且VM将不受信任。</li>
+<li><strong>最小TCB</strong>。对于我们的模型，我们不信任云提供商。<strong>可信计算基础仅限于Intel CPU和SGX SDK</strong>，它们可以利用hypervisor公开的EPC内存。SGX SDK在为虚拟机创建的受保护运行时中执行CPU指令。认证客户端不知道底层硬件基础结构，不需要Intel CPU和SGX SDK以外的任何其他模块。有了这个属性，我们可以利用各种云模型，即裸机即服务&#x2F;MaaS、IaaS或具有比以前更高信任级别的系统容器。</li>
+<li><strong>受信任的认证服务</strong>。在我们的系统中，认证服务是部署在应用程序供应商拥有并完全控制的可信环境中的唯一软件。这意味着<strong>该软件也可以被视为可信的</strong>。任何部署在云模型中的应用程序都会因特定于云的漏洞而面临风险（Singh和Chatterjee，2017），对于未部署在云中的认证服务器来说，这些漏洞不是问题所在。</li>
+<li><strong>通信加密</strong>。每个网络通信通道都受到TLS保护，enclave输入&#x2F;输出额外加密。enclave返回的测试结果使用enclave私钥加密。认证客户端使用TLS会话密钥对它们进行进一步加密，然后再通过网络将它们发送到AS。TLS通信通过客户端证书认证得到增强，该认证将相互认证认证客户端和AS。对于生产部署，应确保TLS证书提供和传输机制。</li>
+</ul>
+<blockquote>
+<p>这个3.6 感觉是在凑字数，因为上面都知道了。</p>
+</blockquote>
+<h1 id="4-系统评估"><a href="#4-系统评估" class="headerlink" title="4 系统评估"></a><strong>4 系统评估</strong></h1><p>测试场景的假设是测量文件系统中的<strong>关键文件、应用程序二进制文件、配置文件、库</strong>，以及通过<code>/proc/</code>文件系统提供的静态运行时信息。当为虚拟机引入SGX enclave时，测量结果用于评估性能开销。这是通过在以下三种情况下计算选定文件的校验和来完成的：</p>
+<ul>
+<li>无SGX。认证客户端直接部署在裸机操作系统上，没有任何虚拟化，并且不使用SGX进行计算。这被用作性能比较的参考场景。</li>
+<li>物理SGX。认证客户端直接部署在裸机操作系统上，并使用SGX进行计算。</li>
+<li>虚拟SGX。这是我们的建议，其中认证客户端部署在虚拟机中，并配置为使用虚拟机监控程序公开的SGX Enclave进行计算。</li>
+</ul>
+<p>每个场景包含50个重复100次的文件的度量。在物理SGX和虚拟SGX场景中，执行相同的步骤，但在前一种情况下，它们直接在主机上执行，在后一种情况下，它们发生在已经创建并准备使用的VM上。</p>
+<h2 id="4-1-实现细节"><a href="#4-1-实现细节" class="headerlink" title="4.1 实现细节"></a><strong>4.1 实现细节</strong></h2><p>见下表，总共2200行C代码，3个模块。<img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653017815972.png" srcset="/img/loading.gif" lazyload alt="image-1653017815972"></p>
+<ol>
+<li><strong>The untrusted Attestation Client</strong>,客户端包含一组例程，用于保护与认证服务的通信。我们利用OpenSSL进行TLS加密，还使用 SSL_CTX_set_verify_depth(ctx,1) 函数强制执行证书身份验证，该函数将强制执行对等证书验证。这将只允许由为认证客户端预先配置的证书颁发机构颁发的证书。将拒绝出示任何其他证书。另一个主要的认证客户端功能是执行来自受信任enclave的系统调用。SGX要求每个OCall和ECall都由Enclave定义语言（Intel，2017）明确定义，描述在认证客户端中执行的受信任和不受信任的函数，见图4。还利用了SGX Edger8工具。</li>
+<li><strong>Trusted Enclave</strong>，初始化和认证后，enclave使用sgx_ecc256_create_key_pair()函数创建密钥对，并与认证服务器共享公钥。AS需要一个策略文件，其中包含要测量的文件列表或要执行的命令集。或者，可以使用sgx_seal_data() 密封文件和部分测试结果，并将其存储在外部，以释放为enclave分配的一些内存。enclave利用OCALL将原子命令执行委托给应用程序，收集结果，并为每个测试重复该过程。为了进行性能评估，在飞地中实施了以下额外函数：<img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653025262605.png" srcset="/img/loading.gif" lazyload alt="image-1653025262605">此函数返回当前系统时间戳，并在测试执行前后调用。它允许我们计算性能基准的执行测试时间。需要ocall_time，因为enclave不允许任何直接时间函数，因此，执行必须在enclave之外委托给认证客户机。两次OCall执行的惩罚对于捕获单个测试的执行时间是必要的，它会影响所有测试场景。</li>
+<li><strong>Checksum calculator</strong>。对于我们的原型，我们将此函数放置在enclave中，并直接放置在认证客户端中。这仅用于比较目的，因为enclave未用于NoSGX场景下。相反，对于生产使用，应该考虑使用trusted libsgx_tsgxssl_crypto ，这是一个基于OpenSSL 1.1.0加密库的加密SGX库。这是可能的，因为校验和计算器仅在enclave内部实现。</li>
+</ol>
+<h2 id="4-2-4-3-详细比较与开销"><a href="#4-2-4-3-详细比较与开销" class="headerlink" title="4.2&#x2F;4.3 详细比较与开销"></a><strong>4.2&#x2F;4.3 详细比较与开销</strong></h2><p>当一个长期运行的测试受到争夺资源的其他操作系统进程执行的影响时，大文件的异常值就会报告出来。当操作系统将CPU分配给具有较高优先级的进程时，就会发生这种情况，对于利用多个虚拟机之间共享的CPU的单线程验证客户端，可以观察到这种情况。<strong>这种配置，在云部署中是很典型的，但是可以通过将CPU绑定到虚拟机上，专门为认证客户端分配处理能力来缓解</strong>。 <img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653029176337.png" srcset="/img/loading.gif" lazyload alt="image-1653029176337">该实验表明，处理时间不超过零秒，对于小文件，处理时间不会随着文件大小的增加而增加。这意味着代表配置文件的文件大小的度量操作对总体处理时间没有显著影响。在这种情况下，提供度量能力所需的执行环境开销以及由<strong>对象创建、内存分配、库调用等产生的执行环境开销是一个主要因素</strong>。 随着文件大小的增长，测量时间开始发挥重要作用，从10 kB的文件大小开始，可以在图9中观察到文件大小和处理时间之间的线性依赖关系1。由于观察到的线性，理论上可以估计任何文件大小的测量时间。例如，表2中给出了1 TB文件的此类计算以及较小文件的处理时间。在最复杂的虚拟SGX场景中测量的小文件的结果偏差最大。另一方面，结果表明在裸机无SGX情况下处理的大型文件的稳定性最大。 <img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653029251412.png" srcset="/img/loading.gif" lazyload alt="image-1653029251412"></p>
+<h2 id="4-4-可能的改进措施"><a href="#4-4-可能的改进措施" class="headerlink" title="4.4 可能的改进措施"></a><strong>4.4 可能的改进措施</strong></h2><p>该原型允许验证文件系统和运行时的完整性。它可以在VM启动时执行，也可以在不影响操作流量的非高峰时间执行。然而，为了使我们的解决方案更适合实际部署，我们提出了一些潜在的改进措施，尤其是在高峰时间对大文件执行远程认证时：</p>
+<ol>
+<li><p><strong>算法选择</strong>。可以使用内置安全库中更有效的文件完整性检查算法来改进校验和或哈希计算。</p>
+</li>
+<li><p><strong>多线程</strong>。认证客户端可以使用多个线程同时处理更多文件。</p>
+</li>
+<li><p><strong>代码优化</strong>。通过一些工程努力和深入分析，可以改进客户端代码，以使用最佳缓冲区大小，降低复杂性和认证客户端调用。</p>
+</li>
+<li><p><strong>VM调整</strong>。我们的模型是CPU昂贵的，应该考虑到这一事实，在创建时分配更多CPU或专门将CPU固定到VM</p>
+<blockquote>
+<p>当一个长期运行的测试受到争夺资源的其他操作系统进程执行的影响时，对于大文件的测试会产生异常</p>
+</blockquote>
+</li>
+<li><p><strong>无退出系统调用（Exitless system calls）</strong>（Kuvaiskii，2018）。对于每个系统调用，进程必须退出enclave，这会增加性能开销（Orenbach et al.，2017）。异步调用可以减少这种开销。</p>
+</li>
+</ol>
+<h2 id="4-5-部署"><a href="#4-5-部署" class="headerlink" title="4.5 部署"></a><strong>4.5 部署</strong></h2><p>认证服务器，多实例、负载均衡等，VM认证客户可以通过放在VM引导镜像中或者VM引导时安装。</p>
+<h2 id="4-6-认证服务器实现"><a href="#4-6-认证服务器实现" class="headerlink" title="4.6 认证服务器实现"></a><strong>4.6 认证服务器实现</strong></h2><p>在本节中，我们将介绍可用于生产部署的认证服务器实现细节。我们不关注用户界面或测试准备和分发。相反，我们讨论了对AS性能起关键作用的构建块，如图10所示。我们提出了2级缓存，即一个数据库缓存和一个位于数据库之上的顶级缓存。这样的设计减少了每次都必须扫描一组数据以搜索校验和，避免昂贵的数据库调用。 <strong>数据库缓存</strong>是在认证服务器启动期间从数据库读取的完整数据集的内存表示形式。 <strong>顶级缓存</strong>用于存储频繁请求对象的正确测量值。当同一测试场景对一些虚拟机执行时，这个数据集比较小而且是固定的。对于不同的请求，这个数据集会增长，人们可能会考虑最近使用最少的缓存策略，或其他缓存策略，保证它数据集不会太大。当测量的VM不相同时，顶级缓存大小会增加，例如，在要检查的操作系统和文件方面。在某种情况下，这会导致每次都要验证唯一的校验和，而AS无法有效地使用顶级缓存。AS利用缓存并进行一些步骤来评估从虚拟机收到的测量结果。 <img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653030824339.png" srcset="/img/loading.gif" lazyload alt="image-1653030824339"></p>
+<ol>
+<li>AS通过安全TLS通道接收加密的测量文件。</li>
+<li>文件被额外解密为可由AS处理的纯文本。</li>
+<li>文件中的每一行都包含一个绝对文件路径和一个校验和结果。行在循环中顺序处理。</li>
+<li>检查校验和是否存在于顶级缓存中，即最频繁请求的对象中。比较器块搜索绝对文件路径的校验和。如果它与接收到的值匹配，则不执行任何操作，并继续执行下一项。</li>
+<li>对于顶级缓存未命中，将在数据库缓存中验证校验和。由于它可以存储大量记录，因此比顶级缓存慢。当在那里找到校验和时，它将填充到顶级缓存中，以加快对同一对象的下一个请求。对于重复测试场景，它应该仅用于第一次运行，因为对相同校验和的后续调用将导致顶级缓存命中。</li>
+<li>直接检查数据库是最后的手段。当DB缓存与数据库不同步时（例如由用户界面的更新引起），可能会发生这种情况。这样的更新应该触发DB缓存刷新。只有在更新完成之前，才会发生缓存未命中。</li>
+<li>如果未在任何缓存和数据库中找到校验和，则不会检测到文件完整性冲突。</li>
+<li>当发现未知校验和时，可以考虑以下几个选项。至少应报告以供进一步调查。在采取最终措施（例如停止VM）之前，应评估发现的不一致性的严重程度。</li>
+</ol>
+<h2 id="4-7-认证服务器性能评估"><a href="#4-7-认证服务器性能评估" class="headerlink" title="4.7 认证服务器性能评估"></a><strong>4.7 认证服务器性能评估</strong></h2><p><img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653031487864.png" srcset="/img/loading.gif" lazyload alt="image-1653031487864"></p>
+<blockquote>
+<p>both是两台AS服务器，做了负载均衡。</p>
+</blockquote>
+<p>假设只有一个实例（蓝线），AS可以每分钟评估9000个VM，每小时评估500000多个VM。有了这样的结果，应用程序供应商可以灵活地根据所拥有的虚拟机数量调整认证需求。</p>
+<h1 id="5-安全性分析"><a href="#5-安全性分析" class="headerlink" title="5 安全性分析"></a><strong>5 安全性分析</strong></h1><p>我们已经证明，我们的系统可以成功地用于在运行SGX的分布式云环境中验证VM。然而，此类部署非常复杂，我们并不总是了解底层基础架构。在部署解决方案时，我们应该谨慎，并重申云的细节。否则，我们可能会使其面临额外的安全风险。例如，除了基本的生命周期操作之外，云栈还应该提供更复杂的功能，例如VM迁移或扩展。<strong>对于已迁移的典型基于SGX的应用程序，enclave使用新处理器创建不同的密钥对。这意味着它将无法解密由前一个虚拟机的处理器生成的加密密钥数据</strong>。在这种情况下，应提供新老平台之间密钥交换和加密enclave数据迁移的安全方法。建议的延期（Gu等人，2017年；Park等人，2019年；2016年）是有希望的，但不是真的。此外，它们还需要额外的构件。这增加了复杂性，并且不能保证迁移数据的机密性、完整性和可用性，因此VM实时迁移不能被视为安全的。</p>
+<blockquote>
+<p>基于SGX的迁移，会导致无法解密。</p>
+</blockquote>
+<p>在我们的模型中，我们不迁移enclave数据；因此，我们支持VM迁移。只有在认证过程运行时，我们才能在enclave之外存储数据。此外，总是在VM启动时，我们假设所有数据都会丢失，并且VM不受信任。这一强有力的假设意味着VM必须经过认证过程才能处理操作流量。由于此属性，建议的解决方案支持任何意味着使用其他处理器的云操作，包括VM迁移。 SGX技术也存在很多攻击点。</p>
+<h1 id="6-基于虚拟TPM和SGX的远程认证比较"><a href="#6-基于虚拟TPM和SGX的远程认证比较" class="headerlink" title="6 基于虚拟TPM和SGX的远程认证比较"></a><strong>6 基于虚拟TPM和SGX的远程认证比较</strong></h1><p><img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653033517876.png" srcset="/img/loading.gif" lazyload alt="image-1653033517876"></p>
+<h1 id="7-总结"><a href="#7-总结" class="headerlink" title="7 总结"></a><strong>7 总结</strong></h1><p>该文提出了一种新的远程证明解决方案，该远程证明专用于在具有支持SGX的虚拟机监控程序的云中运行的虚拟机。所提出的方法允许在启动期间基于文件系统完整性评估系统信任，也可以根据需要使用灵活的策略进行评估。我们表明，我们的方法不会给处理时间增加显著的开销。此外，我们建议进一步改进。 我们的原型符合我们定义的安全属性。它以最小的可信计算基础为认证客户端提供运行时保护。我们还分析了威胁模型和SGX攻击技术，提出了针对潜在漏洞的应对措施。该解决方案不需要对现有软件进行任何更改，这使其非常适合能够无缝传输其服务的应用程序供应商。我们的解决方案消除了VTPM实施中存在的一些障碍；因此，它是支持SGX的云部署的良好候选者。 下一步工作，我们计划（a）分析云配置安全方面，并提出缓解方法以避免错误配置，（b）提出适用于大型文件的完整性验证模型，以减少代价较高的处理时间。</p>
+<h1 id="读者总结与思考"><a href="#读者总结与思考" class="headerlink" title="读者总结与思考"></a><strong>读者总结与思考</strong></h1><ol>
+<li>这篇文章提出的远程证明思想基于SGX，与TPM无关，并且将VTPM与Virtual SGX的远程证明进行了对比。</li>
+<li>它将所有的可信基础归结到SGX enclave，对虚拟机进行远程验证时，需要先对SGX enclave进行认证。</li>
+<li>对enclave认证就是利用SGX的IAS认证服务方法，对于虚拟机的认证，先由不受信任的认证客户端，这个客户端是在虚拟机中运行的，向enclave发出生成非对称密钥对的指令，私钥由enclave保存，公钥返回给认证客户端。客户端再向认证服务器发出请求获取策略，认证服务器解密后，使用enclave生成的公钥加密策略发送给认证客户端，客户端得到策略，委托给enclave。enclave解密后，执行测试。如果测试过程中有系统调用之类的，需要发出ocalls，由认证客户端去发出，认证客户端再将结果返回给enclave。全部测试执行完毕后，加密所有结果，最终返回给认证服务器。认证服务器得到测试结果后，评估VM的安全级别，对VM执行相应操作。</li>
+</ol>
+<p>问题：</p>
+<ol>
+<li>SGX相关的攻击有可能会导致enclave不可信，并且已经有对于SGX的攻击。文中并没有给出如何解决，这种风险。</li>
+<li>它所提出的测试场景包括：<strong>关键文件、应用程序二进制文件、配置文件、库</strong>，以及<strong>通过&#x2F;proc&#x2F;文件系统提供的静态运行时</strong>信息，这样涵盖了静态和动态，这个静态运行时信息，也没有给出示例。</li>
+<li>测试的例子没有给出，只给了宏观的性能分析等，如何通过测试，让enclave来执行获取&#x2F;proc&#x2F;的运行时信息，之前有篇文章就是通过&#x2F;proc&#x2F;文件系统，获取程序代码段的运行时信息，因为代码段不会变嘛。</li>
+<li>因为这个策略是由验证者来决定的，有很大的变动空间，如果策略设置不合理，或者出错，该如何解决？</li>
+<li>enclave中存在CPU的上下文切换开销，对于大文件的认证操作有可能会受到其他进程的影响导致认证失败，而且对于大文件会导致极大的系统开销，如何解决？</li>
+</ol>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%8F%AF%E4%BF%A1%E8%AE%A1%E7%AE%97/" class="category-chain-item">可信计算</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E8%BF%9C%E7%A8%8B%E8%AF%81%E6%98%8E/" class="print-no-link">#远程证明</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>远程证明_03_使用Intel SGX对虚拟机进行远程认证和完整性测量</div>
+      <div>http://example.com/0003.html</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>landery</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2023年3月7日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/0004.html" title="远程证明_04_虚拟化环境的安全认证">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">远程证明_04_虚拟化环境的安全认证</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/0002.html" title="远程证明_02_TRIGLA V：公共云中虚拟机运行时完整性的远程验证_自我总结">
+                        <span class="hidden-mobile">远程证明_02_TRIGLA V：公共云中虚拟机运行时完整性的远程验证_自我总结</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"GK4nuH8jdXDcw4IJIVShjMtA-gzGzoHsz","appKey":"7P0B0kJFdaLY6eDQ93Lhcv8J","path":"window.location.pathname","placeholder":"建议使用QQ邮箱，评论头像采用QQ头像","avatar":"retro","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":true,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":true,"bg":null,"count":true},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+    <!-- 备案信息 ICP for China -->
+    <div class="beian">
+  <span>
+    <a href="http://beian.miit.gov.cn/" target="_blank" rel="nofollow noopener">
+      蜀ICP备2022011502号
+    </a>
+  </span>
+  
+    
+      <span>
+        <a
+          href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=51012202001227"
+          rel="nofollow noopener"
+          class="beian-police"
+          target="_blank"
+        >
+          
+            <span style="visibility: hidden; width: 0">|</span>
+            <img src="/img/police_beian.png" srcset="/img/loading.gif" lazyload alt="police-icon"/>
+          
+          <span>川公网安备51012202001227号</span>
+        </a>
+      </span>
+    
+  
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/DynamicRibbon.min.js"></script>
+<script src="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/love.min.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

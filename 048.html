@@ -1,0 +1,875 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="landery">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="01 glib事件循环机制Linux系统中“一切皆文件”，包括具体文件、设备、网络、Socket等都被抽象为文件。Linux通过fd来访问一个文件，应用程序也可以调用select、poll、epoll系统调用来监听文件的变化。QEMU程序的运行即是基于各类文件fd事件的，QEMU在运行过程中会将自己感兴趣的文件fd添加到其监听列表上并定义相应的处理函数，在其主线程中，有一个循环用来处理这些文件fd">
+<meta property="og:type" content="article">
+<meta property="og:title" content="QEMU的事件循环-01 glib事件循环机制">
+<meta property="og:url" content="http://example.com/048.html">
+<meta property="og:site_name" content="landery小站">
+<meta property="og:description" content="01 glib事件循环机制Linux系统中“一切皆文件”，包括具体文件、设备、网络、Socket等都被抽象为文件。Linux通过fd来访问一个文件，应用程序也可以调用select、poll、epoll系统调用来监听文件的变化。QEMU程序的运行即是基于各类文件fd事件的，QEMU在运行过程中会将自己感兴趣的文件fd添加到其监听列表上并定义相应的处理函数，在其主线程中，有一个循环用来处理这些文件fd">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/wp-content/uploads/2023/06/image-1686191288096.png">
+<meta property="article:published_time" content="2023-06-08T02:32:22.000Z">
+<meta property="article:modified_time" content="2024-04-15T10:04:00.397Z">
+<meta property="article:author" content="landery">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://example.com/wp-content/uploads/2023/06/image-1686191288096.png">
+  
+  
+  
+  <title>QEMU的事件循环-01 glib事件循环机制 - landery小站</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/scroll.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"GK4nuH8jdXDcw4IJIVShjMtA-gzGzoHsz","app_key":"7P0B0kJFdaLY6eDQ93Lhcv8J","server_url":"https://api.landery.cn","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>landery 小站</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/links/" target="_self">
+                <i class="iconfont icon-link-fill"></i>
+                <span>友链</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/remark/" target="_self">
+                <i class="iconfont icon-twitch-fill"></i>
+                <span>留言板</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/image/bg/001.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="QEMU的事件循环-01 glib事件循环机制"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2023-06-08 10:32" pubdate>
+          2023年6月8日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          4k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          34 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">QEMU的事件循环-01 glib事件循环机制</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h2 id="01-glib事件循环机制"><a href="#01-glib事件循环机制" class="headerlink" title="01 glib事件循环机制"></a>01 glib事件循环机制</h2><p>Linux系统中“一切皆文件”，包括具体文件、设备、网络、Socket等都被抽象为文件。Linux通过fd来访问一个文件，应用程序也可以调用select、poll、epoll系统调用来监听文件的变化。QEMU程序的运行即是基于各类文件fd事件的，<strong>QEMU在运行过程中会将自己感兴趣的文件fd添加到其监听列表上并定义相应的处理函数</strong>，在其主线程中，有一个循环用来处理这些文件fd的事件，如来自用户的输入、来自VNC的连接、虚拟网卡对应tap设备的收包等。QEMU程序的事件机制是基于glib的，我们需要了解一下glib。</p>
+<h3 id="glib是什么？"><a href="#glib是什么？" class="headerlink" title="glib是什么？"></a>glib是什么？</h3><p>GLib是一种开源的通用C语言库，提供了许多常用的数据类型、数据结构、线程支持、文件操作、内存管理、字符串处理、网络编程等功能，方便开发者进行跨平台的应用程序开发。GLib最初是GTK+项目的一部分，但现在已经成为一个独立的开源项目，其设计目标是为了提供一个高效、可移植、易于使用的C语言库。 其官方网址：<a target="_blank" rel="noopener" href="https://docs.gtk.org/glib/">GLib – 2.0 (gtk.org)</a></p>
+<h3 id="事件循环机制"><a href="#事件循环机制" class="headerlink" title="事件循环机制"></a>事件循环机制</h3><p>我们先说glib事件循环机制一般有什么用？glib实现了一个功能完整的事件循环分发处理的机制，这些事件来源包括各种文件描述符（文件、管道或者socket）、超时和idle事件等，当然也可以自定义事件源。使用这套接口注册事件源以及对应的处理回调方法，可以方便开发基于事件触发的应用，如QEMU。 glib的事件循环机制是基于<code>poll</code>的，这又是牵扯到一个叫做 <strong>I&#x2F;O多路复用</strong> 的概念。 IO多路复用是一种同步 IO 模型,实现一个线程可以监视多个文件句柄。一旦某个文件句柄就绪,就能够通知应用程序进行相应的读写操作；没有文件句柄就绪时会阻塞应用程序，交出CPU。这样就可以减少系统开销，避免创建过多进程或者线程维护文件句柄。而实现IO多路复用的方式主要是这三种：<code>select</code>、<code>poll</code>、<code>epoll</code>。 glib是一个跨平台的库，在Linux上，使用的是<code>poll</code>函数，在window上，使用的是<code>select</code>。而<code>epoll</code>这个接口，在linux2.6中才正式推出，它的效率比前两者更高，在网络编程中大量使用。而本质上，这三个函数，其实是相同的。如果要看详细的对比，可以看这个博主的文章： <a target="_blank" rel="noopener" href="https://blog.csdn.net/ChineseSoftware/article/details/123812179">IO 多路复用_io多路复用_JFS_Study的博客-CSDN博客</a></p>
+<h3 id="poll机制"><a href="#poll机制" class="headerlink" title="poll机制"></a>poll机制</h3><p>以poll为例，简单介绍的poll使用如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><code class="hljs C"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;poll.h&gt;</span></span><br>...<br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">pollfd</span> <span class="hljs-title">fds</span>[2];</span><br><span class="hljs-type">int</span> timeout_msecs = <span class="hljs-number">500</span>;<br><span class="hljs-type">int</span> ret;<br><span class="hljs-type">int</span> i;<br><br><span class="hljs-comment">/* Open STREAMS device. */</span><br>fds[<span class="hljs-number">0</span>].fd = open(<span class="hljs-string">&quot;/dev/dev0&quot;</span>, ...);<br>fds[<span class="hljs-number">1</span>].fd = open(<span class="hljs-string">&quot;/dev/dev1&quot;</span>, ...);<br>fds[<span class="hljs-number">0</span>].events = POLLOUT  POLLWRBAND; <span class="hljs-comment">//等待发生的事件</span><br>fds[<span class="hljs-number">1</span>].events = POLLOUT  POLLWRBAND; <span class="hljs-comment">//等待发生的事件</span><br><br><span class="hljs-keyword">while</span>(<span class="hljs-number">1</span>) &#123;<br>    ret = poll(fds, <span class="hljs-number">2</span>, timeout_msecs);<br>    <span class="hljs-keyword">if</span> (ret &gt; <span class="hljs-number">0</span>) &#123;<br>        <span class="hljs-comment">/* An event on one of the fds has occurred. */</span><br>        <span class="hljs-keyword">for</span> (i=<span class="hljs-number">0</span>; i&lt;<span class="hljs-number">2</span>; i++) &#123;<br>            <span class="hljs-comment">//检查实际发生的事件</span><br>            <span class="hljs-keyword">if</span> (fds[i].revents &amp; POLLWRBAND) &#123;<br>            <span class="hljs-comment">/* Priority data may be written on device number i. */</span><br>            ...<br>            &#125;<br>            <span class="hljs-keyword">if</span> (fds[i].revents &amp; POLLOUT) &#123;<br>            <span class="hljs-comment">/* Data may be written on device number i. */</span><br>            ...<br>            &#125;<br>            <span class="hljs-keyword">if</span> (fds[i].revents &amp; POLLHUP) &#123;<br>            <span class="hljs-comment">/* A hangup has occurred on device number i. */</span><br>            ...<br>            &#125;<br>        &#125;<br>    &#125;<br>&#125;<br>...<br></code></pre></td></tr></table></figure>
+
+<p>上面这个代码，我们可以把它拆分成3部分：</p>
+<ol>
+<li><p>准备要检测的文件集合（不是简单的准备“文件描述符”的集合，而是准备<code>struct pollfd</code>结构体的集合。这就包括了文件描述符，以及希望监控的事件，如可读&#x2F;可写&#x2F;或可执行其他操作等)。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs C"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">pollfd</span> &#123;</span><br><span class="hljs-type">int</span> fd;        <span class="hljs-comment">/* 文件描述符 */</span><br><span class="hljs-type">short</span> events;  <span class="hljs-comment">/* 等待的事件 */</span><br><span class="hljs-type">short</span> revents; <span class="hljs-comment">/* 实际发生了的事件 */</span><br>&#125;;<br></code></pre></td></tr></table></figure>
+</li>
+<li><p>执行<code>poll</code>，等待事件发生（文件描述符对应的文件可读&#x2F;可写&#x2F;或可执行其他操作等）或者是函数超时返回。</p>
+</li>
+<li><p>遍历文件集合（<code>struct pollfd</code>结构体的集合)，判断具体是哪些文件有“事件”发生，并且进一步判断是何种“事件”。然后，根据需求，执行对应的操作（上面的代码中，用…表示的对应操作)。</p>
+</li>
+</ol>
+<p>其中<strong>2</strong>和<strong>3</strong>对应的代码，都放在一个<code>while</code>循环中。而在<strong>3</strong>中所谓的“对应的操作”，还可以包括一种“退出”操作，这样的话，就可以从<code>while</code>循环中退出，这样的话，整个进程也有机会正常结束。 这段代码比较简单，但是存在一些使用上的问题：</p>
+<ol>
+<li>这段代码里仅仅打开了两个文件，传递给poll函数，如果程序运行过程中，想要动态的增加poll函数监控的文件，怎么实现？</li>
+<li>这段代码里面，设置的超时时间是固定的，加入某个时刻有100个文件需要监控，那么怎么针对100个文件设置不同的超时时间？</li>
+<li>这段代码里面，当poll函数返回时，对监控的每个fd进行遍历，逐个判断并执行对应的擦欧总。那如果有100个文件被监控，其中某个文件优先级很高，非常紧急怎么办？</li>
+</ol>
+<p>可以从面向对象的角度来看：</p>
+<ol>
+<li>对第1个问题，可以想到，需要对 <strong>所有的文件</strong>（<code>struct pollfd</code>）做一个统一的管理，需要有添加和删除文件的功能。用面向对象的思想来看，这就是一个类，暂且叫做<strong>类A</strong>。</li>
+<li>对第2个问题，可以想到，还需要对 <strong>每一个被监控的文件</strong>（<code>struct pollfd</code>）做更多的控制。也可以用一个类来包装被监控的文件，对这个文件进行管理，在该对象中，包含了<code>struct pollfd</code>结构体，该类还可以提供对应的文件所期望的超时时间。暂且叫做<strong>类B</strong>。</li>
+<li>对第3个问题，可以考虑为每一个被监控的文件设置一个优先级，然后就可以根据优先级优先执行更“紧急”的“对应的操作”。这个优先级信息，也可以存储在<strong>类B</strong>中。设计出了<strong>类B</strong>之后，<strong>类A</strong>就不再是直接统一管理文件了，而是变成统一管理<strong>类B</strong>，可以看成是<strong>类B</strong>的一个容器类。</li>
+</ol>
+<p>有了这些思想，在glib中的GMainLoop等就是做的这些事，接下来就看看glib中是怎么按照这个思想实现的。</p>
+<h3 id="glib事件循环涉及的重要数据结构"><a href="#glib事件循环涉及的重要数据结构" class="headerlink" title="glib事件循环涉及的重要数据结构"></a>glib事件循环涉及的重要数据结构</h3><p>要深入理解glib事件循环机制，还是要看：<a target="_blank" rel="noopener" href="https://github.com/GNOME/glib">Glib源码</a> <code>glib</code>的主事件循环框架，由3个类来实现，<code>GMainLoop</code>，<code>GMainContext</code>和<code>GSource</code>。 其中对应关系：一个<code>GMainLoop</code>只包含一个<code>GMainContext</code>，一个<code>GMainContext</code>可以对应多个<code>GSource</code>。这里面最主要的还是<code>GMainContext</code>和<code>GSource</code>，分别对应前面提到的<strong>类A</strong>和<strong>类B</strong>。 <strong>GSource</strong> <code>GSource</code>相当于前面提到的<strong>类B</strong>，它里面会保存优先级信息以及对应的需要监控的文件，并且GSource是一个链表的结构，保存了下一个GSource的引用。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><code class="hljs C"><span class="hljs-class"><span class="hljs-keyword">struct</span> _<span class="hljs-title">GSource</span></span><br><span class="hljs-class">&#123;</span><br>  <span class="hljs-comment">/*&lt; private &gt;*/</span><br>  gpointer callback_data; <span class="hljs-comment">//回调函数的参数。</span><br>  GSourceCallbackFuncs *callback_funcs; <span class="hljs-comment">//回调函数的指针。</span><br><br>  <span class="hljs-type">const</span> GSourceFuncs *source_funcs; <span class="hljs-comment">//GSource 的函数指针，用于实现 GSource 的事件处理逻辑。</span><br>  guint ref_count;<br><br>  GMainContext *context; <span class="hljs-comment">//GSource 所属的 GMainContext。</span><br><br>  gint priority; <span class="hljs-comment">//GSource 的优先级。</span><br>  guint flags; <span class="hljs-comment">//GSource 的标志位，表示 GSource 的状态和类型。</span><br>  guint source_id; <span class="hljs-comment">//GSource 的唯一标识符。</span><br><br>  GSList *poll_fds; <span class="hljs-comment">//GSource 关心的文件描述符列表。</span><br><br>  GSource *prev; <span class="hljs-comment">//GSource 在 GMainContext 中的链表中的前驱和后继。</span><br>  GSource *next; <br><br>  <span class="hljs-type">char</span>    *name; <span class="hljs-comment">//GSource 的名称。</span><br><br>  GSourcePrivate *priv; <span class="hljs-comment">//GSource 的私有数据。</span><br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>GSource 的函数指针指向的结构体定义了用于实现 GSource 的事件处理逻辑。（从面向对象的角度看，<code>GSource</code>是一个抽象类，而且有4个重要的纯虚函数，需要子类来具体实现)，这4个函数就是：其中最重要的还是prepare、check、dispatch。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs C"><span class="hljs-class"><span class="hljs-keyword">struct</span> _<span class="hljs-title">GSourceFuncs</span></span><br><span class="hljs-class">&#123;</span><br>  gboolean (*prepare)  (GSource    *source,<br>                        gint       *timeout_);<span class="hljs-comment">/* Can be NULL */</span><br>  gboolean (*check)    (GSource    *source);<span class="hljs-comment">/* Can be NULL */</span><br>  gboolean (*dispatch) (GSource    *source,<br>                        GSourceFunc callback,<br>                        gpointer    user_data);<br>  <span class="hljs-comment">//释放资源的</span><br>  <span class="hljs-type">void</span>     (*finalize) (GSource    *source); <span class="hljs-comment">/* Can be NULL */</span><br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>我们对比poll机制中示例代码中的3部分，这个<code>prepare</code>函数，就是要在第一部分被调用的，<code>check</code>和<code>dispathch</code>函数，就是在第3部分被调用的。有一点区别是，<code>prepare</code>函数也要放到<code>while</code>循环中，而不是在循环之外（因为要动态的增加或者删除<code>poll</code>函数监控的文件)。</p>
+<ol>
+<li><code>prepare</code>函数，会在执行<code>poll</code>之前被调用。该<code>GSource</code>中的<code>struct pollfd</code>是否希望被<code>poll</code>函数监控，就由<code>prepare</code>函数的返回值来决定。</li>
+<li><code>check</code>函数，在执行<code>poll</code>之后被调用。该<code>GSource</code>中的<code>struct pollfd</code>是否有事件发生，就由<code>check</code>函数的返回值来描述（在<code>check</code>函数中可以检测<code>struct pollfd</code>结构体中的返回信息)。</li>
+<li><code>dispatch</code>函数，在执行<code>poll</code>和<code>check</code>函数之后被调用，并且，仅当对应的<code>check</code>函数返回true的时候，对应的<code>dispatch</code>函数才会被调用，<code>dispatch</code>函数，就相当于“对应的操作”。</li>
+</ol>
+<p><img src="/wp-content/uploads/2023/06/image-1686191288096.png" srcset="/img/loading.gif" lazyload alt="file"> <strong>GMainContext</strong> <code>GMainContext</code>是<code>GSource</code>的容器，<code>GSource</code>可以添加到<code>GMainContext</code>里面（间接的就把<code>GSource</code>中的<code>struct pollfd</code>也添加到<code>GMainContext</code>里面了)，<code>GSource</code>也可以从<code>GMainContext</code>中移除（间接的就把<code>GSource</code>中的<code>struct pollfd</code>从<code>GMainContext</code>中移除了）。<code>GMainContext</code>可以遍历<code>GSource</code>，自然就有机会调用每个<code>GSource</code>的<code>prepare/check/dispatch</code>函数，可以根据每个<code>GSource</code>的<code>prepare</code>函数的返回值来决定，是否要在<code>poll</code>函数中，监控该<code>GSource</code>管理的文件。当然可以根据<code>GSource</code>的优先级进行排序。当<code>poll</code>返回后，可以根据每个<code>GSource</code>的<code>check</code>函数的返回值来决定是否需要调用对应的<code>dispatch</code>函数。 <code>GMainContext</code> 定义如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * GMainContext:</span><br><span class="hljs-comment"> *</span><br><span class="hljs-comment"> * The `GMainContext` struct is an opaque data</span><br><span class="hljs-comment"> * type representing a set of sources to be handled in a main loop.</span><br><span class="hljs-comment"> */</span><br><span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> _<span class="hljs-title">GMainContext</span> <span class="hljs-title">GMainContext</span>;</span><br><br><span class="hljs-comment">//以下结构体省略了很多字段，多线程之间同步互斥等字段都以省略，</span><br><span class="hljs-class"><span class="hljs-keyword">struct</span> _<span class="hljs-title">GMainContext</span> &#123;</span><br>  GThread *owner; <span class="hljs-comment">/* 拥有该 GMainContext 的线程 */</span><br><br>  GHashTable *sources;     <span class="hljs-comment">/* 存储所有的 GSource 对象 */</span><br><br>  GList *source_lists;        <span class="hljs-comment">/* 存储不同优先级的 GSource 对象列表 */</span><br>  GPollRec *poll_records;     <span class="hljs-comment">/* 存储需要监听的文件描述符及其对应的事件类型 */</span><br><br>  guint next_id;              <span class="hljs-comment">/* 下一个 GSource 对象的 ID */</span><br>  GPollFunc poll_func;        <span class="hljs-comment">/* 用于监听文件描述符状态变化的函数 */</span><br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p><strong>GMainLoop</strong> GMainLoop结构一般调用下面的方法<code>g_main_loop_new</code>创建，需要传入GMainContext，这个参数可以为NULL，将使用默认的上下文，这个结构体代表着一个事件循环。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs C">GMainLoop* <span class="hljs-title function_">g_main_loop_new</span> <span class="hljs-params">(</span><br><span class="hljs-params">  GMainContext* context,</span><br><span class="hljs-params">  gboolean is_running</span><br><span class="hljs-params">)</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="glib中g-main-context-iterate-关键函数理解"><a href="#glib中g-main-context-iterate-关键函数理解" class="headerlink" title="glib中g_main_context_iterate()关键函数理解"></a>glib中g_main_context_iterate()关键函数理解</h3><p><code>g_main_loop_run</code> 函数是 GLib 中用于运行主循环的函数之一。它的作用是启动主循环并运行，直到被调用的 <code>g_main_loop_quit</code> 函数被调用或者发生错误（比如被信号中断）。 我们使用时一般都是按照如下步骤：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs C"><span class="hljs-type">int</span> <span class="hljs-title function_">main</span><span class="hljs-params">(<span class="hljs-type">int</span> argc, <span class="hljs-type">char</span> *argv[])</span> &#123;<br>    GMainLoop *loop = g_main_loop_new(<span class="hljs-literal">NULL</span>, FALSE);<br>    <span class="hljs-comment">// 注册事件源到主循环中</span><br>    ...<br>    <span class="hljs-comment">// 启动主循环并运行</span><br>    g_main_loop_run(loop);<br>    <span class="hljs-comment">// 主循环结束，清理资源</span><br>    ...<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>接下来我们看一下源码：<code>g_main_loop_run</code> 函数中的<code>g_main_context_iterate()</code>函数，其实就相当于poll机制中代码片段中的循环体中要做的动作。循环的退出，则是靠<code>loop-&gt;is_running</code>这个标记变量来标识的。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><code class="hljs C"><span class="hljs-type">void</span> <span class="hljs-title function_">g_main_loop_run</span> <span class="hljs-params">(GMainLoop *loop)</span><br>&#123;<br>    ...<br>    <span class="hljs-comment">//该标志会出现错误等情况被设置为false，终止循环。</span><br>    loop-&gt;is_running = TRUE;<br>    <span class="hljs-keyword">while</span> (loop-&gt;is_running)<br>       g_main_context_iterate (loop-&gt;context, TRUE, TRUE, self);<br>    ...<br>&#125;<br><br><span class="hljs-type">static</span> gboolean <span class="hljs-title function_">g_main_context_iterate</span> <span class="hljs-params">(GMainContext *context, </span><br><span class="hljs-params">        gboolean block, gboolean dispatch, GThread *self)</span> <br>&#123;<br>    gint max_priority;<br>    gint timeout;<br>    gboolean some_ready;<br>    gint nfds, allocated_nfds;<br>    GPollFD *fds = <span class="hljs-literal">NULL</span>;<br><br>    UNLOCK_CONTEXT (context);<br>    ...<br>    <span class="hljs-keyword">if</span> (!context-&gt;cached_poll_array) &#123;<br>        context-&gt;cached_poll_array_size = context-&gt;n_poll_records;<br>        context-&gt;cached_poll_array = g_new (GPollFD, context-&gt;n_poll_records);<br>    &#125;<br>    allocated_nfds = context-&gt;cached_poll_array_size;<br>    fds = context-&gt;cached_poll_array;<br><br>    UNLOCK_CONTEXT (context);<br><br>    <span class="hljs-comment">//prepare实现方法，准备需要被监控的fd</span><br>    g_main_context_prepare(context, &amp;max_priority);<br>    <span class="hljs-keyword">while</span> ((nfds = g_main_context_query(context, max_priority, &amp;timeout, fds,<br>                                        allocated_nfds)) &gt; allocated_nfds) &#123;<br>        LOCK_CONTEXT (context);<br>        g_free(fds);<br>        context-&gt;cached_poll_array_size = allocated_nfds = nfds;<br>        context-&gt;cached_poll_array = fds = g_new (GPollFD, nfds);<br>        UNLOCK_CONTEXT (context);<br>    &#125;<br>    <span class="hljs-keyword">if</span> (!block)<br>        timeout = <span class="hljs-number">0</span>;<br>    <span class="hljs-comment">//poll函数简单封装</span><br>    g_main_context_poll(context, timeout, max_priority, fds, nfds);<br>    <span class="hljs-comment">//检查有没有需要处理的fd</span><br>    some_ready = g_main_context_check(context, max_priority, fds, nfds);<br>    <span class="hljs-keyword">if</span> (dispatch)<br>        <span class="hljs-comment">//调用对应的处理方法。</span><br>        g_main_context_dispatch(context);<br><br>    LOCK_CONTEXT (context);<br>    <span class="hljs-keyword">return</span> some_ready;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h4 id="第一部分-准备要监控的文件集合"><a href="#第一部分-准备要监控的文件集合" class="headerlink" title="第一部分 准备要监控的文件集合"></a>第一部分 准备要监控的文件集合</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs C">g_main_context_prepare(context, &amp;max_priority);<br><br><span class="hljs-keyword">while</span> ((nfds = g_main_context_query(context, max_priority, &amp;timeout, fds,<br>                                    allocated_nfds)) &gt; allocated_nfds) &#123;<br>    LOCK_CONTEXT (context);<br>    g_free(fds);<br>    context-&gt;cached_poll_array_size = allocated_nfds = nfds;<br>    context-&gt;cached_poll_array = fds = g_new (GPollFD, nfds);<br>    UNLOCK_CONTEXT (context);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>首先是调用<code>g_main_context_prepare(context, &amp;max_priority)</code>，这个就是遍历每个<code>GSource</code>，调用每个<code>GSource</code>的<code>prepare</code>函数，选出一个最高的优先级<code>max_priority</code>，函数内部其实还计算出了一个最短的超时时间。 然后调用<code>g_main_context_query</code>，其实这是再次遍历每个<code>GSource</code>，把优先级等于<code>max_priority</code>的<code>GSource</code>中的<code>struct pollfd</code>，添加到<code>poll</code>的监控集合中。</p>
+<h4 id="第二部分-执行poll，等待事件发生"><a href="#第二部分-执行poll，等待事件发生" class="headerlink" title="第二部分 执行poll，等待事件发生"></a>第二部分 执行poll，等待事件发生</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs C"><span class="hljs-keyword">if</span> (!block)<br>    timeout = <span class="hljs-number">0</span>;<br>g_main_context_poll(context, timeout, max_priority, fds, nfds);<br></code></pre></td></tr></table></figure>
+
+<p>就是调用<code>g_main_context_poll(context, timeout, max_priority, fds, nfds)</code>，<code>g_main_context_poll</code>只是对<code>poll</code>函数的一个简单封装。</p>
+<h4 id="第三部分-遍历被监控的文件集合，执行对应操作"><a href="#第三部分-遍历被监控的文件集合，执行对应操作" class="headerlink" title="第三部分 遍历被监控的文件集合，执行对应操作"></a>第三部分 遍历被监控的文件集合，执行对应操作</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs C">some_ready = g_main_context_check(context, max_priority, fds, nfds);<br><span class="hljs-keyword">if</span> (dispatch)<br>    g_main_context_dispatch(context);<br></code></pre></td></tr></table></figure>
+
+<p>实际上，<code>glib</code>的处理方式是，先遍历所有的<code>GSource</code>，执行<code>g_main_context_prepare(context, &amp;max_priority)</code>，调用每个GSource的<code>check</code>函数，然后把满足条件的<code>GSource</code>（<code>check</code>函数返回<code>true</code>的<code>GSource</code>)，添加到一个内部链表中。 然后执行<code>g_main_context_dispatch(context)</code>，遍历刚才准备好的内部链表中的<code>GSource</code>，调用每个<code>GSource</code>的<code>dispatch</code>函数。</p>
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>所以可以看出，glib实现方式与poll机制使用思想是一致的，只是实现上更加复杂了，上述我们没有讨论到多线程等情况，如果讨论了会更加复杂。</p>
+<h3 id="glib事件循环机制使用示例"><a href="#glib事件循环机制使用示例" class="headerlink" title="glib事件循环机制使用示例"></a>glib事件循环机制使用示例</h3><p>经过上面的了解，大概也知道了glib事件循环机制主要的结构和实现的思路，我们再给出一个例子可以更好的了解glib事件循环机制。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><code class="hljs C"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdio.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdlib.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;glib.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;fcntl.h&gt;</span></span><br><br><span class="hljs-comment">// 文件描述符的回调函数，用于处理文件描述符的可读事件</span><br><span class="hljs-type">static</span> gboolean <span class="hljs-title function_">on_fd_events</span><span class="hljs-params">(GIOChannel *channel, GIOCondition condition, gpointer data)</span> &#123;<br>    <span class="hljs-type">char</span> buffer[<span class="hljs-number">1024</span>];<br>    gsize bytes_read;<br>    <span class="hljs-comment">// 从文件描述符中读取数据</span><br>    g_io_channel_read_chars(channel, buffer, <span class="hljs-keyword">sizeof</span>(buffer), &amp;bytes_read, <span class="hljs-literal">NULL</span>);<br>    <span class="hljs-comment">// 处理读取到的数据</span><br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;Received data: %s\n&quot;</span>, buffer);<br>    <span class="hljs-keyword">return</span> TRUE;<br>&#125;<br><br><span class="hljs-type">int</span> <span class="hljs-title function_">main</span><span class="hljs-params">(<span class="hljs-type">int</span> argc, <span class="hljs-type">char</span> *argv[])</span> &#123;<br>    GMainLoop *loop;<br>    GIOChannel *channel;<br>    GSource *source;<br>    <span class="hljs-type">int</span> fd;<br><br>    <span class="hljs-comment">// 打开文件</span><br>    fd = open(<span class="hljs-string">&quot;test.txt&quot;</span>, O_RDONLY);<br>    <span class="hljs-keyword">if</span> (fd &lt; <span class="hljs-number">0</span>) &#123;<br>        perror(<span class="hljs-string">&quot;open&quot;</span>);<br>        <span class="hljs-built_in">exit</span>(EXIT_FAILURE);<br>    &#125;<br><br>    <span class="hljs-comment">// 创建 GIOChannel 对象，用于封装文件描述符</span><br>    channel = g_io_channel_unix_new(fd);<br><br>    <span class="hljs-comment">// 创建 GSource 对象，用于监听文件描述符的可读事件</span><br>    source = g_io_create_watch(channel, G_IO_IN);<br><br>    <span class="hljs-comment">// 设置 GSource 的回调函数</span><br>    g_source_set_callback(source, (GSourceFunc)on_fd_events, <span class="hljs-literal">NULL</span>, <span class="hljs-literal">NULL</span>);<br><br>    <span class="hljs-comment">// 创建 GMainLoop 对象，用于启动事件循环</span><br>    loop = g_main_loop_new(<span class="hljs-literal">NULL</span>, FALSE);<br><br>    <span class="hljs-comment">// 将 GSource 对象添加到事件循环中</span><br>    g_source_attach(source, <span class="hljs-literal">NULL</span>);<br><br>    <span class="hljs-comment">// 启动事件循环</span><br>    g_main_loop_run(loop);<br><br>    <span class="hljs-comment">// 清理资源</span><br>    g_source_destroy(source);<br>    g_main_loop_unref(loop);<br>    g_io_channel_unref(channel);<br>    close(fd);<br><br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>先查看glib在哪儿不然直接编译有可能出错。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs shell">root@test-ubuntu-no-vgpu:~# pkg-config --cflags --libs glib-2.0<br>-I/usr/include/glib-2.0 -I/usr/lib/x86_64-linux-gnu/glib-2.0/include -lglib-2.0<br><br>root@test-ubuntu-no-vgpu:~# gcc glib_test.c -o glib_test -I/usr/include/glib-2.0 -I/usr/lib/x86_64-linux-gnu/glib-2.0/include -lglib-2.0<br>root@test-ubuntu-no-vgpu:~# ./glib_test<br>Received data: 123456789<br>7F<br>Received data: 123456789<br>7F<br>Received data: 123456789<br>...<br></code></pre></td></tr></table></figure>
+
+<p>可以看到在上述代码中，我们先创建了<code>GSource</code>，添加了需要监听的fd，然后将<code>GSource</code>加入了默认<code>GMainContext</code>中，然后启动事件循环。</p>
+<h3 id="如何自定义事件源"><a href="#如何自定义事件源" class="headerlink" title="如何自定义事件源"></a>如何自定义事件源</h3><p>glib还支持自定义我们的事件源GSource，可以参考这个博主的<a target="_blank" rel="noopener" href="https://github.com/liyansong2018/glib_demo">liyansong2018&#x2F;glib_demo: glib 主事件循环的案例 (github.com)</a>。 基本上就是定义事件源结构，实现对应的Gsource的抽象接口，QEMU中也实现了自己的自定义事件源AioContext。 如：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><code class="hljs C"><span class="hljs-comment">/* 自定义事件源 */</span><br><span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">MyGSource</span> &#123;</span><br>    GSource source;<br>    ...<br>    其他字段<br>    GPollFD fd;<br>&#125; MyGSource;<br><br><span class="hljs-comment">//实现如下几个方法</span><br>gboolean <span class="hljs-title function_">g_source_myself_prepare</span><span class="hljs-params">(GSource * source, gint * timeout)</span>;<br>gboolean <span class="hljs-title function_">g_source_myself_check</span><span class="hljs-params">(GSource * source)</span>;<br>gboolean <span class="hljs-title function_">g_source_myself_dispatch</span><span class="hljs-params">(GSource * source,</span><br><span class="hljs-params">                GSourceFunc callback, gpointer user_data)</span>;<br><span class="hljs-type">void</span> <span class="hljs-title function_">g_source_myself_finalize</span><span class="hljs-params">(GSource * source)</span>;<br><br><span class="hljs-comment">//自定义函数集合</span><br>GSourceFuncs g_source_myself_funcs = &#123;<br>        g_source_myself_prepare,<br>        g_source_myself_check,<br>        g_source_myself_dispatch,<br>        g_source_myself_finalize,<br>    &#125;;<br><br><span class="hljs-comment">//使用方法：</span><br>GMainLoop *loop = g_main_loop_new(<span class="hljs-literal">NULL</span>, FALSE);<br><span class="hljs-comment">//事件源容器创建，事件源上下文</span><br>GMainContext *context = g_main_loop_get_context(loop);<br><span class="hljs-comment">//事件源创建，绑定对应的事件处理函数</span><br>GSource *source = g_source_new(&amp;g_source_myself_funcs, <span class="hljs-keyword">sizeof</span>(MyGSource));<br>MyGSource *source_myself = (MyGSource *) source;<br><span class="hljs-comment">//绑定要监听的fd</span><br>g_source_add_poll(source, &amp;source_myself-&gt;fd);<br><span class="hljs-comment">//添加事件源</span><br>g_source_attach(source, context);<br><span class="hljs-comment">//开启主循环</span><br>g_main_loop_run(loop);<br></code></pre></td></tr></table></figure>
+
+<h3 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h3><ul>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/ChineseSoftware/article/details/123812179">IO 多路复用_io多路复用_JFS_Study的博客-CSDN博客</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/huang987246510/article/details/90738137">深入理解qemu事件循环 —— 基本框架_享乐主的博客-CSDN博客</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/liyansong2018/glib_demo">liyansong2018&#x2F;glib_demo: glib 主事件循环的案例 (github.com)</a></li>
+<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/512939620">Glib事件循环机制 - 知乎 (zhihu.com)</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/u013554213/article/details/104789699">【glib】GMainLoop的实现原理和代码模型_EthanYYYY的博客-CSDN博客</a></li>
+</ul>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E8%99%9A%E6%8B%9F%E5%8C%96/" class="category-chain-item">虚拟化</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>QEMU的事件循环-01 glib事件循环机制</div>
+      <div>http://example.com/048.html</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>landery</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2023年6月8日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/050.html" title="SeaBIOS源码分析-虚拟机启动过程分析">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">SeaBIOS源码分析-虚拟机启动过程分析</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/0037.html" title="openstack报错：nova.compute.manager nova.exception.PortBindingFailed">
+                        <span class="hidden-mobile">openstack报错：nova.compute.manager nova.exception.PortBindingFailed</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"GK4nuH8jdXDcw4IJIVShjMtA-gzGzoHsz","appKey":"7P0B0kJFdaLY6eDQ93Lhcv8J","path":"window.location.pathname","placeholder":"建议使用QQ邮箱，评论头像采用QQ头像","avatar":"retro","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":true,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":true,"bg":null,"count":true},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+    <!-- 备案信息 ICP for China -->
+    <div class="beian">
+  <span>
+    <a href="http://beian.miit.gov.cn/" target="_blank" rel="nofollow noopener">
+      蜀ICP备2022011502号
+    </a>
+  </span>
+  
+    
+      <span>
+        <a
+          href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=51012202001227"
+          rel="nofollow noopener"
+          class="beian-police"
+          target="_blank"
+        >
+          
+            <span style="visibility: hidden; width: 0">|</span>
+            <img src="/img/police_beian.png" srcset="/img/loading.gif" lazyload alt="police-icon"/>
+          
+          <span>川公网安备51012202001227号</span>
+        </a>
+      </span>
+    
+  
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/DynamicRibbon.min.js"></script>
+<script src="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/love.min.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

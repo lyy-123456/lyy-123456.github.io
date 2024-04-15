@@ -1,0 +1,834 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="landery">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="1 Nova-compute服务源码解析nova-compute创建虚拟机时，其主要任务就是通过用户准备的各种参数，最终生成创建虚拟机的XML文件以供Hypervisor使用，主要步骤如下： NaN.  准备虚拟机所需要的资源（CPU资源，RAM资源以及镜像资源等），网络资源也会在这个阶段一同分配NaN.  创建虚拟机的镜像文件，nova-compute会调用glanceclient拉取镜像，以该">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Nova-compute服务源码解析">
+<meta property="og:url" content="http://example.com/039.html">
+<meta property="og:site_name" content="landery小站">
+<meta property="og:description" content="1 Nova-compute服务源码解析nova-compute创建虚拟机时，其主要任务就是通过用户准备的各种参数，最终生成创建虚拟机的XML文件以供Hypervisor使用，主要步骤如下： NaN.  准备虚拟机所需要的资源（CPU资源，RAM资源以及镜像资源等），网络资源也会在这个阶段一同分配NaN.  创建虚拟机的镜像文件，nova-compute会调用glanceclient拉取镜像，以该">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/wp-content/uploads/2023/05/image-cync.png">
+<meta property="og:image" content="http://example.com/wp-content/uploads/2023/05/image-ivyr.jpg">
+<meta property="og:image" content="http://example.com/wp-content/uploads/2023/05/image-fpfs.png">
+<meta property="og:image" content="http://example.com/wp-content/uploads/2023/05/image-luem.png">
+<meta property="og:image" content="http://example.com/wp-content/uploads/2023/05/image-fqtj.png">
+<meta property="og:image" content="http://example.com/wp-content/uploads/2023/05/image-wbev.png">
+<meta property="og:image" content="http://example.com/wp-content/uploads/2023/05/image-slzr.png">
+<meta property="og:image" content="http://example.com/wp-content/uploads/2023/05/image-dyia.png">
+<meta property="og:image" content="http://example.com/wp-content/uploads/2023/05/image-qgyc.png">
+<meta property="og:image" content="http://example.com/wp-content/uploads/2023/05/image-gsjd.png">
+<meta property="og:image" content="http://example.com/wp-content/uploads/2023/05/image-rkvw.png">
+<meta property="og:image" content="http://example.com/wp-content/uploads/2023/05/image-bivc.png">
+<meta property="og:image" content="http://example.com/wp-content/uploads/2023/05/image-nxvg.png">
+<meta property="og:image" content="http://example.com/wp-content/uploads/2023/05/image-lzha.png">
+<meta property="og:image" content="http://example.com/wp-content/uploads/2023/05/image-uhav.png">
+<meta property="og:image" content="http://example.com/wp-content/uploads/2023/05/image-izrz.png">
+<meta property="og:image" content="http://example.com/wp-content/uploads/2023/05/image-yyiw.png">
+<meta property="article:published_time" content="2023-05-15T02:30:35.000Z">
+<meta property="article:modified_time" content="2024-04-15T10:03:00.740Z">
+<meta property="article:author" content="landery">
+<meta property="article:tag" content="openstack">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://example.com/wp-content/uploads/2023/05/image-cync.png">
+  
+  
+  
+  <title>Nova-compute服务源码解析 - landery小站</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/scroll.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"GK4nuH8jdXDcw4IJIVShjMtA-gzGzoHsz","app_key":"7P0B0kJFdaLY6eDQ93Lhcv8J","server_url":"https://api.landery.cn","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>landery 小站</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/links/" target="_self">
+                <i class="iconfont icon-link-fill"></i>
+                <span>友链</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/remark/" target="_self">
+                <i class="iconfont icon-twitch-fill"></i>
+                <span>留言板</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/image/bg/001.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Nova-compute服务源码解析"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2023-05-15 10:30" pubdate>
+          2023年5月15日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          9 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Nova-compute服务源码解析</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="1-Nova-compute服务源码解析"><a href="#1-Nova-compute服务源码解析" class="headerlink" title="1 Nova-compute服务源码解析"></a>1 Nova-compute服务源码解析</h1><p>nova-compute创建虚拟机时，其主要任务就是通过用户准备的各种参数，最终生成创建虚拟机的XML文件以供Hypervisor使用，主要步骤如下：</p>
+<p>NaN.  准备虚拟机所需要的资源（CPU资源，RAM资源以及镜像资源等），网络资源也会在这个阶段一同分配<br>NaN.  创建虚拟机的镜像文件，nova-compute会调用glanceclient拉取镜像，以该镜像为基础创建镜像文件。<br>NaN.  生成创建虚拟机的XML文件<br>NaN.  创建网络并启动虚拟机</p>
+<p>以上过程中生成的XML或者暂存在计算节点的镜像都会存放在计算节点的&#x2F;var&#x2F;lib&#x2F;nova&#x2F;instances文件夹下以该虚拟机的UUID命名的子目录中。</p>
+<h2 id="1-1-Nova-compute启动流程"><a href="#1-1-Nova-compute启动流程" class="headerlink" title="1.1 Nova-compute启动流程"></a>1.1 Nova-compute启动流程</h2><p>nova-compute服务的入口位于nova&#x2F;cmd&#x2F;compute.py，如下图所示： <img src="/wp-content/uploads/2023/05/image-cync.png" srcset="/img/loading.gif" lazyload> 其中第45行会读取配置文件进行一些初始化的工作，第59行代码用于创建RPC Service，并将此RPC Service的topic设置为CONF.compute_topic，类Service的定义位于nova&#x2F;service.py，其中第116行为实例化一个ComputeManager（nova&#x2F;compute&#x2F;manager.py）类，里面定义了接受并处理各种RPC请求的方法。 <img src="/wp-content/uploads/2023/05/image-ivyr.jpg" srcset="/img/loading.gif" lazyload> 最后在nova&#x2F;cmd&#x2F;compute.py的第61行service.serve(server)用于启动RPC Service()，service.serve()的实现方法（nova&#x2F;service.py）如下所示，通过oslo_service&#x2F;service.py中的launch方法，启动相应数量的RPC Service进程，至此nova-compute服务启动。  </p>
+<h2 id="1-2-Nova-compute创建虚拟机流程"><a href="#1-2-Nova-compute创建虚拟机流程" class="headerlink" title="1.2 Nova-compute创建虚拟机流程"></a>1.2 Nova-compute创建虚拟机流程</h2><p>在OpenStack nova创建虚拟机过程中，nova-api收到虚拟机创建请求，然后nova-scheduler完成选择合适计算节点的任务，nova-conductor则开始调用build_instance()来创建虚机。 <a target="_blank" rel="noopener" href="http://在conductor.manager.computetaskmanager.build/">在conductor.manager.ComputeTaskManager.build</a>_instance()中，通过rpc调用：self.compute_rpcapi.build_and_run_instance()，该方法的代码如下所示（nova&#x2F;compute&#x2F;rpcapi.py）该方法通过RPC调用nova&#x2F;compute&#x2F;manager.py:ComputeManager中的build_and_run_instance()方法。而build_and_run_instance()方法就完成VM在计算节点上的创建和启动任务。 nova&#x2F;compute&#x2F;rpcapi.py：   <img src="/wp-content/uploads/2023/05/image-fpfs.png" srcset="/img/loading.gif" lazyload> nova&#x2F;compute&#x2F;manager.py： <img src="/wp-content/uploads/2023/05/image-luem.png" srcset="/img/loading.gif" lazyload> 里面定义了一个_locked_do_build_and_run_instance()方法，这里真正实现instance的创建和启动的，还有一个spawn方法调用，这是因为nova compute创建VM的时间会比较长，因为其中包括了下载VM镜像、创建和配置VM网卡信息、文件注入等任务，因此调用utils.spawn_n()方法返回RPC线程而不会造成阻塞。 在_locked_do_build_and_run_instance()_<a target="_blank" rel="noopener" href="http://方法直接调用self.do/">_方法直接调用self._do</a>_build_and_run_instance()。 <img src="/wp-content/uploads/2023/05/image-fqtj.png" srcset="/img/loading.gif" lazyload> <img src="/wp-content/uploads/2023/05/image-wbev.png" srcset="/img/loading.gif" lazyload> self._do_build_and_run_instance()方法主要做了一下几件事： 1、 设置虚拟机状态为BUILDING instance.vm_state &#x3D; vm_states.BUILDING， task_state为None，然后调用instance.save()将状态存入数据库中。 2、 如果起虚机时有文件注入，将会调用nova.compute.manager.ComputeManager._decode_files()完成文件注入处理。decoded_files &#x3D; self._decode_files(injected_files) 3、 接下来就是调用self._build_and_run_instance方法进行虚拟机创建。     self._build_and_run_instance： <img src="/wp-content/uploads/2023/05/image-slzr.png" srcset="/img/loading.gif" lazyload> 该方法包含如下几个部分： 1、 通知部分，通知其他组件实例的创建状态： <img src="/wp-content/uploads/2023/05/image-dyia.png" srcset="/img/loading.gif" lazyload> 2、 检查设备和证书： <img src="/wp-content/uploads/2023/05/image-qgyc.png" srcset="/img/loading.gif" lazyload> 3、 provider_mapping &#x3D; self._get_request_group_mapping(request_spec) 要在服务器调度期间支持 QoS 最小带宽策略，Neutron 需要知道哪个资源提供程序为服务器创建请求中的每个端口提供带宽资源。在处理 VGPU 和加速器设备时会出现类似的需求。返回一个字典，如果该字典不为空，那么就需要更新pci_request_spec。 <img src="/wp-content/uploads/2023/05/image-gsjd.png" srcset="/img/loading.gif" lazyload> 4、 获取该用户的分配情况： <img src="/wp-content/uploads/2023/05/image-rkvw.png" srcset="/img/loading.gif" lazyload> 5、 _get_scheduler_hints获取调度程序提示，self.rt.instance_claim获取实例资源分配声明，可用于发生异常后恢复资源，self._validate_instance_group_policy验证是否符合调度程序设置的策略： <img src="/wp-content/uploads/2023/05/image-bivc.png" srcset="/img/loading.gif" lazyload> 6、 接下来就是调用self._build_resources申请各种资源，成功后，更新数据库中的状态：vm_state为building, task_state为spawning， <img src="/wp-content/uploads/2023/05/image-nxvg.png" srcset="/img/loading.gif" lazyload> 7、 最后调用driver.spawn方法完成VM孵化，OpenStack底层调用的是libvirt，因此这里的driver就是libvirt提供的接口。在配置文件&#x2F;etc&#x2F;nova&#x2F;nova.conf中设置了Driver&#x3D; LibvirtDriver。   <img src="/wp-content/uploads/2023/05/image-lzha.png" srcset="/img/loading.gif" lazyload>   查看具体如何申请各种资源的： self._build_resources()方法： 1、如果accel_uuids不为空，执行_get_bound_arq_resources和_split_network_arqs。 <img src="/wp-content/uploads/2023/05/image-uhav.png" srcset="/img/loading.gif" lazyload> 2、为实例构建网络：_build_networks_for_instance <img src="/wp-content/uploads/2023/05/image-izrz.png" srcset="/img/loading.gif" lazyload> 3、分配块设备 <img src="/wp-content/uploads/2023/05/image-yyiw.png" srcset="/img/loading.gif" lazyload></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/OpenStack/" class="category-chain-item">OpenStack</a>
+  
+  
+
+      </span>
+    
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E4%BA%91%E8%AE%A1%E7%AE%97/" class="category-chain-item">云计算</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/openstack/" class="print-no-link">#openstack</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Nova-compute服务源码解析</div>
+      <div>http://example.com/039.html</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>landery</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2023年5月15日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/022.html" title="使用GDB对qemu进行调试">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">使用GDB对qemu进行调试</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/002.html" title="4k壁纸网站推荐">
+                        <span class="hidden-mobile">4k壁纸网站推荐</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"GK4nuH8jdXDcw4IJIVShjMtA-gzGzoHsz","appKey":"7P0B0kJFdaLY6eDQ93Lhcv8J","path":"window.location.pathname","placeholder":"建议使用QQ邮箱，评论头像采用QQ头像","avatar":"retro","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":true,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":true,"bg":null,"count":true},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+    <!-- 备案信息 ICP for China -->
+    <div class="beian">
+  <span>
+    <a href="http://beian.miit.gov.cn/" target="_blank" rel="nofollow noopener">
+      蜀ICP备2022011502号
+    </a>
+  </span>
+  
+    
+      <span>
+        <a
+          href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=51012202001227"
+          rel="nofollow noopener"
+          class="beian-police"
+          target="_blank"
+        >
+          
+            <span style="visibility: hidden; width: 0">|</span>
+            <img src="/img/police_beian.png" srcset="/img/loading.gif" lazyload alt="police-icon"/>
+          
+          <span>川公网安备51012202001227号</span>
+        </a>
+      </span>
+    
+  
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/DynamicRibbon.min.js"></script>
+<script src="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/love.min.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

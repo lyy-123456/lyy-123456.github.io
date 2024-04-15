@@ -1,0 +1,887 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="landery">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="1通常在计算机系统中，虚拟页被称为页，物理页被称为页帧或页框。虚拟页是进程或程序地址空间的抽象，它们被映射到物理页帧或页框上。虚拟页的使用可以让进程或程序使用比实际物理内存更大的地址空间，从而提高计算机系统的性能和效率。  内存的管理是以内存页面为单位进行的，一个内存页面是指连续的4KB物理内存 在_Intel 80x86_ CPU中，程序在寻址过程中使用的是由段+偏移值构成的地址，该地址不能直">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux内核内存管理概述">
+<meta property="og:url" content="http://example.com/037.html">
+<meta property="og:site_name" content="landery小站">
+<meta property="og:description" content="1通常在计算机系统中，虚拟页被称为页，物理页被称为页帧或页框。虚拟页是进程或程序地址空间的抽象，它们被映射到物理页帧或页框上。虚拟页的使用可以让进程或程序使用比实际物理内存更大的地址空间，从而提高计算机系统的性能和效率。  内存的管理是以内存页面为单位进行的，一个内存页面是指连续的4KB物理内存 在_Intel 80x86_ CPU中，程序在寻址过程中使用的是由段+偏移值构成的地址，该地址不能直">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/wp-content/uploads/2023/10/image-29.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/chen123456122/IMAGES@main/images/%E9%A1%B5%E8%A1%A8%E7%9B%AE%E5%BD%95%E5%92%8C%E9%A1%B5%E8%A1%A8%E7%BB%93%E6%9E%84%E7%A4%BA%E6%84%8F%E5%9B%BE">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/chen123456122/IMAGES@main/images/%E9%A1%B5%E7%9B%AE%E5%BD%95%E5%8F%8A%E9%A1%B5%E8%A1%A8%E9%A1%B9%E7%BB%93%E6%9E%84">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/chen123456122/IMAGES@main/images/%E7%BA%BF%E6%80%A7%E5%9C%B0%E5%9D%80%E5%8F%98%E6%8D%A2%E7%A4%BA%E6%84%8F%E5%9B%BE">
+<meta property="og:image" content="http://example.com/wp-content/uploads/2023/10/image-28.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/chen123456122/IMAGES@main/images/%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/chen123456122/IMAGES@main/images/%E8%BF%9B%E7%A8%8B%E4%BB%A3%E7%A0%81%E4%B8%8E%E6%95%B0%E6%8D%AE%E5%9C%A8%E9%80%BB%E8%BE%91%E7%A9%BA%E9%97%B4%E7%9A%84%E5%88%86%E5%B8%83">
+<meta property="article:published_time" content="2023-10-14T12:20:47.000Z">
+<meta property="article:modified_time" content="2024-04-15T10:02:46.990Z">
+<meta property="article:author" content="landery">
+<meta property="article:tag" content="linux">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://example.com/wp-content/uploads/2023/10/image-29.png">
+  
+  
+  
+  <title>Linux内核内存管理概述 - landery小站</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/scroll.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"GK4nuH8jdXDcw4IJIVShjMtA-gzGzoHsz","app_key":"7P0B0kJFdaLY6eDQ93Lhcv8J","server_url":"https://api.landery.cn","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>landery 小站</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/links/" target="_self">
+                <i class="iconfont icon-link-fill"></i>
+                <span>友链</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/remark/" target="_self">
+                <i class="iconfont icon-twitch-fill"></i>
+                <span>留言板</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/image/bg/001.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Linux内核内存管理概述"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2023-10-14 20:20" pubdate>
+          2023年10月14日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.9k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          16 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Linux内核内存管理概述</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <hr>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs">通常在计算机系统中，虚拟页被称为页，物理页被称为页帧或页框。虚拟页是进程或程序地址空间的抽象，它们被映射到物理页帧或页框上。虚拟页的使用可以让进程或程序使用比实际物理内存更大的地址空间，从而提高计算机系统的性能和效率。<br></code></pre></td></tr></table></figure>
+
+<p>内存的管理是以内存页面为单位进行的，一个内存页面是指连续的4KB物理内存</p>
+<p>在_Intel 80x86_ CPU中，程序在寻址过程中使用的是由段+偏移值构成的地址，该地址不能直接用于直接寻早物理地址因此又被称之为虚拟地址。</p>
+<p>而将虚拟机地址变换为物理地址的这种地址变换机制为内存管理的主要功能之一，另一个主要功能为：内存寻址保护机制</p>
+<p><img src="/wp-content/uploads/2023/10/image-29.png" srcset="/img/loading.gif" lazyload></p>
+<hr>
+<h1 id="1-内存分页管理"><a href="#1-内存分页管理" class="headerlink" title="1. 内存分页管理"></a>1. 内存分页管理</h1><p>分页管理的目的是：将某一物理地址页面映射到某一线性地址</p>
+<p>在 x86系统中，内存分页管理是通过页目录表以及内存页表的二级表组成 ，其中页目录表与页表的结构相同，表项结构也相同</p>
+<p>页目录表中的每一个表项（4B）用来寻址一个页表，而每个页表的表项（4B）用来寻址一个物理内存页.即是当唯一指定一个页表目录项与页表项我们就可以唯一地对应一个物理内存页</p>
+<p>一个系统中可以同时存在多个页目录表，而在某一时刻只有一个页目录表可用，其由CR3寄存器保存物理内存地址</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs routeros">页目录表占一页内存（4KB），则最多可以寻址（4KB/<span class="hljs-attribute">4B</span>=1024）个页表，页表亦如此。所以一个页目录表所寻址的所有页表共可以寻址 1024\<span class="hljs-number">*1024</span>\<span class="hljs-number">*4096B</span>=4GB内存空间<br></code></pre></td></tr></table></figure>
+
+<p><img src="https://cdn.jsdelivr.net/gh/chen123456122/IMAGES@main/images/%E9%A1%B5%E8%A1%A8%E7%9B%AE%E5%BD%95%E5%92%8C%E9%A1%B5%E8%A1%A8%E7%BB%93%E6%9E%84%E7%A4%BA%E6%84%8F%E5%9B%BE" srcset="/img/loading.gif" lazyload alt="页表目录及页表结构示意"></p>
+<hr>
+<h2 id="1-1-页目录与页表项结构"><a href="#1-1-页目录与页表项结构" class="headerlink" title="1.1. 页目录与页表项结构"></a>1.1. 页目录与页表项结构</h2><figure class="highlight mathematica"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs mathematica">由于内存页的大小是<span class="hljs-number">4</span><span class="hljs-variable">KB</span>，也就是<span class="hljs-number">2</span>的<span class="hljs-number">12</span>次方字节，因此内存页的地址必须是<span class="hljs-number">4</span><span class="hljs-variable">KB</span>的倍数，即低<span class="hljs-number">12</span>位总是<span class="hljs-number">0</span>。这是因为在二进制中，<span class="hljs-number">2</span>的<span class="hljs-number">12</span>次方等于<span class="hljs-number">4096</span>，即<span class="hljs-number">1000000000000</span>，低<span class="hljs-number">12</span>位全是<span class="hljs-number">0</span>。因此，内存页的起始地址总是位于<span class="hljs-number">4</span><span class="hljs-built_in">K</span>边界上，其低<span class="hljs-number">12</span>位总是<span class="hljs-number">0</span>。<br><br>因此页表项的低<span class="hljs-number">12</span>位可做他用<br><br>这种对齐方式可以提高内存管理的效率和性能，因为如果内存页不对齐，那么将会出现跨页的情况，导致内存访问效率下降，甚至产生错误。通过将内存页对齐到<span class="hljs-number">4</span><span class="hljs-built_in">K</span>边界上，可以最大限度地利用内存空间，同时提高内存访问的效率和性能。<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>在一个页目录表中，其页帧地址指向页表的起始地址；而在二级页表中，页帧地址指向期望内存操作的物理内存页地址</li>
+<li>存在位（PRENSENT—P）确定一个页表是否可以用作地址转换过程</li>
+</ul>
+<blockquote>
+<p>当CPU试图将一个页表项进行地址转换时，如果P&#x3D;0，则会抛出页异常信号。此时缺页中断就将所请求的页加入到物理内存中，并且导致异常的指令将会重新执行</p>
+<ul>
+<li>读写位（READ&#x2F;WRITE—R&#x2F;W）与用户&#x2F;超级用户（USER&#x2F;SUPERVISOR—U&#x2F;S）用于分页级别的保护机制</li>
+<li>已访问位（ACCESS—A）和已修改（DIRTY—D）用来提供有关页的使用信息（页目录项没有D位，页表项有D位）</li>
+</ul>
+</blockquote>
+<p><img src="https://cdn.jsdelivr.net/gh/chen123456122/IMAGES@main/images/%E9%A1%B5%E7%9B%AE%E5%BD%95%E5%8F%8A%E9%A1%B5%E8%A1%A8%E9%A1%B9%E7%BB%93%E6%9E%84" srcset="/img/loading.gif" lazyload></p>
+<hr>
+<h2 id="1-2-线性地址变换"><a href="#1-2-线性地址变换" class="headerlink" title="1.2. 线性地址变换"></a>1.2. 线性地址变换</h2><p>对于内核或者应用进程，在申请内存时使用的是线性地址</p>
+<p>为了使用分页机制，一个32位的线性地址被分为3部分：页目录项、页表项、对应物理内存页的偏移地址（在进行内存分页时，页内偏移地址是存放在虚拟地址的低位部分，用于在地址变换过程中确定所访问的页内具体位置）</p>
+<p><img src="https://cdn.jsdelivr.net/gh/chen123456122/IMAGES@main/images/%E7%BA%BF%E6%80%A7%E5%9C%B0%E5%9D%80%E5%8F%98%E6%8D%A2%E7%A4%BA%E6%84%8F%E5%9B%BE" srcset="/img/loading.gif" lazyload alt="线性地址变换示意图"></p>
+<p><img src="/wp-content/uploads/2023/10/image-28.png" srcset="/img/loading.gif" lazyload></p>
+<hr>
+<h1 id="2-linux中的物理内存管理与分配"><a href="#2-linux中的物理内存管理与分配" class="headerlink" title="2. linux中的物理内存管理与分配"></a>2. linux中的物理内存管理与分配</h1><p>其中，主内存区即为程序进行分配管理内存区域</p>
+<p><img src="https://cdn.jsdelivr.net/gh/chen123456122/IMAGES@main/images/%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80" srcset="/img/loading.gif" lazyload></p>
+<p>每个进程在地址中都是从nr*64MB地址起始，nr是任务号，占用逻辑地址64MB；bss为未初始化的数据段；环境参数数据块最长128KB，其左面为起始堆栈指针</p>
+<p><img src="https://cdn.jsdelivr.net/gh/chen123456122/IMAGES@main/images/%E8%BF%9B%E7%A8%8B%E4%BB%A3%E7%A0%81%E4%B8%8E%E6%95%B0%E6%8D%AE%E5%9C%A8%E9%80%BB%E8%BE%91%E7%A9%BA%E9%97%B4%E7%9A%84%E5%88%86%E5%B8%83" srcset="/img/loading.gif" lazyload></p>
+<hr>
+<h2 id="2-1-页面出错异常处理"><a href="#2-1-页面出错异常处理" class="headerlink" title="2.1. 页面出错异常处理"></a>2.1. 页面出错异常处理</h2><p>在开启了分页机制（标志寄存器中PG&#x3D;1）的情况下，存在以下两种情况使得引起页出错异常中断 INT 14</p>
+<blockquote>
+<ol>
+<li>页目录项或者页表项存在位P&#x3D;0&#x2F;&#x2F;缺页中断</li>
+<li>当前执行程序权限不够访问该页面&#x2F;&#x2F;写保护中断</li>
+</ol>
+</blockquote>
+<p>此时CPU将会提供以下信息：</p>
+<blockquote>
+<ol>
+<li>栈中的出错码（error code）</li>
+</ol>
+<blockquote>
+<p>其格式位32位，但仅最低三位有用，分别指P、R&#x2F;W、U&#x2F;S位；详见P745\</p>
+<ol start="2">
+<li>控制寄存器CR2将保存引起异常的线性地址。页出错处理程序可使用其定位相关页目录项与页表项</li>
+</ol>
+</blockquote>
+</blockquote>
+<hr>
+<h2 id="2-2-写时复制"><a href="#2-2-写时复制" class="headerlink" title="2.2. 写时复制"></a>2.2. 写时复制</h2><p>当进程A调用fork()函数创建进程B时，两个进程实际上是共享A的物理页面；fork会让子进程以只读方式共享父进程A页面，同时将A进程对于该物理页面的访问也设置为只读模式</p>
+<p>当其中一方进行写操作时将会触发页面异常中断，此时 CPU将会执行 <code>do_wp_page()</code> 来解决该异常：① 取消该页面的共享；② 为写进程复制一个新的物理页面；③ 重新执行导致页面异常的写入操作</p>
+<hr>
+<h2 id="2-3-需求加载机制"><a href="#2-3-需求加载机制" class="headerlink" title="2.3. 需求加载机制"></a>2.3. 需求加载机制</h2><p>需求加载（Demand Loading）是指仅当程序需要时才将程序代码和数据从磁盘加载到内存中，而不是在程序启动时将所有代码和数据都加载到内存中。这种机制可以减少内存使用，提高系统性能和效率。</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs markdown"><span class="hljs-bullet">1.</span> 程序启动时，操作系统会将程序的可执行文件加载到进程的地址空间中，但是只有程序的代码和一些必要的数据被加载到内存中，而其他数据则被标记为未加载状态，只有在需要时才会被加载到内存中。<br><span class="hljs-bullet">2.</span> 当程序需要访问未加载到内存中的数据时，操作系统会触发一个页错误（Page Fault）异常，告诉操作系统需要将该数据加载到内存中。操作系统会检查该页是否在磁盘交换区中，如果在，则将该页从磁盘交换区中读入内存，并更新页表中的映射关系。<br><span class="hljs-bullet">3.</span> 加载完数据后，程序继续执行，直到下一次访问未加载到内存中的数据，再次触发页错误异常，从而触发新一轮的需求加载过程。<br></code></pre></td></tr></table></figure>
+
+<p>此种技术要求被执行的文件目标格式为ZMAGIC——需求分页格式的目标文件格式（程序的代码段与数据段都从页面边界开始存放），以契合内核以页面为单位读取代码或者数据</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/" class="category-chain-item">操作系统</a>
+  
+  
+
+      </span>
+    
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%86%85%E6%A0%B8%E5%BC%80%E5%8F%91/" class="category-chain-item">内核开发</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/linux/" class="print-no-link">#linux</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Linux内核内存管理概述</div>
+      <div>http://example.com/037.html</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>landery</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2023年10月14日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/0032.html" title="libvirt修改XML配置添加qemu命令行参数">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">libvirt修改XML配置添加qemu命令行参数</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/020.html" title="内存页面追踪实验">
+                        <span class="hidden-mobile">内存页面追踪实验</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"GK4nuH8jdXDcw4IJIVShjMtA-gzGzoHsz","appKey":"7P0B0kJFdaLY6eDQ93Lhcv8J","path":"window.location.pathname","placeholder":"建议使用QQ邮箱，评论头像采用QQ头像","avatar":"retro","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":true,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":true,"bg":null,"count":true},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+    <!-- 备案信息 ICP for China -->
+    <div class="beian">
+  <span>
+    <a href="http://beian.miit.gov.cn/" target="_blank" rel="nofollow noopener">
+      蜀ICP备2022011502号
+    </a>
+  </span>
+  
+    
+      <span>
+        <a
+          href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=51012202001227"
+          rel="nofollow noopener"
+          class="beian-police"
+          target="_blank"
+        >
+          
+            <span style="visibility: hidden; width: 0">|</span>
+            <img src="/img/police_beian.png" srcset="/img/loading.gif" lazyload alt="police-icon"/>
+          
+          <span>川公网安备51012202001227号</span>
+        </a>
+      </span>
+    
+  
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/DynamicRibbon.min.js"></script>
+<script src="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/love.min.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

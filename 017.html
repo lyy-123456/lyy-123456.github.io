@@ -1,0 +1,944 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="landery">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="title: 可信计算_Qemu03_VMWare上使用Qemu-KVM创建虚拟机 date: 2022-06-06 21:31:08.145 updated: 2022-07-11 15:47:27.28 url: &#x2F;archives&#x2F;kxjsqemu03 categories:  可信计算 tags: 可信计算   1 计划我们在1、2已经完成了不使用KVM，只用Qemu">
+<meta property="og:type" content="article">
+<meta property="og:title" content="可信计算_Qemu03_VMWare上使用Qemu-KVM创建虚拟机">
+<meta property="og:url" content="http://example.com/017.html">
+<meta property="og:site_name" content="landery小站">
+<meta property="og:description" content="title: 可信计算_Qemu03_VMWare上使用Qemu-KVM创建虚拟机 date: 2022-06-06 21:31:08.145 updated: 2022-07-11 15:47:27.28 url: &#x2F;archives&#x2F;kxjsqemu03 categories:  可信计算 tags: 可信计算   1 计划我们在1、2已经完成了不使用KVM，只用Qemu">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1657246748827.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1657247335267.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1657247480650.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1657247444309.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1657248068132.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1657264940684.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1657268618382.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1657274543345.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1657274598061.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1657468335956.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1657524241844.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1657525018336.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1657525096831.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1657525157190.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1657525432730.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1657525581298.png">
+<meta property="article:published_time" content="2023-03-07T13:13:38.000Z">
+<meta property="article:modified_time" content="2024-04-15T10:00:21.575Z">
+<meta property="article:author" content="landery">
+<meta property="article:tag" content="kvm">
+<meta property="article:tag" content="qemu">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1657246748827.png">
+  
+  
+  
+  <title>可信计算_Qemu03_VMWare上使用Qemu-KVM创建虚拟机 - landery小站</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/scroll.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"GK4nuH8jdXDcw4IJIVShjMtA-gzGzoHsz","app_key":"7P0B0kJFdaLY6eDQ93Lhcv8J","server_url":"https://api.landery.cn","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>landery 小站</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/links/" target="_self">
+                <i class="iconfont icon-link-fill"></i>
+                <span>友链</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/remark/" target="_self">
+                <i class="iconfont icon-twitch-fill"></i>
+                <span>留言板</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/image/bg/001.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="可信计算_Qemu03_VMWare上使用Qemu-KVM创建虚拟机"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2023-03-07 21:13" pubdate>
+          2023年3月7日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.9k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          16 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">可信计算_Qemu03_VMWare上使用Qemu-KVM创建虚拟机</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <hr>
+<p>title: 可信计算_Qemu03_VMWare上使用Qemu-KVM创建虚拟机 date: 2022-06-06 21:31:08.145 updated: 2022-07-11 15:47:27.28 url: &#x2F;archives&#x2F;kxjsqemu03 categories:</p>
+<ul>
+<li>可信计算 tags:</li>
+<li>可信计算</li>
+</ul>
+<hr>
+<h3 id="1-计划"><a href="#1-计划" class="headerlink" title="1 计划"></a><strong>1 计划</strong></h3><p>我们在1、2已经完成了不使用KVM，只用Qemu也可以实现虚拟化，我们现在将使用KVM来对Qemu虚拟化进行加速，但是需要使用KVM，Linux 内核和硬件必须支持 KVM（基于内核的虚拟机）完全虚拟化，并且必须加载必要的内核模块。 qemu当运行与主机架构相同的目标架构时可以使用KVM，例如一个x86兼容处理器上运行qemu-system-x86，因此我们在前面的安装的ARM架构是无法利用X86架构的KVM的，我们在本次实验中，换成X86架构的虚拟机。</p>
+<ul>
+<li>利用Qemu实现X86_64系统上运行ARM虚拟机，学习Qemu</li>
+<li>使用Qemu-KVM同样的搭建虚拟机，学习KVM</li>
+<li>添加vTPM支持，实现可信虚拟机</li>
+</ul>
+<p> </p>
+<h3 id="2-注意事项"><a href="#2-注意事项" class="headerlink" title="2 注意事项"></a><strong>2 注意事项</strong></h3><ul>
+<li>您的内核必须是2.6.29或更高版本才能运行任何版本的qemu-kvm（内核2.6.27 &#x2F; 2.6.28与kvm-kmod 2.6.29也将工作） 参考 <a target="_blank" rel="noopener" href="http://www.linux-kvm.org/page/Choose_the_right_kvm_%26_kernel_version">如何选择kvm和内核版本</a></li>
+<li>KVM内核空间组件在Linux 2.6.20之后已经被集成在Linux内核和空间，KVM用户空间组件就在Qemu中，参考<a target="_blank" rel="noopener" href="http://www.linux-kvm.org/page/Main_Page">KVM官网</a>。</li>
+</ul>
+<h3 id="3-实验前准备😀😁"><a href="#3-实验前准备😀😁" class="headerlink" title="3 实验前准备😀😁"></a><strong>3 实验前准备😀😁</strong></h3><p>  用的是Win11上的WMware，在其中创建了CentOS 7的虚拟机，然后再在虚拟机里面使用Qemu再创建虚拟机。采用的最新版的Qemu 7.0.0 采用VMWare实现，需要开启虚拟化功能：<img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1657246748827.png" srcset="/img/loading.gif" lazyload alt="image-1657246748827"> 进入系统后查看，系统是否支持虚拟化： <code>#egrep &#39;(vmxsvm)&#39; /proc/cpuinfo</code> <img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1657247335267.png" srcset="/img/loading.gif" lazyload alt="image-1657247335267"> 检查是否已经加载KVM模块 : <code>#modprobe kvm</code> 加载kvm内核模块：</p>
+<figure class="highlight tap"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs tap">功能区分intel/amd的启用：<br><span class="hljs-comment">#modprobe kvm-intel</span><br><span class="hljs-comment"># lsmod grep kvm</span><br>kvm_intel      <span class="hljs-number"> 55496 </span>0<br>kvm         <span class="hljs-number"> 337772 </span>1 kvm_intel<br></code></pre></td></tr></table></figure>
+
+<h3 id="4-Qemu安装"><a href="#4-Qemu安装" class="headerlink" title="4 Qemu安装"></a><strong>4 Qemu安装</strong></h3><blockquote>
+<p>qemu-kvm安装有两个方法，可以通过 yum安装：<code>yum install -y qemu-kvm</code>，但在这个实验中，我们都是通过qemu源码编译的方式进行安装。</p>
+</blockquote>
+<p>  在前一个实验中，我们编译的命令如下：</p>
+<figure class="highlight jboss-cli"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs jboss-cli"><span class="hljs-keyword">cd</span> <span class="hljs-string">/opt/qemu-7.0.0</span><br><span class="hljs-string">./configure</span> <span class="hljs-params">--target-list=aarch64-softmmu</span> <span class="hljs-params">--enable-vnc</span> <span class="hljs-params">--enable-sdl</span> <span class="hljs-params">--python=/usr/bin/python3</span><br></code></pre></td></tr></table></figure>
+
+<p>查看qemu命令：<img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1657247480650.png" srcset="/img/loading.gif" lazyload alt="image-1657247480650"> 可以看到没有qemu-system-x86_64，因为我们上面的configure命令中并没有指定 x84_64-softmmu，需要重新编译。 重新编译命令：</p>
+<ol>
+<li><p>清除之前编译的配置文件等。</p>
+<figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs apache"><span class="hljs-attribute">cd</span> /opt/qemu-<span class="hljs-number">7</span>.<span class="hljs-number">0</span>.<span class="hljs-number">0</span><br><span class="hljs-attribute">make</span> distclean<br></code></pre></td></tr></table></figure>
+</li>
+<li><p>configue命令</p>
+<figure class="highlight jboss-cli"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs jboss-cli"><span class="hljs-string">./configure</span> <span class="hljs-params">--enable-debug</span>  <span class="hljs-params">--enable-kvm</span> <span class="hljs-params">--enable-vnc</span> <span class="hljs-params">--target-list=x86_64-softmmu</span> <span class="hljs-params">--enable-sdl</span><br></code></pre></td></tr></table></figure>
+
+<p><code>--target-list</code> 指定最终的虚拟机是X86架构 <code>--enable-kvm</code> 启用KVM加速，其余参数与之前的实验相同。</p>
+</li>
+<li><p>编译 <code>make -j4</code></p>
+</li>
+<li><p>安装 <code>make install</code></p>
+</li>
+</ol>
+<p>安装结果，查看qemu命令：<img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1657247444309.png" srcset="/img/loading.gif" lazyload alt="image-1657247444309">上图可能看不清，放大：<img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1657248068132.png" srcset="/img/loading.gif" lazyload alt="image-1657248068132"> 可以看到现在已经有 <code>qemu-system-x86_64</code> 这个命令了🙂。</p>
+<h3 id="5-安装VNCServer"><a href="#5-安装VNCServer" class="headerlink" title="5 安装VNCServer"></a><strong>5 安装VNCServer</strong></h3><p>我们使用VNC界面来安装操作系统。不然的话会卡住并提示：</p>
+<figure class="highlight gams"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs gams"><span class="hljs-function"><span class="hljs-title">Loading</span></span> bootlogo... Initializing gfx code...<br></code></pre></td></tr></table></figure>
+
+<p><img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1657264940684.png" srcset="/img/loading.gif" lazyload alt="image-1657264940684"></p>
+<ul>
+<li><p>安装 <code># yum install tigervnc-server tigervnc</code></p>
+</li>
+<li><p>设置密码</p>
+<figure class="highlight avrasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs avrasm"><span class="hljs-meta"># vncpasswd </span><br><span class="hljs-symbol">Password:</span> <span class="hljs-number">123456</span><br><span class="hljs-symbol">Verify:</span><br></code></pre></td></tr></table></figure>
+</li>
+<li><p>配置，目的：使用systemctl管理vnc窗口，只创建一个窗口</p>
+<figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs gradle"># cp <span class="hljs-regexp">/lib/</span>systemd<span class="hljs-regexp">/system/</span>vncserver@.service <span class="hljs-regexp">/etc/</span>systemd<span class="hljs-regexp">/system/</span>vncserver@:<span class="hljs-number">1</span>.service<br># vim <span class="hljs-regexp">/etc/</span>systemd<span class="hljs-regexp">/system/</span>vncserver@:<span class="hljs-number">1</span>.service<br></code></pre></td></tr></table></figure>
+
+<p>其内容为：</p>
+<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs ini"><span class="hljs-section">[Unit]</span><br> <span class="hljs-attr">Description</span>=Remote desktop service (VNC)<br> <span class="hljs-attr">After</span>=syslog.target network.target<br><br> <span class="hljs-section">[Service]</span><br> <span class="hljs-attr">Type</span>=simple<br><br> <span class="hljs-comment"># Clean any existing files in /tmp/.X11-unix environment</span><br> <span class="hljs-attr">ExecStartPre</span>=/bin/sh -c <span class="hljs-string">&#x27;/usr/bin/vncserver -kill %i &gt; /dev/null 2&gt;&amp;1  :&#x27;</span><br> <span class="hljs-attr">ExecStart</span>=/usr/bin/vncserver_wrapper &lt;USER&gt; %i<br> <span class="hljs-attr">ExecStop</span>=/bin/sh -c <span class="hljs-string">&#x27;/usr/bin/vncserver -kill %i &gt; /dev/null 2&gt;&amp;1  :&#x27;</span><br><br> <span class="hljs-section">[Install]</span><br> <span class="hljs-attr">WantedBy</span>=multi-user.target<br></code></pre></td></tr></table></figure>
+
+<p>修改配置，将<code>&lt;USER&gt;</code>改为root <code>ExecStart=/usr/bin/vncserver_wrapper root %i</code></p>
+</li>
+<li><p>重启systemd <code># systemctl daemon-reload</code></p>
+</li>
+<li><p>配置防火墙</p>
+<figure class="highlight subunit"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs subunit"># firewall-cmd --permanent --add-service vnc-server<br><span class="hljs-keyword">success</span><br><span class="hljs-keyword"></span># systemctl restart firewalld.service<br></code></pre></td></tr></table></figure>
+</li>
+<li><p>查看状态</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs yaml">[<span class="hljs-string">root@centos7</span> <span class="hljs-string">~</span>]<span class="hljs-comment"># systemctl status firewalld.service</span><br><span class="hljs-string">●</span> <span class="hljs-string">firewalld.service</span> <span class="hljs-bullet">-</span> <span class="hljs-string">firewalld</span> <span class="hljs-bullet">-</span> <span class="hljs-string">dynamic</span> <span class="hljs-string">firewall</span> <span class="hljs-string">daemon</span><br>   <span class="hljs-attr">Loaded:</span> <span class="hljs-string">loaded</span> <span class="hljs-string">(/usr/lib/systemd/system/firewalld.service;</span> <span class="hljs-string">enabled;</span> <span class="hljs-attr">vendor preset:</span> <span class="hljs-string">enabled)</span><br>   <span class="hljs-attr">Active:</span> <span class="hljs-string">active</span> <span class="hljs-string">(running)</span> <span class="hljs-string">since</span> <span class="hljs-string">五</span> <span class="hljs-number">2022-07-08 16:27:27 </span><span class="hljs-string">CST;</span> <span class="hljs-string">25s</span> <span class="hljs-string">ago</span><br>     <span class="hljs-attr">Docs:</span> <span class="hljs-string">man:firewalld(1)</span><br>[<span class="hljs-string">root@centos7</span> <span class="hljs-string">~</span>]<span class="hljs-comment"># firewall-cmd --list-all</span><br><span class="hljs-string">public</span> <span class="hljs-string">(active)</span><br>  <span class="hljs-attr">target:</span> <span class="hljs-string">default</span><br>  <span class="hljs-attr">icmp-block-inversion:</span> <span class="hljs-literal">no</span><br>  <span class="hljs-attr">interfaces:</span> <span class="hljs-string">br0</span> <span class="hljs-string">ens32</span><br>  <span class="hljs-attr">sources:</span><br>  <span class="hljs-attr">services:</span> <span class="hljs-string">dhcpv6-client</span> <span class="hljs-string">ssh</span> <span class="hljs-string">vnc-server</span><br></code></pre></td></tr></table></figure>
+</li>
+<li><p>开启一个VNC窗口</p>
+</li>
+</ul>
+<figure class="highlight dts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs dts">[root@centos7 ~]<span class="hljs-meta"># systemctl start vncserver@:1.service</span><br>[root@centos7 ~]<span class="hljs-meta"># systemctl status vncserver@:1.service</span><br>● vncserver@:<span class="hljs-number">1.</span>service - Remote desktop service (VNC)<br><span class="hljs-symbol">   Loaded:</span> loaded (<span class="hljs-keyword">/etc/</span>systemd<span class="hljs-keyword">/system/</span>vncserver@:<span class="hljs-number">1.</span><span class="hljs-attr">service</span><span class="hljs-punctuation">;</span> <span class="hljs-attr">disabled</span><span class="hljs-punctuation">;</span> vendor preset: disabled)<br><span class="hljs-symbol">   Active:</span> active (running) since 五 <span class="hljs-number">2022</span><span class="hljs-number">-07</span><span class="hljs-number">-08</span> <span class="hljs-number">16</span>:<span class="hljs-number">31</span>:<span class="hljs-number">16</span> CST<span class="hljs-punctuation">;</span> <span class="hljs-number">2</span>s ago<br><span class="hljs-symbol">  Process:</span> <span class="hljs-number">38041</span> ExecStartP<span class="hljs-attr">re</span><span class="hljs-operator">=</span><span class="hljs-keyword">/bin/</span>sh -c <span class="hljs-keyword">/usr/</span>bin/vncserver -kill %i &gt; <span class="hljs-keyword">/dev/</span>null <span class="hljs-number">2</span>&gt;<span class="hljs-variable">&amp;1</span>  : (<span class="hljs-attr">code</span><span class="hljs-operator">=</span>exited, <span class="hljs-attr">status</span><span class="hljs-operator">=</span><span class="hljs-number">0</span>/SUCCESS)<br> Main PID: <span class="hljs-number">38046</span> (vncserver_wrapp)<br><span class="hljs-symbol">   CGroup:</span> /system.slice/system-vncserver.slice/vncserver@:<span class="hljs-number">1.</span>service<br>           └─<span class="hljs-number">38046</span> <span class="hljs-keyword">/bin/</span>sh <span class="hljs-keyword">/usr/</span>bin/vncserver_wrapper root :<span class="hljs-number">1</span><br><br><span class="hljs-number">7</span>月 <span class="hljs-number">08</span> <span class="hljs-number">16</span>:<span class="hljs-number">31</span>:<span class="hljs-number">16</span> centos7 systemd[<span class="hljs-number">1</span>]: Starting Remote desktop service (VNC)...<br><span class="hljs-number">7</span>月 <span class="hljs-number">08</span> <span class="hljs-number">16</span>:<span class="hljs-number">31</span>:<span class="hljs-number">16</span> centos7 systemd[<span class="hljs-number">1</span>]: Started Remote desktop service (VNC).<br>[root@centos7 ~]<span class="hljs-meta"># vncserver -list</span><br><br>TigerVNC server sessions:<br><br>X DISPLAY <span class="hljs-meta">#     PROCESS ID</span><br>:<span class="hljs-number">1</span>              <span class="hljs-number">38071</span><br><br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>使用 vncviewer 连接 <code>vncviewer -geometry 1900x1000 :1</code></li>
+</ul>
+<p>关闭vncviewer。</p>
+<h3 id="5-安装Qemu-KVM虚拟机"><a href="#5-安装Qemu-KVM虚拟机" class="headerlink" title="5 安装Qemu-KVM虚拟机"></a><strong>5 安装Qemu-KVM虚拟机</strong></h3><p>现在已经有了可以创建虚拟机的命令了，需要使用一个X86架构的虚拟机镜像，我们为了方便区分宿主机和虚拟机，我们采用x84架构的ubuntu作为虚拟机，VMware中的CentOS 7作为虚拟机。</p>
+<ol>
+<li>下载并上传操作系统镜像</li>
+</ol>
+<blockquote>
+<p>这个版本有点问题，成功安装系统后，重新启动虚拟机会卡在黑屏界面。 试了很多方法，也没能解决这个问题，CentOS7、Ubuntu18.04都能启动，但是Ubuntu18.10没能成功启动。</p>
+</blockquote>
+<p>我们下载 <code>ubuntu-18.10-desktop-amd64.iso</code> 镜像(<strong>AMD64是AMD的叫法</strong>)，下载链接：<a target="_blank" rel="noopener" href="https://old-releases.ubuntu.com/releases/cosmic/">https://old-releases.ubuntu.com/releases/cosmic/</a> 下好之后，上传至CentOS 7中，保存在<strong>目录&#x2F;devsdb下</strong>。这个目录需要与下面安装时指定iso文件路径一致。</p>
+<blockquote>
+<p>原本是放在&#x2F;root下的，但是当初给VMware Centos分配的磁盘空间太小，创建不了虚拟硬盘，而VMware扩展硬盘，需要删除之前的快照，只能新添了一个硬盘，重新挂载在&#x2F;devsdb下使用。</p>
+</blockquote>
+<ol start="2">
+<li>创建虚拟硬盘</li>
+</ol>
+<p>利用qemu-img指令可以创建1个空的虚拟硬盘，便于后面安装的时候将系统安装到虚拟硬盘上。这里我们采用qcow2格式的磁盘映像 <code>-f qcow2</code>。 <code>qemu-img create -f qcow2 ubuntu-18.10-desktop-amd64.qcow2 16G</code></p>
+<ol start="3">
+<li>虚拟机安装</li>
+</ol>
+<p>第一次启动虚拟机，需要安装操作系统，指定ISO镜像文件，命令如下：</p>
+<figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs apache"><span class="hljs-attribute">qemu</span>-system-x86_64 --enable-kvm -m <span class="hljs-number">2048</span> -smp <span class="hljs-number">4</span> -boot d -hda ubuntu-<span class="hljs-number">18</span>.<span class="hljs-number">10</span>-desktop-amd64.qcow2 -cdrom ubuntu-<span class="hljs-number">18</span>.<span class="hljs-number">10</span>-desktop-amd64.iso -cpu host<br></code></pre></td></tr></table></figure>
+
+<p>输入命令后太会自动弹出Qemu窗口，如下图所示，安装即可。<img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1657268618382.png" srcset="/img/loading.gif" lazyload alt="image-1657268618382"></p>
+<h3 id="6-运行并检查网络"><a href="#6-运行并检查网络" class="headerlink" title="6 运行并检查网络"></a><strong>6 运行并检查网络</strong></h3><p>操作系统安装完成后，直接关闭 VNC 窗口。 启动虚拟机：</p>
+<figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs apache"><span class="hljs-attribute">qemu</span>-system-x86_64 --enable-kvm -m <span class="hljs-number">2048</span> -smp <span class="hljs-number">4</span> -hda ubuntu-<span class="hljs-number">18</span>.<span class="hljs-number">10</span>-desktop-amd64.qcow2  -cpu host<br></code></pre></td></tr></table></figure>
+
+<p>注意：去掉 -boot d和-cdrom ubuntu-18.10-desktop-amd64.iso，因为他会指定启动方式。d代表（第一个CD-ROM），参考 <a target="_blank" rel="noopener" href="https://man.archlinux.org/man/qemu.1">https://man.archlinux.org/man/qemu.1</a> 但是启动会黑屏：<img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1657274543345.png" srcset="/img/loading.gif" lazyload alt="image-1657274543345"><img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1657274598061.png" srcset="/img/loading.gif" lazyload alt="image-1657274598061"> 经过测试：用以上步骤重新安装CentOS7，安装成功后也可以正常启动：</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs routeros">qemu-system-x86_64 --enable-kvm -m 2048 -smp 4 -hda centos7.qcow2 -cpu host -device virtio-net,<span class="hljs-attribute">netdev</span>=network0 -netdev tap,<span class="hljs-attribute">id</span>=network0,ifname=tap0,script=no,downscript=no,vhost=on<br></code></pre></td></tr></table></figure>
+
+<p><img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1657468335956.png" srcset="/img/loading.gif" lazyload alt="image-1657468335956"> 考虑是不是安装Ubuntu 18.10的时候选择出错了。 我在尝试了ubuntu18.04版本的镜像，发现就可以了，也没有报错。</p>
+<figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs apache"><span class="hljs-attribute">qemu</span>-system-x86_64 --enable-kvm -m <span class="hljs-number">2048</span> -smp <span class="hljs-number">2</span> -boot d -hda ubuntu18-<span class="hljs-number">04</span>.qcow2 -cpu host<br></code></pre></td></tr></table></figure>
+
+<p><img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1657524241844.png" srcset="/img/loading.gif" lazyload alt="image-1657524241844"> 试了很多方法，也没能解决这个问题，CentOS7、Ubuntu18.04都能启动，但是Ubuntu18.10没能成功启动。</p>
+<h3 id="7-设置网络"><a href="#7-设置网络" class="headerlink" title="7 设置网络"></a><strong>7 设置网络</strong></h3><p>接下来我们就用刚才安装的ubuntu18.04版本来进行操作，看看网络情况如何。</p>
+<h4 id="7-1-情况说明"><a href="#7-1-情况说明" class="headerlink" title="7.1 情况说明"></a><strong>7.1 情况说明</strong></h4><ol>
+<li>查看宿主机CentOS地址：<img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1657525018336.png" srcset="/img/loading.gif" lazyload alt="image-1657525018336"></li>
+<li>查看虚拟机ubuntu18.04的ip地址<img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1657525096831.png" srcset="/img/loading.gif" lazyload alt="image-1657525096831"></li>
+<li>目前无法访问百度：<img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1657525157190.png" srcset="/img/loading.gif" lazyload alt="image-1657525157190"></li>
+</ol>
+<h4 id="7-2-网络配置"><a href="#7-2-网络配置" class="headerlink" title="7.2 网络配置"></a><strong>7.2 网络配置</strong></h4><p>类似我上个实验，我们采用桥接方式来联通连网通网络 <a target="_blank" rel="noopener" href="https://www.landery.cn/archives/kxjsqemu02">https://www.landery.cn/archives/kxjsqemu02</a> 。 我们如上个实验中添加启动、关闭脚本后：关闭虚拟机，在启动虚拟机的命令后添加如下参数： <code>-net tap,script=/etc/qemu-ifup,downscript=/etc/qemu-ifdown</code> 全部命令如下：</p>
+<figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs apache"><span class="hljs-attribute">qemu</span>-system-x86_64 --enable-kvm -m <span class="hljs-number">2048</span> -smp <span class="hljs-number">2</span> -boot d -hda ubuntu18-<span class="hljs-number">04</span>.qcow2 -cpu host -net nic -net tap,script=/etc/qemu-ifup,downscript=/etc/qemu-ifdown<br></code></pre></td></tr></table></figure>
+
+<p>进入虚拟机后，查看虚拟机ip，已经变成192.168.134.128同网段的ip地址。<img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1657525432730.png" srcset="/img/loading.gif" lazyload alt="image-1657525432730"> 测试是否能访问百度：<strong>成功</strong><img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1657525581298.png" srcset="/img/loading.gif" lazyload alt="image-1657525581298"> 经过测试，网络已经可以正常访问。</p>
+<h3 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a><strong>参考链接</strong></h3><ul>
+<li><a target="_blank" rel="noopener" href="https://www.jb51.net/article/94086.htm">https://www.jb51.net/article/94086.htm</a></li>
+</ul>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%8F%AF%E4%BF%A1%E8%AE%A1%E7%AE%97/" class="category-chain-item">可信计算</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/kvm/" class="print-no-link">#kvm</a>
+      
+        <a href="/tags/qemu/" class="print-no-link">#qemu</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>可信计算_Qemu03_VMWare上使用Qemu-KVM创建虚拟机</div>
+      <div>http://example.com/017.html</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>landery</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2023年3月7日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/018.html" title="可信计算_Qemu04 采用virsh创建Qemu/KVM虚拟机">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">可信计算_Qemu04 采用virsh创建Qemu/KVM虚拟机</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/016.html" title="可信计算_Qemu02_VMWare上使用Qemu7.0.0 实现X86_64系统上运行ARM架构虚拟机">
+                        <span class="hidden-mobile">可信计算_Qemu02_VMWare上使用Qemu7.0.0 实现X86_64系统上运行ARM架构虚拟机</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"GK4nuH8jdXDcw4IJIVShjMtA-gzGzoHsz","appKey":"7P0B0kJFdaLY6eDQ93Lhcv8J","path":"window.location.pathname","placeholder":"建议使用QQ邮箱，评论头像采用QQ头像","avatar":"retro","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":true,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":true,"bg":null,"count":true},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+    <!-- 备案信息 ICP for China -->
+    <div class="beian">
+  <span>
+    <a href="http://beian.miit.gov.cn/" target="_blank" rel="nofollow noopener">
+      蜀ICP备2022011502号
+    </a>
+  </span>
+  
+    
+      <span>
+        <a
+          href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=51012202001227"
+          rel="nofollow noopener"
+          class="beian-police"
+          target="_blank"
+        >
+          
+            <span style="visibility: hidden; width: 0">|</span>
+            <img src="/img/police_beian.png" srcset="/img/loading.gif" lazyload alt="police-icon"/>
+          
+          <span>川公网安备51012202001227号</span>
+        </a>
+      </span>
+    
+  
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/DynamicRibbon.min.js"></script>
+<script src="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/love.min.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

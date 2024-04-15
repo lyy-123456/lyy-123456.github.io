@@ -1,0 +1,855 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="landery">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="title: devops_jenkins_04_常用插件安装 date: 2022-05-03 21:42:04.0 updated: 2022-05-05 23:31:52.94 url: &#x2F;archives&#x2F;jenkins04 categories:  devops tags: jenkins devops 持续部署   安装插件这里只介绍我安装的，其他的一些插件，请查看">
+<meta property="og:type" content="article">
+<meta property="og:title" content="devops_jenkins_04_常用插件安装">
+<meta property="og:url" content="http://example.com/033.html">
+<meta property="og:site_name" content="landery小站">
+<meta property="og:description" content="title: devops_jenkins_04_常用插件安装 date: 2022-05-03 21:42:04.0 updated: 2022-05-05 23:31:52.94 url: &#x2F;archives&#x2F;jenkins04 categories:  devops tags: jenkins devops 持续部署   安装插件这里只介绍我安装的，其他的一些插件，请查看">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://b3logfile.com/file/2022/05/image-3fb00012.png">
+<meta property="article:published_time" content="2023-03-07T13:21:20.000Z">
+<meta property="article:modified_time" content="2024-04-15T10:02:16.404Z">
+<meta property="article:author" content="landery">
+<meta property="article:tag" content="devops">
+<meta property="article:tag" content="jenkins">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://b3logfile.com/file/2022/05/image-3fb00012.png">
+  
+  
+  
+  <title>devops_jenkins_04_常用插件安装 - landery小站</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/scroll.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"GK4nuH8jdXDcw4IJIVShjMtA-gzGzoHsz","app_key":"7P0B0kJFdaLY6eDQ93Lhcv8J","server_url":"https://api.landery.cn","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>landery 小站</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/links/" target="_self">
+                <i class="iconfont icon-link-fill"></i>
+                <span>友链</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/remark/" target="_self">
+                <i class="iconfont icon-twitch-fill"></i>
+                <span>留言板</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/image/bg/001.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="devops_jenkins_04_常用插件安装"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2023-03-07 21:21" pubdate>
+          2023年3月7日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          718 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          6 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">devops_jenkins_04_常用插件安装</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>title: devops_jenkins_04_常用插件安装 date: 2022-05-03 21:42:04.0 updated: 2022-05-05 23:31:52.94 url: &#x2F;archives&#x2F;jenkins04 categories:</p>
+<ul>
+<li>devops tags:</li>
+<li>jenkins</li>
+<li>devops</li>
+<li>持续部署</li>
+</ul>
+<hr>
+<h1 id="安装插件"><a href="#安装插件" class="headerlink" title="安装插件"></a><strong>安装插件</strong></h1><p>这里只介绍我安装的，其他的一些插件，请查看参考文献。这些安装的插件，后面会详细介绍，如果是需要一些新的插件时也会在文章中提到。</p>
+<h2 id="1-用户以及权限"><a href="#1-用户以及权限" class="headerlink" title="1 用户以及权限"></a><strong>1 用户以及权限</strong></h2><ol>
+<li>Role-based Authorization Strategy <a target="_blank" rel="noopener" href="https://plugins.jenkins.io/role-strategy%EF%BC%8C%E8%BF%99%E4%B8%AA%E6%8F%92%E4%BB%B6%E6%8F%90%E4%BE%9B%E4%BA%86%E4%B8%80%E7%A7%8D%E5%9F%BA%E4%BA%8E%E8%A7%92%E8%89%B2%EF%BC%88Role%EF%BC%89%E7%9A%84%E7%94%A8%E6%88%B7%E6%9D%83%E9%99%90%E7%AE%A1%E7%90%86%E7%AD%96%E7%95%A5%EF%BC%8C%E6%94%AF%E6%8C%81%E5%88%9B%E5%BB%BAglobal%E8%A7%92%E8%89%B2%E3%80%81Project%E8%A7%92%E8%89%B2%E3%80%81Slave%E8%A7%92%E8%89%B2%EF%BC%8C%E4%BB%A5%E5%8F%8A%E7%BB%99%E7%94%A8%E6%88%B7%E5%88%86%E9%85%8D%E8%BF%99%E4%BA%9B%E8%A7%92%E8%89%B2%E3%80%82%E8%BF%99%E6%AC%BE%E6%8F%92%E4%BB%B6%E6%98%AF%E6%9C%80%E5%B8%B8%E7%94%A8%E7%9A%84Jenkins%E6%9D%83%E9%99%90%E7%AD%96%E7%95%A5%E5%92%8C%E7%AE%A1%E7%90%86%E6%8F%92%E4%BB%B6%E3%80%82%EF%BF%BC">https://plugins.jenkins.io/role-strategy，这个插件提供了一种基于角色（Role）的用户权限管理策略，支持创建global角色、Project角色、Slave角色，以及给用户分配这些角色。这款插件是最常用的Jenkins权限策略和管理插件。<img src="https://b3logfile.com/file/2022/05/image-3fb00012.png" srcset="/img/loading.gif" lazyload alt="image.png"></a></li>
+</ol>
+<h2 id="2-代码管理"><a href="#2-代码管理" class="headerlink" title="2 代码管理"></a><strong>2 代码管理</strong></h2><p>Jenkins 项目中配置Source Code Management 去下载代码进行构建任务，是非常普遍的应用场景。Jenkins插件支持很多SCM的系统，使用最常见的是Git 和SVN。</p>
+<ul>
+<li>l Git <a target="_blank" rel="noopener" href="https://plugins.jenkins.io/git%EF%BC%8C%E6%94%AF%E6%8C%81%E4%BD%BF%E7%94%A8Github%E3%80%81GitLab%E3%80%81Gerrit%E7%AD%89%E7%B3%BB%E7%BB%9F%E7%AE%A1%E7%90%86%E4%BB%A3%E7%A0%81%E4%BB%93%E5%BA%93%E3%80%82">https://plugins.jenkins.io/git，支持使用Github、GitLab、Gerrit等系统管理代码仓库。</a></li>
+<li>l Subversion <a target="_blank" rel="noopener" href="https://plugins.jenkins.io/subversion%EF%BC%8C%E6%94%AF%E6%8C%81Subversion%E7%B3%BB%E7%BB%9F%E7%AE%A1%E7%90%86%E6%BA%90%E4%BB%A3%E7%A0%81%E3%80%82">https://plugins.jenkins.io/subversion，支持Subversion系统管理源代码。</a></li>
+</ul>
+<h2 id="3-项目及视图"><a href="#3-项目及视图" class="headerlink" title="3 项目及视图"></a><strong>3 项目及视图</strong></h2><p>Jenkins中对Project 和 view的管理，是用户日常工作中使用很多的功能。</p>
+<ul>
+<li>l Folder <a target="_blank" rel="noopener" href="https://plugins.jenkins.io/cloudbees-folder%EF%BC%8C%E8%BF%99%E4%B8%AA%E6%8F%92%E4%BB%B6%E6%94%AF%E6%8C%81%E7%94%A8%E6%88%B7%E4%BD%BF%E7%94%A8%E7%9B%AE%E5%BD%95%E7%AE%A1%E7%90%86%E9%A1%B9%E7%9B%AE%EF%BC%8C%E7%9B%AE%E5%BD%95%E6%94%AF%E6%8C%81%E5%B5%8C%E5%A5%97%EF%BC%8C%E5%B9%B6%E4%B8%94%E6%94%AF%E6%8C%81%E7%9B%AE%E5%BD%95%E4%B8%AD%E5%88%9B%E5%BB%BA%E8%A7%86%E5%9B%BE%E3%80%82">https://plugins.jenkins.io/cloudbees-folder，这个插件支持用户使用目录管理项目，目录支持嵌套，并且支持目录中创建视图。</a></li>
+<li>l Build Pipeline <a target="_blank" rel="noopener" href="https://plugins.jenkins.io/build-pipeline-plugin%EF%BC%8C%E8%BF%99%E4%B8%AA%E6%8F%92%E4%BB%B6%E6%8F%90%E4%BE%9B%E4%BA%86%E4%B8%80%E7%A7%8DBuild">https://plugins.jenkins.io/build-pipeline-plugin，这个插件提供了一种Build</a> Pipeline 视图，用于显示上、下游项目构建的关系。（存在XSS漏洞没安装）</li>
+</ul>
+<h2 id="4-构建触发"><a href="#4-构建触发" class="headerlink" title="4 构建触发"></a><strong>4 构建触发</strong></h2><p>Jenkins支持多种Build 触发方式，尤其一些<a target="_blank" rel="noopener" href="http://www.ttlsa.com/auto/">自动化</a>触发方式非常有用</p>
+<ul>
+<li>l GitLab <a target="_blank" rel="noopener" href="https://plugins.jenkins.io/gitlab-plugin%EF%BC%8C">https://plugins.jenkins.io/gitlab-plugin，</a> 这个插件将Jenkins 集成到GitLab web hook中，支持Gitlab 分支及Merge Request等相关事件触发Jenkins构建。</li>
+<li>l GitHub Integration <a target="_blank" rel="noopener" href="https://plugins.jenkins.io/github-pullrequest">https://plugins.jenkins.io/github-pullrequest</a> ，这个插件将Jenkins集成到GitHub中，支持Gitgub分支及Pull requests 触发Jenkins 构建。</li>
+<li>l Maven Integration。maven风格插件。</li>
+</ul>
+<h2 id="5-构建参数"><a href="#5-构建参数" class="headerlink" title="5 构建参数"></a><strong>5 构建参数</strong></h2><ol>
+<li>Rebuilder：此插件可以直接重复上次构建，也可以用于查看一些参数比较复杂的构建时，上次构建所选的参数是什么。非常nice的一个插件。</li>
+<li>Build With Parameters。为了实现参数化构建。</li>
+<li>build-name-setter <a target="_blank" rel="noopener" href="https://plugins.jenkins.io/build-name-setter%EF%BC%8C%E8%BF%99%E4%B8%AA%E6%8F%92%E4%BB%B6%E6%94%AF%E6%8C%81%E8%AE%BE%E7%BD%AE%E6%9E%84%E5%BB%BA%E7%9A%84%E6%98%BE%E7%A4%BA%E5%90%8D%E5%AD%97%EF%BC%8C%E8%80%8C%E4%B8%8D%E6%98%AF%E9%BB%98%E8%AE%A4%E7%9A%84%E4%B8%BA#1%EF%BC%8C#2%EF%BC%8C%E2%80%A6%E2%80%A6%EF%BC%8C#buildnum">https://plugins.jenkins.io/build-name-setter，这个插件支持设置构建的显示名字，而不是默认的为#1，#2，……，#buildnum</a></li>
+<li>description setter <a target="_blank" rel="noopener" href="https://plugins.jenkins.io/description-setter%EF%BC%8C%E8%BF%99%E4%B8%AA%E6%8F%92%E4%BB%B6%E6%94%AF%E6%8C%81%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F%E5%8C%B9%E9%85%8D%E6%9E%84%E5%BB%BAlog%E8%BE%93%E5%87%BA%EF%BC%8C%E8%AE%BE%E7%BD%AE%E6%9E%84%E5%BB%BA%E7%9A%84%E6%8F%8F%E8%BF%B0">https://plugins.jenkins.io/description-setter，这个插件支持正则表达式匹配构建log输出，设置构建的描述</a></li>
+</ol>
+<h2 id="6-其他"><a href="#6-其他" class="headerlink" title="6 其他"></a><strong>6 其他</strong></h2><ol>
+<li>邮件插件,Email Extension</li>
+<li>显示用户名 build user vars(还有其作用)</li>
+<li>Git 扩展：git parameter</li>
+<li>选项型参数：Active Choices Plugin</li>
+<li>配置备份还有回滚功能，Job Configuration History Plugin</li>
+<li>项目视图中看到构建人，Build Trigger Badge</li>
+<li>构建后在当前窗口构建日志，Display Console Output Plugin</li>
+<li>通过插件的方式提供更加丰富的构建版本号，Version Number</li>
+</ol>
+<h1 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a><strong>参考链接</strong></h1><ul>
+<li><a target="_blank" rel="noopener" href="http://www.ttlsa.com/auto/jenkins-plugin-recommend/">Jenkins 高效插件推荐 – 运维生存时间 (</a><a target="_blank" rel="noopener" href="http://ttlsa.com/">ttlsa.com</a><a target="_blank" rel="noopener" href="http://www.ttlsa.com/auto/jenkins-plugin-recommend/">)</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/iancloud/p/16045093.html">Jenkins常用插件汇总以及简单介绍原创 - ianCloud - 博客园 (</a><a target="_blank" rel="noopener" href="http://cnblogs.com/">cnblogs.com</a><a target="_blank" rel="noopener" href="https://www.cnblogs.com/iancloud/p/16045093.html">)</a></li>
+<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/378093468">Jenkins必备安装插件 - 知乎 (</a><a target="_blank" rel="noopener" href="http://zhihu.com/">zhihu.com</a><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/378093468">)</a></li>
+</ul>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%90%8E%E7%AB%AF%E5%BC%80%E5%8F%91/" class="category-chain-item">后端开发</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/devops/" class="print-no-link">#devops</a>
+      
+        <a href="/tags/jenkins/" class="print-no-link">#jenkins</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>devops_jenkins_04_常用插件安装</div>
+      <div>http://example.com/033.html</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>landery</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2023年3月7日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/034.html" title="devops_jenkins_05_spring boot + vue项目前后端项目持续部署（1）">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">devops_jenkins_05_spring boot + vue项目前后端项目持续部署（1）</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/032.html" title="devops_jenkins_03_多jdk和maven版本配置">
+                        <span class="hidden-mobile">devops_jenkins_03_多jdk和maven版本配置</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"GK4nuH8jdXDcw4IJIVShjMtA-gzGzoHsz","appKey":"7P0B0kJFdaLY6eDQ93Lhcv8J","path":"window.location.pathname","placeholder":"建议使用QQ邮箱，评论头像采用QQ头像","avatar":"retro","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":true,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":true,"bg":null,"count":true},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+    <!-- 备案信息 ICP for China -->
+    <div class="beian">
+  <span>
+    <a href="http://beian.miit.gov.cn/" target="_blank" rel="nofollow noopener">
+      蜀ICP备2022011502号
+    </a>
+  </span>
+  
+    
+      <span>
+        <a
+          href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=51012202001227"
+          rel="nofollow noopener"
+          class="beian-police"
+          target="_blank"
+        >
+          
+            <span style="visibility: hidden; width: 0">|</span>
+            <img src="/img/police_beian.png" srcset="/img/loading.gif" lazyload alt="police-icon"/>
+          
+          <span>川公网安备51012202001227号</span>
+        </a>
+      </span>
+    
+  
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/DynamicRibbon.min.js"></script>
+<script src="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/love.min.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

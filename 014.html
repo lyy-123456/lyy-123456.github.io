@@ -1,0 +1,879 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="landery">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="title: 可信计算_密码学基础01_PKI、SSL、DAA、PCA date: 2022-05-27 11:07:53.887 updated: 2022-05-27 11:48:54.449 url: &#x2F;archives&#x2F;可信计算密码学基础01pkissldaapca categories:  可信计算 tags: 可信计算 密码学   1 PKI1.1 PKI概念PK">
+<meta property="og:type" content="article">
+<meta property="og:title" content="可信计算_密码学基础01_PKI、SSL、DAA、PCA">
+<meta property="og:url" content="http://example.com/014.html">
+<meta property="og:site_name" content="landery小站">
+<meta property="og:description" content="title: 可信计算_密码学基础01_PKI、SSL、DAA、PCA date: 2022-05-27 11:07:53.887 updated: 2022-05-27 11:48:54.449 url: &#x2F;archives&#x2F;可信计算密码学基础01pkissldaapca categories:  可信计算 tags: 可信计算 密码学   1 PKI1.1 PKI概念PK">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653619477726.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653619688508.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653619819887.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653619869988.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653619971132.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653620100178.png">
+<meta property="article:published_time" content="2023-03-07T13:15:13.000Z">
+<meta property="article:modified_time" content="2024-04-15T09:59:57.401Z">
+<meta property="article:author" content="landery">
+<meta property="article:tag" content="DAA">
+<meta property="article:tag" content="密码学">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653619477726.png">
+  
+  
+  
+  <title>可信计算_密码学基础01_PKI、SSL、DAA、PCA - landery小站</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/scroll.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"GK4nuH8jdXDcw4IJIVShjMtA-gzGzoHsz","app_key":"7P0B0kJFdaLY6eDQ93Lhcv8J","server_url":"https://api.landery.cn","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>landery 小站</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/links/" target="_self">
+                <i class="iconfont icon-link-fill"></i>
+                <span>友链</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/remark/" target="_self">
+                <i class="iconfont icon-twitch-fill"></i>
+                <span>留言板</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/image/bg/001.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="可信计算_密码学基础01_PKI、SSL、DAA、PCA"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2023-03-07 21:15" pubdate>
+          2023年3月7日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          3.1k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          26 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">可信计算_密码学基础01_PKI、SSL、DAA、PCA</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <hr>
+<p>title: 可信计算_密码学基础01_PKI、SSL、DAA、PCA date: 2022-05-27 11:07:53.887 updated: 2022-05-27 11:48:54.449 url: &#x2F;archives&#x2F;可信计算密码学基础01pkissldaapca categories:</p>
+<ul>
+<li>可信计算 tags:</li>
+<li>可信计算</li>
+<li>密码学</li>
+</ul>
+<hr>
+<h1 id="1-PKI"><a href="#1-PKI" class="headerlink" title="1 PKI"></a><strong>1 PKI</strong></h1><h2 id="1-1-PKI概念"><a href="#1-1-PKI概念" class="headerlink" title="1.1 PKI概念"></a><strong>1.1 PKI概念</strong></h2><p>PKI技术是利用公钥密码体系实现的一个标准的安全基础设施，作为一种提供安全服务的基础性平台，它主要提供应用层级别的安全服务，向网络实体提供所必须的安全服务。 PKI技术主要通过为网络空间中各个主体提供安全保障以解决网络中的信任问题。 它通过数字证书为用户提供数字签名、身份认证等具体的安全服务，来确立用户身份的 唯一性和真实性，PKI技术提供的基本服务有： <img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653619477726.png" srcset="/img/loading.gif" lazyload alt="image-1653619477726"></p>
+<ol>
+<li>身份认证服务：即身份认证与识别。PKI技术实现身份认证主要是检查由双方共同信任的CA颁发的数字证书的真实性以及是否过期。</li>
+<li>数据的完整性和不可否认性：PKI技术通过数字签名技术保证信息在传递过程中没有被篡改过。而不可否认性是指从技术上确保用户认可所做的网络通信行为，确保数据有源可查，不能抵赖。</li>
+<li>机密性：PKI技术通过对数据加密确保除密钥拥有者以外的其他任何实体不能理解出数据的具体信息。</li>
+</ol>
+<p>一个完整的PKI系统主要包括认证中心(Certificate Authority，CA)、注册中心 (Registration Authority，RA)、数字证书库、证书撤销等功能模块组成。</p>
+<ol>
+<li>认证中心CA：是PKI中具有权威性、公正性的第三方信任机构，CA是PKI技术中最重要的部分。它的主要作用是确认用户身份信息与相应的数字证书信息相对应，通过为经过验证的用户颁发的相应的数字证书来实现。</li>
+<li>注册中心RA：RA主要负责证书申请者的信息录入、审核等工作，在对用户信息鉴别的基础上决定是否同意CA颁发数字证书给申请者。</li>
+<li>证书发布库：证书发布库是存放CA所颁发和撤销的证书的数据库。</li>
+<li>证书撤销：通过证书撤销列表CRL(CertificateRevocationList)确认证书是否撤销</li>
+</ol>
+<h2 id="1-2-X-509数字证书"><a href="#1-2-X-509数字证书" class="headerlink" title="1.2 X.509数字证书"></a><strong>1.2 X.509数字证书</strong></h2><p>PKI技术的重要基础之一是X.509数字证书，它通过把公钥和它的所有者的身份标识信息相互绑定保证用户身份的真实性，以此确保公钥信息的完整性和不被篡改，保证用户传送信息的安全性。是用户与认证中心建立信任关系的基础，也是PKI的关键技术之一。 X.509数字证书由可信第三方认证机构CA签发。通过CA对用户身份信息和公钥进行签名，以此保证证书的有效性。PKI技术的一切活动都是围绕X.509数字证书的应用展开的，数据机密性、身份认证、数据完整性等PKI所提供的全部安全服务功能都需要X.509数字证书完成。图6列出了X.509数字证书的结构。 <img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653619688508.png" srcset="/img/loading.gif" lazyload alt="image-1653619688508"> X.509数字证书的签名和认证过程：</p>
+<ol>
+<li>CA签名证书 在X.509证书格式中，最后一个字段代表认证机构CA对证书进行的数字签名，CA向申请用户颁发证书前，需要使用MD5或SHA-1对颁发证书的所有内容进行哈希运算得到一个消息摘要。然后CA使用私钥加密这个消息摘要，形成最终的数字签名。最后CA将加密后的消息摘要插入X.509证书的最后一个字段，这样CA就完成了对X.509证书的签名。签名过程如图8所示。</li>
+<li>X.509数字证书认证 X.509数字证书的认证过程如下：<ol>
+<li>认证者使用单向散列函数对证书中除了签名以外的所有字段进行哈希运算获得一个消息摘要M1。其中单向散列函数与CA签发证书时所用的算法一样，具体由签发证书中的相应字段确定；</li>
+<li>认证者从证书相应字段获取CA的数字签名；</li>
+<li>认证者用CA的公钥对证书解密证书中的数字签名，获得CA对证书字段进行散列所得的到消息摘要M2；</li>
+<li>认证者比较消息摘要M1和M2，看两条摘要是否相等，如果两条消息摘要相等，即M1&#x3D;M2，那么可确定X.509证书由认证机构CA颁发并签名，否则便不能信任此证书，拒绝其提出的访问请求。</li>
+</ol>
+</li>
+</ol>
+<p><img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653619819887.png" srcset="/img/loading.gif" lazyload alt="image-1653619819887"></p>
+<h1 id="2-SSL协议"><a href="#2-SSL协议" class="headerlink" title="2 SSL协议"></a><strong>2 SSL协议</strong></h1><h2 id="2-1-SSL协议概述"><a href="#2-1-SSL协议概述" class="headerlink" title="2.1 SSL协议概述"></a><strong>2.1 SSL协议概述</strong></h2><p>SSL协议是在传输层上为网络通信提供安全及数据完整性的一种安全协议，用于在平台之间建立了透明的连接通道，几乎所有支持TCP的协议都可以使用SSL提供的安全服务，因此SSL协议得到了广泛应用。它主要通过非对称密钥体系进行通信双方的身份认证，在通过认证后交换对称密钥作为通信密钥，然后采用通信密钥加密传输数据。SSL具体由SSL握手协议、修改密码协议、SSL记录协议以及警告协议组成（图8）。 <img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653619869988.png" srcset="/img/loading.gif" lazyload alt="image-1653619869988"></p>
+<h2 id="2-2-SSL双向认证"><a href="#2-2-SSL双向认证" class="headerlink" title="2.2 SSL双向认证"></a><strong>2.2 SSL双向认证</strong></h2><p>SSL握手协议根据不同需要分为单向认证和双向认证[33]。一般SSL双向认证主要完成服务器与服务器之间的认证，当两个服务器端使用SSL协议进行通信时，需要先进行SSL双向认证然后再进行通信。SSL双向认证主要完成SSL初始化信息如版本号协商、摘要算法、加密密钥、加密算法等，同时完成对通信双方的身份认证。SSL双向认证的流程如图9所示：</p>
+<ol>
+<li>服务器A给服务器B发送一个连接请求。</li>
+<li>服务器B把X.509证书和同证书的相关信息发到服务器A。</li>
+<li>服务器A将由服务器B发送过来的X.509证书进行检查，检查此证书的签发机构是否是所信赖的CA中心。如果是，对之前的协议继续进行执行操作；如果不是，向客户发送警告消息：即警告客户当前证书并非是可以信赖的，同时向客户发送询问请求，判断是否需要继续操作行为。之后服务器A对证书中的消息与服务器B刚刚发送的相关消息进行比较处理，判断其是否一致，如果一致，对服务器的合法身份进行认可。</li>
+<li>服务器A完成对服务器B的认证。并发送自己的X.509证书到服务器B</li>
+<li>服务器B收到证书后后，对证书进行验证处理，若验证失败，对连接请求进行拒绝处理；若验证成功，服务器B得到服务器A的公钥。</li>
+<li>服务器B完成对服务器A的认证。</li>
+<li>服务器A和服务器B进行会话密码协商。具体流程是首先服务器A将所能支持的密码方案告知于服务器B，然后针对服务器A发送过来的方案，服务器B从中选择一种加密程度最高的方案，用服务器A的公钥进行加密处理，之后发送到服务器A。针对这个密码方案，服务器A生成一个会话密钥，接着用来自于服务器B的公钥同样进行加密处理，之后发送给对方。B接收到消息，用自己的私钥解密，获得会话密钥。</li>
+<li>服务器A和B完成两个平台之间的双向认证，接下来的会话都是用对称密码进行通讯。</li>
+</ol>
+<p><img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653619971132.png" srcset="/img/loading.gif" lazyload alt="image-1653619971132"></p>
+<h1 id="3-DAA"><a href="#3-DAA" class="headerlink" title="3 DAA"></a><strong>3 DAA</strong></h1><p>可信计算作为一种新的计算机体系结构，远程证明是它的重要功能之一。远程证明就是通过两个网络平台在通信前由经典的“挑战一应答”协议实现来判断对方平台的身份和可信状态。杜芸芸对云计算环境下的远程证明安全进行了研究。杨力基于可信计算提出一种改进的移动计算平台直接匿名证明方案。目前实现远程证明的方案包括TPM1.1提出的Privacy CA方案(Privacy Certification Authority)和TPM1.2提出的直接匿名证明DAA方案。 每个TPM都包含一对背书密钥EK作为平台唯一标识符，通常为保护EK不被泄露，由TPM生成一对AIK公钥，由AIK公钥完成平台身份的认证。Privacy CA认证方案就是TPM在每次证明时，在产生身份密钥AIK后，使用第三方机构Privacy CA对AIK公钥进行签名。在证明时TPM需要将由AIK签名的PCR值和接收到的Privacy CA对AIK的签名发送给验证者，由验证者根据签名值对判断身份及是否可信进行判断。基于Privacy CA的证明方案不足之处一是Privacy CA身份的安全性问题，当CA与Verifier串通时，会暴露Attestor的行为；二是由于每次证明时TPM都需要向Privacy CA申请证书，使Privacy CA成为中心环节，Privacy CA的性能决定了方案的效率，从而不适合大规模应用和部署。 而DAA直接匿名认证协议很好的弥补了前面提到的Privacy CA认证方案存在的不足，DAA直接匿名认证协议如图11所示。 DAA认证包含4个实体：TPM，Attestor，DAA Issuer，Verifier。其中Attestor是一个包含TPM的平台。DAA认证协议根据计算的安全性，将对安全性高的计算提交给TPM计算，而Attestor主机完成不需要安全的计算，在保证安全的同时提高了DAA认证协议的效率。 DAA认证协议由DAA Join和DAA Sign两个子协议组成。其中DAA Join协议是指DAA ISSUER通过验证TPM平台为符合要求的TPM平台颁发DAA证书，其中DAA证书主要用于平台身份证明；而DAA Sign协议就是TPM通过使用ISSUER颁发的DAA证书向Verifier证明自身的过程。在证明的过程中，Verifier根据零知识证明思想在不泄露TPM隐私的条件下实现了DAA证书的验证，完成了对平台身份的认证。 其过程分为三步：</p>
+<ol>
+<li>TPM由密钥生成器生成一对AIK公私钥对，然后由EK向DAA发布者ISSUER提供平台身份的合法信息。</li>
+<li>DAA ISSUER对EK提供的平台信息进行验证，如果通过，DAA ISSUER将验证的一个DAA证书传送给TPM。被验证者接下来就通过使用这个证书签名相关消息。如图10中第(3)步。</li>
+</ol>
+<p><img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653620100178.png" srcset="/img/loading.gif" lazyload alt="image-1653620100178"></p>
+<ol start="3">
+<li>DAA Sign协议是Verifier验证Attestor合法性的协议，是在TPM与Verifier之间进 行，Verifier主要是验证Attestor中TPM颁发的AIK。其中AIK由TPM生成，并用从DAA ISSUER获得的DAA证书的签名发送到Verifier。</li>
+</ol>
+<p>DAA匿名认证的优点如下:</p>
+<ol>
+<li>DAA签署方不能把AIK的签署和EK联系在一起，同时两个DAA签名不能够区分是否来自同一TPM，DAA验证者和发布者不能对Attestor的行为进行跟踪，解决了Privacy CA方案的缺点。</li>
+<li>DAA证书只需要TPM平台向ISSUER申请一次，而不像Privacy CA方案一样，每次证明都需要申请证书。解决了Privacy CA中出现的瓶颈问题。</li>
+<li>在TPM获得ISSUER颁发的DAA证书后，可生成多个AIK公私钥对并由DAA证书签名，使证书得到了扩展。</li>
+</ol>
+<h1 id="关于DAA"><a href="#关于DAA" class="headerlink" title="关于DAA"></a><strong>关于DAA</strong></h1><p>DAA是可信计算组织TCG提出的解决Privacy CA可能会泄露信息的一种零知识证明方案。</p>
+<h1 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a><strong>参考链接</strong></h1><blockquote>
+<p>原文是下列文章中的第二章相关内容。</p>
+</blockquote>
+<ul>
+<li>江丽军. 基于TPM的可信DAA认证模型的研究[D]. 河北:河北大学,2015. DOI:10.7666&#x2F;d.D723749.</li>
+</ul>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%8F%AF%E4%BF%A1%E8%AE%A1%E7%AE%97/" class="category-chain-item">可信计算</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/DAA/" class="print-no-link">#DAA</a>
+      
+        <a href="/tags/%E5%AF%86%E7%A0%81%E5%AD%A6/" class="print-no-link">#密码学</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>可信计算_密码学基础01_PKI、SSL、DAA、PCA</div>
+      <div>http://example.com/014.html</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>landery</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2023年3月7日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/013.html" title="可信计算-供应链安全-FIM和RIM">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">可信计算-供应链安全-FIM和RIM</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/018.html" title="可信计算_Qemu04 采用virsh创建Qemu/KVM虚拟机">
+                        <span class="hidden-mobile">可信计算_Qemu04 采用virsh创建Qemu/KVM虚拟机</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"GK4nuH8jdXDcw4IJIVShjMtA-gzGzoHsz","appKey":"7P0B0kJFdaLY6eDQ93Lhcv8J","path":"window.location.pathname","placeholder":"建议使用QQ邮箱，评论头像采用QQ头像","avatar":"retro","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":true,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":true,"bg":null,"count":true},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+    <!-- 备案信息 ICP for China -->
+    <div class="beian">
+  <span>
+    <a href="http://beian.miit.gov.cn/" target="_blank" rel="nofollow noopener">
+      蜀ICP备2022011502号
+    </a>
+  </span>
+  
+    
+      <span>
+        <a
+          href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=51012202001227"
+          rel="nofollow noopener"
+          class="beian-police"
+          target="_blank"
+        >
+          
+            <span style="visibility: hidden; width: 0">|</span>
+            <img src="/img/police_beian.png" srcset="/img/loading.gif" lazyload alt="police-icon"/>
+          
+          <span>川公网安备51012202001227号</span>
+        </a>
+      </span>
+    
+  
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/DynamicRibbon.min.js"></script>
+<script src="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/love.min.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

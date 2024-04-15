@@ -1,0 +1,975 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="landery">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="1 Redis学习 主要了解redis安装、使用以及维护，以及与MySQL的区别  1.1 Redis概述Redis，Remote Dictionary Server（远程字典服务器），是完全开源免费的，用C语言编写的一个高性能（key-value）分布式内存数据库，基于内存运行并支持持久化的NoSQL数据库（关于NoSQL见 NoSQL.md）。  1.2 Redis的特点 Redis支持数">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Redis学习_01_相关概念知识">
+<meta property="og:url" content="http://example.com/0026.html">
+<meta property="og:site_name" content="landery小站">
+<meta property="og:description" content="1 Redis学习 主要了解redis安装、使用以及维护，以及与MySQL的区别  1.1 Redis概述Redis，Remote Dictionary Server（远程字典服务器），是完全开源免费的，用C语言编写的一个高性能（key-value）分布式内存数据库，基于内存运行并支持持久化的NoSQL数据库（关于NoSQL见 NoSQL.md）。  1.2 Redis的特点 Redis支持数">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-03-07T13:26:12.000Z">
+<meta property="article:modified_time" content="2024-04-15T10:20:05.380Z">
+<meta property="article:author" content="landery">
+<meta property="article:tag" content="redis">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>Redis学习_01_相关概念知识 - landery小站</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/scroll.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"GK4nuH8jdXDcw4IJIVShjMtA-gzGzoHsz","app_key":"7P0B0kJFdaLY6eDQ93Lhcv8J","server_url":"https://api.landery.cn","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>landery 小站</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/links/" target="_self">
+                <i class="iconfont icon-link-fill"></i>
+                <span>友链</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/remark/" target="_self">
+                <i class="iconfont icon-twitch-fill"></i>
+                <span>留言板</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/image/bg/001.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Redis学习_01_相关概念知识"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2023-03-07 21:26" pubdate>
+          2023年3月7日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          3.4k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          29 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Redis学习_01_相关概念知识</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p> </p>
+<h1 id="1-Redis学习"><a href="#1-Redis学习" class="headerlink" title="1 Redis学习"></a><strong>1 Redis学习</strong></h1><blockquote>
+<p>主要了解redis安装、使用以及维护，以及与MySQL的区别</p>
+</blockquote>
+<h2 id="1-1-Redis概述"><a href="#1-1-Redis概述" class="headerlink" title="1.1 Redis概述"></a><strong>1.1 Redis概述</strong></h2><p>Redis，Remote Dictionary Server（远程字典服务器），是完全开源免费的，用C语言编写的一个高性能（key-value）分布式内存数据库，基于内存运行并支持持久化的NoSQL数据库（关于NoSQL见 <a target="_blank" rel="noopener" href="http://nosql.md/">NoSQL.md</a>）。</p>
+<hr>
+<h2 id="1-2-Redis的特点"><a href="#1-2-Redis的特点" class="headerlink" title="1.2 Redis的特点"></a><strong>1.2 Redis的特点</strong></h2><ol>
+<li>Redis支持数据持久化，支持将内存中的数据持久化到磁盘，重启的时候可以重新加载使用</li>
+<li>Redis不仅仅支持简单的key-value类型的数据，同时还提供了list、set、zset、hash等数据结构的存储</li>
+<li>Redis支持数据的备份，即master-slave模式的数据备份。</li>
+</ol>
+<h2 id="1-3-Redis的安装"><a href="#1-3-Redis的安装" class="headerlink" title="1.3 Redis的安装"></a><strong>1.3 Redis的安装</strong></h2><h3 id="1-3-1-Redis在Windows上的安装"><a href="#1-3-1-Redis在Windows上的安装" class="headerlink" title="1.3.1 Redis在Windows上的安装"></a><strong>1.3.1 Redis在Windows上的安装</strong></h3><ol>
+<li>在 <a target="_blank" rel="noopener" href="https://github.com/microsoftarchive/redis/releases">Git地址</a> 上选择合适的版本，下载安装包</li>
+<li>在该网站中可以下载msi和zip两种格式，msi是微软格式的安装包，zip是压缩包。我们选择msi，这样可以在安装过程中，可以直接通过选择将程序路径加系统环境变量中。</li>
+<li>安装完毕后，需要先做一些设定工作，以便服务启动后能正常运行。打开Redis服务配置文件。注意：不要找错了，通常为<strong>redis.windows-service.conf</strong>，而不是<strong>redis.windows.conf</strong>。后者是以非系统服务方式启动程序使用的配置文件。</li>
+<li>在该配置文件中，找到含有requirepass字样的地方，追加一行，输入**requirepass “”**，引号中为访问Redis时的密码。</li>
+<li>点击”开始”&gt;右击”计算机管理”&gt;”服务和应用程序”&gt;”服务”。再在右侧找到Redis名称的服务，查看启动情况。如未启动，则手动启动之。正常情况下，服务应该正常启动并运行了。</li>
+<li>最后通过测试客户端来测试一下Redis是否正常提供服务，打开cmd，输入命令 <strong>redis-cli</strong>,如果显示端口号证明服务已启动。再输入命令：**auth “”**，引号中为4中设置的密码，即可开始使用Redis服务。</li>
+</ol>
+<h3 id="1-3-2-Redis在CentOS上的安装（推荐，公司常用）"><a href="#1-3-2-Redis在CentOS上的安装（推荐，公司常用）" class="headerlink" title="1.3.2 Redis在CentOS上的安装（推荐，公司常用）"></a><strong>1.3.2 Redis在CentOS上的安装（推荐，公司常用）</strong></h3><blockquote>
+<p>一般下载地址：<a target="_blank" rel="noopener" href="http://redis.io/download">http://redis.io/download</a> ，下载最新稳定版本。发现官方网站下载地址很慢，于是找到了华为的Redis下载镜像：<a target="_blank" rel="noopener" href="https://mirrors.huaweicloud.com/redis/%E3%80%82">https://mirrors.huaweicloud.com/redis/。</a></p>
+</blockquote>
+<ol>
+<li>cd &#x2F;usr&#x2F;local &#x2F;&#x2F;一般使用此目录下载文件</li>
+<li>wget <a target="_blank" rel="noopener" href="https://mirrors.huaweicloud.com/redis/redis-6.2.5.tar.gz">https://mirrors.huaweicloud.com/redis/redis-6.2.5.tar.gz</a> &#x2F;&#x2F;下载redis压缩包</li>
+<li>tar xzf redis-6.2.5.tar.gz &#x2F;&#x2F;解压缩文件</li>
+<li>cd redis-6.2.5</li>
+<li>make &#x2F;&#x2F;编译并链接程序</li>
+<li>执行完 make 命令后，redis-6.2.5 的 src 目录下会出现编译后的 redis 服务程序 redis-server，还有用于测试的客户端程序 redis-cli。</li>
+<li>cd src</li>
+<li>.&#x2F;redis-server &amp; &#x2F;&#x2F;后台启动Redis服务</li>
+<li>.&#x2F;redis-cli &#x2F;&#x2F;测试redis服务是否启动</li>
+</ol>
+<h3 id="1-2-3-在redis安装过程所遇到的问题"><a href="#1-2-3-在redis安装过程所遇到的问题" class="headerlink" title="1.2.3 在redis安装过程所遇到的问题"></a><strong>1.2.3 在redis安装过程所遇到的问题</strong></h3><ol>
+<li>在CentOS上安装Redis时，发现官网的访问速度很慢，于是找到华为云下载镜像解决。</li>
+<li>在2.1.2的第8步中，后台启动Redis服务，还可以通过 <strong>ctrl + z</strong> 将该服务暂停到后台，通过命令 <strong>jobs -l</strong> 查看后台运行的任务的job号jobnumber，再通过命令 <strong>bg jobnumber</strong> 将一个在后台暂停的任务，变成在后台继续执行，或通过 <strong>fg jobnumber</strong>，将后台中的任务调至前台继续运行。</li>
+</ol>
+<hr>
+<h2 id="1-3-Redis的基本使用"><a href="#1-3-Redis的基本使用" class="headerlink" title="1.3 Redis的基本使用"></a><strong>1.3 Redis的基本使用</strong></h2><blockquote>
+<p>Redis 是完全开源的，遵守 BSD 协议，是一个高性能的 key-value 数据库。 Redis支持五种数据类型：string（字符串），hash（哈希），list（列表），set（集合）及zset(sorted set：有序集合)。</p>
+</blockquote>
+<h3 id="1-3-1-Redis命令"><a href="#1-3-1-Redis命令" class="headerlink" title="1.3.1 Redis命令"></a><strong>1.3.1 Redis命令</strong></h3><ol>
+<li>redis-cli -h host -p port -a password &#x2F;&#x2F;连接到远程redis服务上，host是主机IP地址，port代表端口，password是连接密码</li>
+<li>set key value &#x2F;&#x2F;设置指定key的value值，重复设定会覆盖</li>
+<li>get key &#x2F;&#x2F;得到指定key的值</li>
+<li>flushdb&#x2F;flushall &#x2F;&#x2F;清空当前库&#x2F;清空默认的16个库</li>
+<li>select 数据库编号 &#x2F;&#x2F;切换数据库 默认有0-15 总共16个库。</li>
+<li>config get requirepass &#x2F;&#x2F;查看密码</li>
+</ol>
+<h3 id="1-3-2-Redis-key常用命令"><a href="#1-3-2-Redis-key常用命令" class="headerlink" title="1.3.2 Redis key常用命令"></a><strong>1.3.2 Redis key常用命令</strong></h3><ol>
+<li>keys * &#x2F;&#x2F;查看当前数据库的所有key</li>
+<li>exist key &#x2F;&#x2F;查看key是否存在，1代表存在，0代表不存在</li>
+<li>expire key 秒钟 &#x2F;&#x2F;设置key 的过期时间</li>
+<li>ttl key &#x2F;&#x2F;查看key还有几秒过期，-1表示永不过期，-2代表已过期</li>
+<li>type key &#x2F;&#x2F;查看key的类型</li>
+<li>move key 数据库编号 &#x2F;&#x2F;移动key到相应的数据库</li>
+<li>del key &#x2F;&#x2F;删除key</li>
+</ol>
+<blockquote>
+<p>redis 所支持的数据结构都有着自己的遍历、增、删命令。</p>
+</blockquote>
+<h3 id="1-3-3-redis数据结构"><a href="#1-3-3-redis数据结构" class="headerlink" title="1.3.3 redis数据结构"></a><strong>1.3.3 redis数据结构</strong></h3><ol>
+<li>string &#x2F;&#x2F;最基本的数据结构，value最大512M</li>
+<li>list &#x2F;&#x2F;底层是双向链表，有lpush和rpush</li>
+<li>hash &#x2F;&#x2F;依旧是kv模式，但v相当于java中map</li>
+<li>set &#x2F;&#x2F;set是 k1 v1 v2 v3</li>
+<li>zset &#x2F;&#x2F;有序集合，zset在set基础上加上了一个score分数值，zset是 k1 score1 v1 score2 v2</li>
+</ol>
+<hr>
+<h2 id="1-4-redis配置文件（Linux）"><a href="#1-4-redis配置文件（Linux）" class="headerlink" title="1.4 redis配置文件（Linux）"></a><strong>1.4 redis配置文件（Linux）</strong></h2><blockquote>
+<p>修改配置文件前，先将原版配置文件备份 使用cp命令即可 配置文件为 redis.conf</p>
+</blockquote>
+<ol>
+<li>GENERAL。通用配置<ul>
+<li>daemonize no &#x2F;&#x2F;当该项yes时，代表开启守护进程模式。在该模式下，redis会在后台运行，并将进程pid号写入至redis.conf选项pidfile设置的文件中，此时redis将一直运行，除非手动kill该进程。默认是no，启动redis后将进入redis的命令行界面，exit强制退出或者关闭连接工具(putty,xshell等)都会导致redis进程退出。</li>
+<li>port &#x2F;&#x2F;端口号，默认6379</li>
+<li>bind &#x2F;&#x2F;绑定的ip地址，默认本机</li>
+<li>timeout &#x2F;&#x2F;连接超时时间，当对方空闲时，切断连接，0代表不断开连接</li>
+<li>loglevel &#x2F;&#x2F;日志级别，默认是notice，级别由低到高为</li>
+<li>logfile &#x2F;&#x2F;日志记录方式，默认为标准输出</li>
+<li>databases &#x2F;&#x2F;数据库数量 默认是16个，从0-15</li>
+</ul>
+</li>
+<li>Security。安全配置<ul>
+<li>命令行设置：config set requirepass “yourpassword” &#x2F;&#x2F;设置密码，重启会失效</li>
+<li>配置文件设置：在配置文件中添加 requirepass “yourpassword”，登录redis时需要使用auth “yourpassword”</li>
+</ul>
+</li>
+<li>Limit。限制配置，配置最大客户端、最大内存、缓存过期策略（默认永不过期）等。<ul>
+<li>maxclients：最大客户端，默认10000</li>
+<li>maxmemory ：最大内存(bytes)</li>
+<li>maxmemory-policy：默认永不过期，真实生产环境需要修改策略。</li>
+</ul>
+</li>
+<li>SNAPSHOT：快照<ul>
+<li>rdbchecksum：对快照进行校验，会损耗性能，如果想提升性能可以关闭。</li>
+<li>save：快照触发条件</li>
+<li>dbfilename：快照文件，默认dump.rdb</li>
+<li>dir：指定数据目录，可用config get dir 命令查看目录</li>
+</ul>
+</li>
+<li>APPEND ONLY MODE:<ul>
+<li>appendonly：默认no，yes开启aof持久化</li>
+<li>appendfilename：默认aof文件</li>
+<li>appendfsync：有三种：always（每次数据变更会记录到磁盘）、everyesc（默认，每秒记录，如果一秒内宕机，有数据丢失）、no。</li>
+<li>auto-aof-rewrite-min-size：设置重写的基准值</li>
+<li>auto-aof-rewrite-percentage：设置重写的基准值</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h2 id="1-5-Redis持久化"><a href="#1-5-Redis持久化" class="headerlink" title="1.5 Redis持久化"></a><strong>1.5 Redis持久化</strong></h2><p>有两种持久化方式RDB和AOF。</p>
+<h3 id="1-5-1-RDB（Redis-DataBase）"><a href="#1-5-1-RDB（Redis-DataBase）" class="headerlink" title="1.5.1 RDB（Redis DataBase）"></a><strong>1.5.1 RDB（Redis DataBase）</strong></h3><p>在指定的时间间隔内，将内存中的数据集快照写到磁盘，就是snapshot快照，恢复时从磁盘读入内存，Redis会单独创建（fork）一个子进程来进行持久化，会先将数据写入到一个临时文件中，待持久化过程都结束了，再用这个临时文件替换上次持久化好的文件整个过程中，主进程是不进行任何IO操作的，这就确保了极高的性能。如果需要进行大规模数据的恢复，且对于数据恢复的完整性不是非常敏感，那RDB方式要比AOF方式更加的高效。RDB的缺点是最后一次持久化后的数据可能丢失，并且fork会复制主进程内容，会造成内存压力。</p>
+<ul>
+<li>默认保存文件为：dump.rdb</li>
+<li>默认触发条件：1分钟内改了1万次，5分钟内改了10次，15分钟内改了1次。如果想要禁用RDB策略，不要在配置文件中使用任何sava指令。</li>
+</ul>
+<h3 id="1-5-2-AOF（Append-Only-File）"><a href="#1-5-2-AOF（Append-Only-File）" class="headerlink" title="1.5.2 AOF（Append Only File）"></a><strong>1.5.2 AOF（Append Only File）</strong></h3><p>以日志的形式记录每个写操作，redis启动时会按照该文件重新构建数据，配置文件中默认关闭，配置字段appendonly。</p>
+<ul>
+<li>Rewrite机制：因为aof文件只能追加，所以会越来越大，当文件超过设定的阈值时，Redis就会启动aof的文件内容压缩，只保留可以恢复数据的最小指令集，可以使用命令bgrewriteaof。触发条件是：默认是AOF文件大小是上次rewrite后大小的一倍且文件大于64M时，配置文件可修改。</li>
+<li>默认保存文件：appendonly.aof</li>
+<li>优点：可以灵活配置持久化时间，aof文件分析容易</li>
+<li>缺点：相同数据集的数据aof文件要远大于rdb文件，恢复速度慢于rdb，aof运行效率要慢于rdb，每秒同步策略效率较好，不同步效率和rdb相同</li>
+</ul>
+<h3 id="1-5-3-总结"><a href="#1-5-3-总结" class="headerlink" title="1.5.3 总结"></a><strong>1.5.3 总结</strong></h3><p>当RDB和AOF共存时，AOF优先加载，假设AOF文件出现问题（断电，丢包等导致），启动不了Redis，但是可以使用redis-check-aof –fix appendonly.aof修复该文件。可以同时开启两种备份和恢复方式。</p>
+<h2 id="1-6-Redis事务"><a href="#1-6-Redis事务" class="headerlink" title="1.6 Redis事务"></a><strong>1.6 Redis事务</strong></h2><p>一组指令顺序、无间断地执行。</p>
+<ul>
+<li>使用：使用mutil开启一个事务，使用exec执行所有命令，discard取消事务。unwatch 取消watch命令对所有key的监视，watch key[key…] 监视一个或多个key，在事务执行之前这些key被改动，那么事务会被打断。</li>
+<li>指令加入队列时出错，整个事务都失败，而事务执行，某条语句出错，只有该条语句会错，其他语句不受影响。</li>
+<li>watch监控：<ol>
+<li>乐观锁：每次去拿数据的时候都认为别人不会修改，<strong>所以不会上锁</strong>，但是在更新的时候会判断一下在此期间别人有没有去更新这个数据，可以使用版本号等机制。乐观锁适用于多读的应用类型，这样可以提高吞吐量。<strong>乐观锁策略:提交版本必须大于记录当前版本才能执行更新。</strong></li>
+<li>悲观锁：每次去拿数据的时候都认为别人会修改，所以每次在拿数据的时候都<strong>会上锁</strong>，这样别人想拿这个数据就会block直到它拿到锁。传统的关系型数据库里边就用到了很多这种锁机制，比如行锁，表锁等，读锁，写锁等，都是在做操作之前先上锁。</li>
+</ol>
+</li>
+<li>一旦执行exec命令，之前加的监控锁都会自动被取消。</li>
+<li>watch类似乐观锁，如果key已经被其他客户端改变，则整个事务都不会执行。</li>
+<li>特性：<ol>
+<li>单独的隔离操作:事务中的所有命令都会序列化、按顺序地执行。事务在执行的过程中不会被其他客户端发送来的命令请求所打断。</li>
+<li>没有隔离级别的概念:队列中的命令没有提交之前都不会实际的被执行，因为事务提交前任何指令都不会被实际执行，也就不存在”事务内的查询要看到事务里的更新，在事务外查询不能看到”这个让人万分头痛的问题。</li>
+<li>不保证原子性: redis同一个事务中如果有一条命令执行失败，其后的命令仍然会被执行，没有回滚。</li>
+</ol>
+</li>
+</ul>
+<h2 id="1-7-redis的主从复制"><a href="#1-7-redis的主从复制" class="headerlink" title="1.7 redis的主从复制"></a><strong>1.7 redis的主从复制</strong></h2><p>主从复制，主机数据更新后根据配置和策略,自动同步到备机的master&#x2F;slaver机制，Master以写为主，Slave以读为主。</p>
+<ul>
+<li>主从复制功能：<ol>
+<li>读写分离，主库以写为主，从库以读为主</li>
+<li>容灾恢复</li>
+</ol>
+</li>
+<li>基本使用：<ol>
+<li>配从库不配主库</li>
+<li>从库配置：slaveof 主库IP 主库端口 &#x2F;&#x2F;每次与master断开，都需重新连接，但可配入redis.conf。如果主机挂了，从机原地待命，主机回来一切照旧，如果从机挂了，重新回来变成主机，需要重新连接</li>
+<li>配置文件操作：拷贝多个redis.conf，开启daemonize yes，修改pidfile、端口号、Log文件名称，dbfilename名字。</li>
+<li>info replication &#x2F;&#x2F; 查看主从复制信息</li>
+<li>slaveof no one &#x2F;&#x2F;从机变主机</li>
+</ol>
+</li>
+<li>原理：从机连上主机后，先全量复制，再增量复制</li>
+<li>哨兵模式：主机挂了以后，剩余从机里投票出新的主机master。<ol>
+<li>新建sentinel.conf文件</li>
+<li>该文件中添加：sentinel monitor 被监控主机名字(自己起名字) 主机ip 6379 1 &#x2F;&#x2F;后面的数字1代表主机挂了以后，slave投票得票数多少后成为主机</li>
+<li>启动哨兵：redis-sentinel sentinel.conf文件路径</li>
+</ol>
+</li>
+</ul>
+<h2 id="1-8-Redis和MySQL区别"><a href="#1-8-Redis和MySQL区别" class="headerlink" title="1.8 Redis和MySQL区别"></a><strong>1.8 Redis和MySQL区别</strong></h2><ol>
+<li>从类型上来说，MySQL是关系型数据库，Redis是缓存数据库。</li>
+<li>从作用上来说，MySQL用于持久化的存储数据到硬盘，功能强大,但是速度较慢。Redis用于存储使用较为频繁的数据到缓存中，读取速度快。</li>
+<li>从需求上来说，MySQL和Redis因为需求的不同，一般都是配合使用。目前基本都是MySQL(主) + Redis(辅)</li>
+<li>从性能上来说，Redis数据存放在内存，MySQL放在磁盘因此性能要优于MySQL。</li>
+<li>从安全性上而言MySQL要优于Redis。</li>
+</ol>
+<h2 id="1-9-总结"><a href="#1-9-总结" class="headerlink" title="1.9 总结"></a><strong>1.9 总结</strong></h2><p>因为磁盘造价便宜，因此MySQL用来存放冷数据，而MySQL每次读取数据都需要进行IO操作，磁盘IO比较耗时，因此采用缓存数据库Redis存放热数据来减少数据IO，从而提升系统性能。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%90%8E%E7%AB%AF%E5%BC%80%E5%8F%91/" class="category-chain-item">后端开发</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/redis/" class="print-no-link">#redis</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Redis学习_01_相关概念知识</div>
+      <div>http://example.com/0026.html</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>landery</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2023年3月7日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/0027.html" title="NoSQL相关概念">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">NoSQL相关概念</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/0029.html" title="Linux新硬盘的挂载操作">
+                        <span class="hidden-mobile">Linux新硬盘的挂载操作</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"GK4nuH8jdXDcw4IJIVShjMtA-gzGzoHsz","appKey":"7P0B0kJFdaLY6eDQ93Lhcv8J","path":"window.location.pathname","placeholder":"建议使用QQ邮箱，评论头像采用QQ头像","avatar":"retro","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":true,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":true,"bg":null,"count":true},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+    <!-- 备案信息 ICP for China -->
+    <div class="beian">
+  <span>
+    <a href="http://beian.miit.gov.cn/" target="_blank" rel="nofollow noopener">
+      蜀ICP备2022011502号
+    </a>
+  </span>
+  
+    
+      <span>
+        <a
+          href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=51012202001227"
+          rel="nofollow noopener"
+          class="beian-police"
+          target="_blank"
+        >
+          
+            <span style="visibility: hidden; width: 0">|</span>
+            <img src="/img/police_beian.png" srcset="/img/loading.gif" lazyload alt="police-icon"/>
+          
+          <span>川公网安备51012202001227号</span>
+        </a>
+      </span>
+    
+  
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/DynamicRibbon.min.js"></script>
+<script src="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/love.min.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

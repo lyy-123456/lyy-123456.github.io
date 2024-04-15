@@ -1,0 +1,857 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="landery">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="CPU虚拟化目前大多数人都将虚拟化分为全虚拟化、半虚拟化、硬件辅助虚拟化。但是对划分的原因，也不太了解。因此本文主要是讨论一下关于虚拟化的分类以及原因。 虚拟化分类原因我们都知道，cpu指令系统分为特权指令和非特权指令。以X86系统为例，共分为Ring0-Ring3 4个级别。其中Ring0 处于内核级别，拥有最高权限，Ring1-Ring3运行在用户级别，虽然CPU指令级别这样划分，但是操作系统">
+<meta property="og:type" content="article">
+<meta property="og:title" content="云计算_01_虚拟化技术_CPU虚拟化">
+<meta property="og:url" content="http://example.com/0008.html">
+<meta property="og:site_name" content="landery小站">
+<meta property="og:description" content="CPU虚拟化目前大多数人都将虚拟化分为全虚拟化、半虚拟化、硬件辅助虚拟化。但是对划分的原因，也不太了解。因此本文主要是讨论一下关于虚拟化的分类以及原因。 虚拟化分类原因我们都知道，cpu指令系统分为特权指令和非特权指令。以X86系统为例，共分为Ring0-Ring3 4个级别。其中Ring0 处于内核级别，拥有最高权限，Ring1-Ring3运行在用户级别，虽然CPU指令级别这样划分，但是操作系统">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://b3logfile.com/file/2022/04/image-f3a45c0d.png">
+<meta property="og:image" content="https://b3logfile.com/file/2022/04/image-88ec361d.png">
+<meta property="article:published_time" content="2022-04-23T13:06:00.000Z">
+<meta property="article:modified_time" content="2024-04-15T10:16:06.987Z">
+<meta property="article:author" content="landery">
+<meta property="article:tag" content="CPU虚拟化">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://b3logfile.com/file/2022/04/image-f3a45c0d.png">
+  
+  
+  
+  <title>云计算_01_虚拟化技术_CPU虚拟化 - landery小站</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/scroll.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"GK4nuH8jdXDcw4IJIVShjMtA-gzGzoHsz","app_key":"7P0B0kJFdaLY6eDQ93Lhcv8J","server_url":"https://api.landery.cn","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>landery 小站</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/links/" target="_self">
+                <i class="iconfont icon-link-fill"></i>
+                <span>友链</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/remark/" target="_self">
+                <i class="iconfont icon-twitch-fill"></i>
+                <span>留言板</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/image/bg/001.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="云计算_01_虚拟化技术_CPU虚拟化"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2022-04-23 21:06" pubdate>
+          2022年4月23日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2.9k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          25 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">云计算_01_虚拟化技术_CPU虚拟化</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="CPU虚拟化"><a href="#CPU虚拟化" class="headerlink" title="CPU虚拟化"></a><strong>CPU虚拟化</strong></h1><p>目前大多数人都将虚拟化分为<strong>全虚拟化</strong>、<strong>半虚拟化</strong>、<strong>硬件辅助虚拟化</strong>。但是对划分的原因，也不太了解。因此本文主要是讨论一下关于虚拟化的分类以及原因。</p>
+<h2 id="虚拟化分类原因"><a href="#虚拟化分类原因" class="headerlink" title="虚拟化分类原因"></a><strong>虚拟化分类原因</strong></h2><p>我们都知道，cpu指令系统分为特权指令和非特权指令。以X86系统为例，共分为Ring0-Ring3 4个级别。其中Ring0 处于内核级别，拥有最高权限，Ring1-Ring3运行在用户级别，虽然CPU指令级别这样划分，但是操作系统不一定用完所有的指令级别，例如Linux只使用了Ring0 和 Ring3两个级别，分别在内核态和用户态运行。</p>
+<ol>
+<li>为什么需要CPU虚拟化？<ul>
+<li>没有虚拟化：操作系统处于最高的特权级，可直接访问所有物理资源（寄存器、内存、I&#x2F;O外设等）。</li>
+<li>虚拟化：操作系统变为客户机操作系统（虚拟机操作系统）而降级到非最高特权级，这时，其试图访问关键资源的指令就成为了敏感指令。VMM 会通过各种手段，保证这些敏感指令的执行能够触发异常，从而陷入到VMM进行模拟，VMM将客户机操作系统的访问定位到VMM为其设计的虚拟的资源上以防止对VMM自身的运行造成破坏。</li>
+</ul>
+</li>
+<li>CPU虚拟化要做什么？<ul>
+<li>CPU虚拟化的重点：由VMM和（物理）CPU共同完成敏感指令的模拟。</li>
+<li>对于虚拟机执行的非敏感指令，物理CPU直接解码处理，并将相关的效果直接反映到物理寄存器上；对于虚拟机执行的敏感指令，让虚拟机里执行的敏感指令陷入然后被VMM模拟，而不要直接作用于真实硬件上。</li>
+</ul>
+</li>
+</ol>
+<p>在非x86系统中经典的虚拟化做法，就是令VMM拥有超级特权，其指令都想运行在Ring0级别；令Guest OS运行在Ring1-Ring3级别，当其运行特权指令时，这些指令会产生异常并被VMM捕获到，VMM会在核心级别中模拟执行，再将运行结果返回给Guest OS。这种经典的虚拟化技术被称为<strong>特权解除和陷入模拟</strong>，以IBM的Power系列为代表。 其次，我们将操作系统会涉及底层公共资源调用的一些运行指令称为<strong>敏感指令</strong>。显然这些敏感指令在虚拟化的结构中也需要陷入到Ring0的核心级别执行，否则会导致不同GuestOS之间的资源调用冲突。大型服务器如PowerPC和SPARC运行的RISC指令集中,所有的敏感指令都属于特权指令，因此可以采用上面说的特权解除和陷入模拟技术完美的进行虚拟化实现。 <strong>但对于X86的CISC指令集而言,存在17条非特权指令的敏感指令，这些指令被GuestOS在Ring1级别执行时，会被直接执行，无法产生异常从而陷入Ring0处理，也就导致无法采用经典技术进行虚拟化，</strong> 因此下文将介绍的一系列方案都是为了解决此问题而设计的。 <img src="https://b3logfile.com/file/2022/04/image-f3a45c0d.png" srcset="/img/loading.gif" lazyload alt="image.png"> 在上述问题中,涉及到三个主要对象，GuestOS、VMM和硬件CPU的指令集,其中VMM是新插入的对象，修改起来很方便，但OS和CPU改起来就难一-些了。解决方案的思路也由此分为三个方向:</p>
+<ol>
+<li>只变动VMM。好处是兼容性最强，OS和CPU都不用动，但效率肯定是最低的。这种方案也被称为CPU Full-Virtualization，全虚拟化。</li>
+<li>改动GuestOS。好处是效率较高,但缺点是Windows肯定不愿意干，只能在Linux上做些文章，而且使用特制的OS，会带来一些可扩展性方面的隐患。这种方案也被称为CPU Para-Virtualization ，半虚拟化。</li>
+<li>改动CPU指令集。这个改动就只有Intel&#x2F;AMD能做了，好处是对Guest OS可以不需变动，兼容Linux和Windows，VMM的使用效率也较高。缺点也有，就是增加了一些虚拟化指令和结构，导致对CPU的利用率下降，在部分应用场景下的性能表现不如前面的CPUPara-Virtualization方案。这种方案也被称为硬件辅助虚拟化技术HVM ( Hardware-assisted Virtualization Machine)。随着Intel&#x2F;AMD的服务器CPU全部更新换代对其提供支持,HVM已经成为当前虚拟化技术应用的主流，硬件辅助虚拟化。</li>
+</ol>
+<p>于是就出现了三个虚拟化种类，分别是全虚拟化（改动VMM）、半虚拟化（改动Guest OS）、硬件辅助虚拟化（改动CPU指令集）</p>
+<h1 id="CPU全虚拟化"><a href="#CPU全虚拟化" class="headerlink" title="CPU全虚拟化"></a><strong>CPU全虚拟化</strong></h1><p>CPU Full-Virtualization（CPU FV），这种思路又被细分为三种解决方案。Emulation、Scan-and-Patch和 Binary Translation。其中Emulation是根本解决方案，而Scan-and-Patch和 Binary Translation可以理解为是Emulation在X86体系上使用的扩展实现方案。CPU Full-Virtualization由于实现较为简单，早在上世纪末就已经出现，是最早期的x86虚拟化技术。</p>
+<ol>
+<li>Emulation：主要应用在跨平台进行虚拟机模拟。由于Guest OS和底层系统平台不同，尤其是指令集的不同，比如你需要在X86系统上模拟ARM的系统，那么VMM所做的工作就是实现将Guest OS的指令读取后进行模拟，模拟出结果后，再返回，逐条执行不区分用户指令和敏感指令，由于每条命令都陷入到Ring 0级别中，所以也就解决了之前的敏感指令的问题。代表产品就是Linux上的QEMU和Bochs，其中QEMU还可以通过KQEMU来提升处理速度。</li>
+<li>Scan-and-Patch：主要思路是将Guest OS的指令提前扫描一遍，找到其中的敏感指令，然后在VMM层中生成对应的补丁指令，同时将敏感指令修改为跳转指令，指向补丁指令。这样当执行到敏感指令时，会跳转到VMM中的补丁指令执行，在将结果返回给Guest OS。代表产品是Oracle的开源虚拟机系统VirtualBox，目前主要应用于在主机上进行虚拟机的模拟，服务器使用较少。</li>
+<li>Binary Translation，二进制转换，主要思路是将Guest OS的指令段进行整段翻译，将其中敏感指令替换成Ring 0中的对应特权指令，然后在执行的同时翻译下一个指令段。代表产品VMWare WorkStation、Microsoft virtual PC主机虚拟化工具，以及早期VMWare的 ESX&#x2F;GSX系列服务器虚拟化系统，目前服务器上很少使用。</li>
+</ol>
+<p>由于CPU FV受性能影响，在服务器上目前被逐渐淘汰。主要代表产品VirtualBox和VMware WorkStation大都应用于主机虚拟化的一些开发测试环境中。</p>
+<h1 id="CPU半虚拟化"><a href="#CPU半虚拟化" class="headerlink" title="CPU半虚拟化"></a><strong>CPU半虚拟化</strong></h1><p>CPU Para-Virtualization称为半虚拟化。此技术以Hyper-V和Xen作为代表，但VMware的ESX Server和Linux的KVM两种主流的虚拟化产品也都支持Para-Virtualization，另外还有基于Linux的Lguest和基于Windows的CoLinux等各具特色的小型产品也都通过部分Para-Virtualization技术来实现操作系统的虚拟化。CPU Para-virtualization以下简称CPU PV。 CPU PV技术实现的主要原理如下，首先VMM公布其一些称为 Hypercalls的接口函数出来，然后在 Guest OS中增加根据这些接口函数修改内核中的代码以替代有问题的17条敏感指令执行系统调用操作。修改后的指令调用通常被称为 Hypercalls，Guest OS可以通过 Hypercalls 直接调用VMM进行系统指令执行，相比较前面提到的陷入模拟方式极大的提升了处理效率。 然而CPU PV修改操作系统内核代码的方式带来了对Guest OS的很多使用限制，如只有Hyper-v可以支持 Para-Virtualization方式的Windows Server作为Guest Os，另外由于KVM&#x2F;Xen&#x2F;VMware vMI&#x2F;Hyper-V各自Hypercalls代码进入Linux内核版本不同，因此采用Linux作为Guest OS时也必须关注各个发行版的Linux内核版本情况。KVM是2.6.20,VMI是2.6.22，Xen是2.6.23，Hyper-V是2.6.32。 由于CPU PV方式对Guest OS的限制，应用范围不是很广，但是由于其技术上的系统调用效率提升，仍然被部分开发与使用者所看好，在某些特定场景也有一定存在需求。</p>
+<h1 id="CPU硬件辅助虚拟化-HVM"><a href="#CPU硬件辅助虚拟化-HVM" class="headerlink" title="CPU硬件辅助虚拟化 HVM"></a><strong>CPU硬件辅助虚拟化 HVM</strong></h1><p>硬件辅助虚拟化就是从硬件出发，修改CPU指令集来解决敏感指令的问题。当前的X86厂商主要是Intel和AMD两家，这两家都提出了自己的CPU虚拟化技术，Intel推出的技术是在Xeon CPU上的 VT-x，和Itanium CPU上的 VT-i，AMD提出的是AMD-V。下面以VT-x为例介绍HVM技术，其他的两种类似。 VT-x在CPU操作方面有两个主要特性：</p>
+<ol>
+<li>是增加了VMCS (Virtual-Machine ControlStructure)数据结构和13条专门针对vM的处理指令,用于提升VM切换时的处理效率。</li>
+<li>通过引入Root&#x2F;Non-Root操作模式解决前面遇到的Guest OS敏感指令无法陷入问题。</li>
+</ol>
+<p>13条新指令中包括5条用于VMCS维护, 4条用于VMX管理,2条用于VMX对TLB(TranslationLook aside Buffer）的管理，2条用于Guest OS调用。 Root&#x2F;Non-Root 操作模式将原有的CPU操作区分为VMM所在的Root操作与VM的Non-Root操作,每个操作都拥有Ring0-Ring3的所有级别。通过VMCS数据结构指向Guest OS到VMM的操作切换。 <img src="https://b3logfile.com/file/2022/04/image-88ec361d.png" srcset="/img/loading.gif" lazyload alt="image.png"> VMM在初始化的时候会在物理内存中为每个VM开辟一段空间用于存储对应的一个VMCS数据结构，可以理解一个VMCS就对应一个vCPU。VM切换时，VMM可以通过VMCS 指针方便的在不同VMCS间进行跳转，有效的提升了CPU使用效率。 VT-x技术还包含以下三个重要内容:</p>
+<ol>
+<li>**EPT (Extended Page Table)**： 由VMM控制的一种新页表结构，主要目的为了在保证多个VM访问物理内存相互隔离的同时,提升大块内存的读写效率。</li>
+<li><strong>FlexMigration</strong>：灵活迁移技术，用于VM在使用不同型号CPU的物理服务器间进行迁移，促成了类似vMotion的vM迁移技术的发展。</li>
+<li><strong>FlexPriority</strong> ：灵活优先级技术，用于优化 CPU中断处理过程中对TPR(Task-Priority Register）的使用，提高中断处理效率。</li>
+</ol>
+<p>VT-x和AMD-v等技术的出现，解决了前面两种纯软件方案进行X86虚拟化时，CPuFull-Virtualization性能低和Para-Virtualization的Guest OS兼容性差问题.随着服务器CPU两三年一换代的更新速度,当前的主流x86服务器已经都可以支持VT-x&#x2F;AMD-v等技术，因此HVM成为当前云计算 laaS服务器虚拟化的主流。主要的几款vMM产品Xen&#x2F;VMware ESXi&#x2F;KVM&#x2F;Hyper-V都已经能够支持HVM功能。</p>
+<h1 id="CPU虚拟化总结"><a href="#CPU虚拟化总结" class="headerlink" title="CPU虚拟化总结"></a><strong>CPU虚拟化总结</strong></h1><p>虚拟化分类，个人理解是从CPU虚拟化角度来分类较为恰当，虽然从I&#x2F;O设备虚拟化的角度来说，也有所谓的I&#x2F;O FV、I&#x2F;O PV，但是个人觉得从CPU角度来区分全虚拟化、半虚拟化、硬件辅助虚拟化较为恰当。接下来会继续介绍虚拟化技术02_I&#x2F;O虚拟化。</p>
+<h1 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a><strong>参考文献</strong></h1><blockquote>
+<p>感谢以下作者的分享，文章大部分内容来自以下参考文献。</p>
+</blockquote>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://www.doc88.com/p-6951962040261.html">从半空看虚拟化 - 道客巴巴 (</a><a target="_blank" rel="noopener" href="http://doc88.com/">doc88.com</a><a target="_blank" rel="noopener" href="https://www.doc88.com/p-6951962040261.html">)</a></li>
+<li><a target="_blank" rel="noopener" href="https://xinsheng.huawei.com/cn/index.php?app=forum&mod=Detail&act=index&id=7715651">虚拟化技术专题分享二：CPU虚拟化 (</a><a target="_blank" rel="noopener" href="http://huawei.com/">huawei.com</a><a target="_blank" rel="noopener" href="https://xinsheng.huawei.com/cn/index.php?app=forum&mod=Detail&act=index&id=7715651">)</a></li>
+</ul>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E8%99%9A%E6%8B%9F%E5%8C%96/" class="category-chain-item">虚拟化</a>
+  
+  
+
+      </span>
+    
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E4%BA%91%E8%AE%A1%E7%AE%97/" class="category-chain-item">云计算</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/CPU%E8%99%9A%E6%8B%9F%E5%8C%96/" class="print-no-link">#CPU虚拟化</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>云计算_01_虚拟化技术_CPU虚拟化</div>
+      <div>http://example.com/0008.html</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>landery</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2022年4月23日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/0009.html" title="云计算_02_虚拟化技术_I/O虚拟化">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">云计算_02_虚拟化技术_I/O虚拟化</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"GK4nuH8jdXDcw4IJIVShjMtA-gzGzoHsz","appKey":"7P0B0kJFdaLY6eDQ93Lhcv8J","path":"window.location.pathname","placeholder":"建议使用QQ邮箱，评论头像采用QQ头像","avatar":"retro","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":true,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":true,"bg":null,"count":true},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+    <!-- 备案信息 ICP for China -->
+    <div class="beian">
+  <span>
+    <a href="http://beian.miit.gov.cn/" target="_blank" rel="nofollow noopener">
+      蜀ICP备2022011502号
+    </a>
+  </span>
+  
+    
+      <span>
+        <a
+          href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=51012202001227"
+          rel="nofollow noopener"
+          class="beian-police"
+          target="_blank"
+        >
+          
+            <span style="visibility: hidden; width: 0">|</span>
+            <img src="/img/police_beian.png" srcset="/img/loading.gif" lazyload alt="police-icon"/>
+          
+          <span>川公网安备51012202001227号</span>
+        </a>
+      </span>
+    
+  
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/DynamicRibbon.min.js"></script>
+<script src="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/love.min.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

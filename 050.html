@@ -1,0 +1,907 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="landery">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="0 SeaBIOS四个阶段从整体角度出发，SeaBIOS包含四个阶段。  加电自检（Power On Self Test, POST) 引导（Boot） 运行时（Main runtime phase） 继续运行和重启（Resume and reboot）  1 POST阶段post阶段调用的相关函数如下图所示：  reset_vector当VCPU开始运行的时候，会从重置向量处开始执行，这“第一条">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SeaBIOS源码分析-虚拟机启动过程分析">
+<meta property="og:url" content="http://example.com/050.html">
+<meta property="og:site_name" content="landery小站">
+<meta property="og:description" content="0 SeaBIOS四个阶段从整体角度出发，SeaBIOS包含四个阶段。  加电自检（Power On Self Test, POST) 引导（Boot） 运行时（Main runtime phase） 继续运行和重启（Resume and reboot）  1 POST阶段post阶段调用的相关函数如下图所示：  reset_vector当VCPU开始运行的时候，会从重置向量处开始执行，这“第一条">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/wp-content/uploads/2023/06/image-1686304817894.png">
+<meta property="article:published_time" content="2023-06-09T10:04:53.000Z">
+<meta property="article:modified_time" content="2024-04-15T10:04:15.857Z">
+<meta property="article:author" content="landery">
+<meta property="article:tag" content="BIOS">
+<meta property="article:tag" content="MBR">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://example.com/wp-content/uploads/2023/06/image-1686304817894.png">
+  
+  
+  
+  <title>SeaBIOS源码分析-虚拟机启动过程分析 - landery小站</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/scroll.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"GK4nuH8jdXDcw4IJIVShjMtA-gzGzoHsz","app_key":"7P0B0kJFdaLY6eDQ93Lhcv8J","server_url":"https://api.landery.cn","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>landery 小站</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/links/" target="_self">
+                <i class="iconfont icon-link-fill"></i>
+                <span>友链</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/remark/" target="_self">
+                <i class="iconfont icon-twitch-fill"></i>
+                <span>留言板</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/image/bg/001.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="SeaBIOS源码分析-虚拟机启动过程分析"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2023-06-09 18:04" pubdate>
+          2023年6月9日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          3.6k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          30 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">SeaBIOS源码分析-虚拟机启动过程分析</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h2 id="0-SeaBIOS四个阶段"><a href="#0-SeaBIOS四个阶段" class="headerlink" title="0 SeaBIOS四个阶段"></a>0 SeaBIOS四个阶段</h2><p>从整体角度出发，SeaBIOS包含四个阶段。</p>
+<ul>
+<li>加电自检（Power On Self Test, POST)</li>
+<li>引导（Boot）</li>
+<li>运行时（Main runtime phase）</li>
+<li>继续运行和重启（Resume and reboot）</li>
+</ul>
+<h2 id="1-POST阶段"><a href="#1-POST阶段" class="headerlink" title="1 POST阶段"></a>1 POST阶段</h2><p>post阶段调用的相关函数如下图所示：</p>
+<p><img src="/wp-content/uploads/2023/06/image-1686304817894.png" srcset="/img/loading.gif" lazyload alt="file"></p>
+<h3 id="reset-vector"><a href="#reset-vector" class="headerlink" title="reset_vector"></a>reset_vector</h3><p>当VCPU开始运行的时候，会从重置向量处开始执行，这“第一条指令”就在<code>romlayout.S</code>的reset_vector中。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs shell">reset_vector:<br>        ljmpw $SEG_BIOS, $entry_post<br>        // 0xfff5 - BiosDate in misc.c<br>        // 0xfffe - BiosModelId in misc.c<br>        // 0xffff - BiosChecksum in misc.c<br>        .end<br></code></pre></td></tr></table></figure>
+
+<p>前面也分析过了，这是一条长跳转指令，会跳转到CS:IP为<code>$SEG_BIOS:$entry_post</code>的位置，也就是0xF000:0xE05B，</p>
+<p>看看0xE05B的位置代码：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs shell">        ORG 0xe05b<br>entry_post:<br>        cmpl $0, %cs:HaveRunPost                // Check for resume/reboot<br>        jnz entry_resume<br>        ENTRY_INTO32 _cfunc32flat_handle_post   // Normal entry point<br></code></pre></td></tr></table></figure>
+
+<p>在romlayout中可以看到他会判断是否经历过POST阶段，如果经历过，意味着当前不应该重新进行，而应该进入继续运行（Resume）。否则就会进入真正的post处理方法：handle_post()。</p>
+<h3 id="handle-post"><a href="#handle-post" class="headerlink" title="handle_post"></a>handle_post</h3><p>通过ENTRY_INTO32 _cfunc32flat_handle_post语句，即先进入保护模式，然后完成对C函数handle_post的调用。</p>
+<p>handle_post函数的定义如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">void</span> VISIBLE32FLAT<br><span class="hljs-title function_">handle_post</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span><br>&#123;<br>    <span class="hljs-keyword">if</span> (!CONFIG_QEMU &amp;&amp; !CONFIG_COREBOOT)<br>        <span class="hljs-keyword">return</span>;<br><br>    serial_debug_preinit();<br>    debug_banner();<br><br>    <span class="hljs-comment">// Check if we are running under Xen.</span><br>    xen_preinit();<br><br>    <span class="hljs-comment">// Allow writes to modify bios area (0xf0000)</span><br>    make_bios_writable();<br><br>    <span class="hljs-comment">// Now that memory is read/writable - start post process.</span><br>    <span class="hljs-comment">//内存可读可写，开始post过程</span><br>    dopost();<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>该函数一开始就对串口进行初始化，准备串口输出调试信息，然后检查是否运行在xen平台上，make_bios_writable方法检测运行的平台，最后将ROM BIOS中的bios复制到1M以内的空间，确保0xC0000-0x100000的这段地址空间是可写的，这个复制高地址处的ROM到低地址处的过程被称为Shadow RAM技术。然而，在这个过程后，这段内存会被保护起来，无法进行写入。make_bios_writable函数就用于让这段内存可写，从而便于更改一些静态分配的全局变量值。</p>
+<h3 id="dopost"><a href="#dopost" class="headerlink" title="dopost"></a>dopost</h3><p>dopost是进一步的初始化。这个函数是POST过程的主体。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">// Setup for code relocation and then relocate.</span><br><span class="hljs-type">void</span> VISIBLE32INIT<br><span class="hljs-title function_">dopost</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span><br>&#123;<br>    code_mutable_preinit();<br><br>    <span class="hljs-comment">// Detect ram and setup internal malloc.</span><br>    qemu_preinit();<br>    coreboot_preinit();<br>    malloc_preinit();<br><br>    <span class="hljs-comment">// Relocate initialization code and call maininit().</span><br>    reloc_preinit(maininit, <span class="hljs-literal">NULL</span>);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>首先看一下code_mutable_preinit方法。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">// Runs after all code is present and prior to any modifications</span><br><span class="hljs-type">void</span><br><span class="hljs-title function_">code_mutable_preinit</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span><br>&#123;<br>    <span class="hljs-comment">//全部变量，因为之前经过make_bios_writable方法，可以修改这个变量。</span><br>    <span class="hljs-keyword">if</span> (HaveRunPost)<br>        <span class="hljs-comment">// Already run</span><br>        <span class="hljs-keyword">return</span>;<br>    <span class="hljs-comment">// Setup reset-vector entry point (controls legacy reboots).</span><br>    <span class="hljs-comment">//将复位代码（CMOS_RESET_CODE）写入CMOS芯片中的Reset Status寄存器（0xCF）</span><br>    rtc_write(CMOS_RESET_CODE, <span class="hljs-number">0</span>);<br>    barrier();<br>    HaveRunPost = <span class="hljs-number">1</span>;<br>    barrier();<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>这一段的核心是将HaveRunPost设置为1。可以看出，HaveRunPost实际上相当于一个全局变量，在BIOS ROM中实际上是被初始化为0的。然后将ROM映射到RAM中的BIOS ROM区域之后，通过make_bios_writable，使得这一段RAM区域可写，然后才能更改HaveRunPost的值。</p>
+<p>接着是qemu_preinit();函数，我们尽量不继续深入，探讨具体实现。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">void</span><br><span class="hljs-title function_">qemu_preinit</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span><br>&#123;<br>    <span class="hljs-comment">// 读取北桥PCI设备的一些配置信息，开启qemu调试的输出端口，检测并判断当前虚拟机运行的平台PlatformRunningOn，QEMU为1、Xen为2、KVM为4.</span><br>    qemu_detect();<br><br>    <span class="hljs-keyword">if</span> (!CONFIG_QEMU)<br>        <span class="hljs-keyword">return</span>;<br><br>    <span class="hljs-keyword">if</span> (runningOnXen()) &#123;<br>        xen_ramsize_preinit();<br>        <span class="hljs-keyword">return</span>;<br>    &#125;<br><br>    <span class="hljs-keyword">if</span> (!runningOnQEMU()) &#123;<br>        dprintf(<span class="hljs-number">1</span>, <span class="hljs-string">&quot;Warning: No QEMU Northbridge found (isapc?)\n&quot;</span>);<br>        PlatformRunningOn = PF_QEMU;<br>        kvm_detect();<br>    &#125;<br><br>    <span class="hljs-comment">// On emulators, get memory size from nvram.</span><br>    <span class="hljs-comment">//读取coms的虚拟机内存大小信息，并加入到e820表</span><br>    <span class="hljs-comment">//e820表通过BIOS向操作系统提供内存布局，通过BIOS的0x15中断进行访问，并将ax设置为0xe820，这也是e820表的由来。</span><br>    u32 rs = ((rtc_read(CMOS_MEM_EXTMEM2_LOW) &lt;&lt; <span class="hljs-number">16</span>)<br>               (rtc_read(CMOS_MEM_EXTMEM2_HIGH) &lt;&lt; <span class="hljs-number">24</span>));<br>    <span class="hljs-keyword">if</span> (rs)<br>        rs += <span class="hljs-number">16</span> * <span class="hljs-number">1024</span> * <span class="hljs-number">1024</span>;<br>    <span class="hljs-keyword">else</span><br>        rs = (((rtc_read(CMOS_MEM_EXTMEM_LOW) &lt;&lt; <span class="hljs-number">10</span>)<br>                (rtc_read(CMOS_MEM_EXTMEM_HIGH) &lt;&lt; <span class="hljs-number">18</span>))<br>              + <span class="hljs-number">1</span> * <span class="hljs-number">1024</span> * <span class="hljs-number">1024</span>);<br>    RamSize = rs;<br>    e820_add(<span class="hljs-number">0</span>, rs, E820_RAM);<br><br>    <span class="hljs-comment">/* reserve 256KB BIOS area at the end of 4 GB */</span><br>    e820_add(<span class="hljs-number">0xfffc0000</span>, <span class="hljs-number">256</span>*<span class="hljs-number">1024</span>, E820_RESERVED);<br><br>    dprintf(<span class="hljs-number">1</span>, <span class="hljs-string">&quot;RamSize: 0x%08x [cmos]\n&quot;</span>, RamSize);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>接着coreboot_preinit代表是从coreboot启动，这里不再探究。</p>
+<p>接着是malloc_preinit();方法，该方法用于SeaBIOS初始化前对系统内存的一些预处理，以便malloc和free操作能够正确地使用系统内存，例如将BIOS区域从映射表删除，以防止被malloc分配使用等，还有就是处理一些高端内存等等。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">void</span><br><span class="hljs-title function_">malloc_preinit</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span><br>&#123;<br>    ASSERT32FLAT();<br>    dprintf(<span class="hljs-number">3</span>, <span class="hljs-string">&quot;malloc preinit\n&quot;</span>);<br><br>    <span class="hljs-comment">// Don&#x27;t declare any memory between 0xa0000 and 0x100000</span><br>    <span class="hljs-comment">//将0xa0000到0x100000之间的内存区域从e820内存映射表中删除，以防止这些区域被分配给malloc库使用。</span><br>    e820_remove(BUILD_LOWRAM_END, BUILD_BIOS_ADDR-BUILD_LOWRAM_END);<br><br>    <span class="hljs-comment">// Mark known areas as reserved.</span><br>    <span class="hljs-comment">// 不能再分配给malloc库使用。</span><br>    e820_add(BUILD_BIOS_ADDR, BUILD_BIOS_SIZE, E820_RESERVED);<br><br>    <span class="hljs-comment">// Populate temp high ram</span><br>    u32 highram = <span class="hljs-number">0</span>;<br>    <span class="hljs-type">int</span> i;<br>    <span class="hljs-keyword">for</span> (i=e820_count<span class="hljs-number">-1</span>; i&gt;=<span class="hljs-number">0</span>; i--) &#123;<br>        <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">e820entry</span> *<span class="hljs-title">en</span> =</span> &amp;e820_list[i];<br>        u64 end = en-&gt;start + en-&gt;size;<br>        <span class="hljs-keyword">if</span> (end &lt; <span class="hljs-number">1024</span>*<span class="hljs-number">1024</span>)<br>            <span class="hljs-keyword">break</span>;<br>        <span class="hljs-keyword">if</span> (en-&gt;type != E820_RAM  end &gt; <span class="hljs-number">0xffffffff</span>)<br>            <span class="hljs-keyword">continue</span>;<br>        u32 s = en-&gt;start, e = end;<br>        <span class="hljs-keyword">if</span> (!highram) &#123;<br>            u32 newe = ALIGN_DOWN(e - BUILD_MAX_HIGHTABLE, MALLOC_MIN_ALIGN);<br>            <span class="hljs-keyword">if</span> (newe &lt;= e &amp;&amp; newe &gt;= s) &#123;<br>                highram = newe;<br>                e = newe;<br>            &#125;<br>        &#125;<br>        alloc_add(&amp;ZoneTmpHigh, s, e);<br>    &#125;<br><br>    <span class="hljs-comment">// Populate regions</span><br>    alloc_add(&amp;ZoneTmpLow, BUILD_STACK_ADDR, BUILD_EBDA_MINIMUM);<br>    <span class="hljs-keyword">if</span> (highram) &#123;<br>        alloc_add(&amp;ZoneHigh, highram, highram + BUILD_MAX_HIGHTABLE);<br>        e820_add(highram, BUILD_MAX_HIGHTABLE, E820_RESERVED);<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>接下来就是reloc_preinit(maininit, NULL)方法。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">void</span> __noreturn<br><span class="hljs-title function_">reloc_preinit</span><span class="hljs-params">(<span class="hljs-type">void</span> *f, <span class="hljs-type">void</span> *arg)</span><br>&#123;<br>    <span class="hljs-type">void</span> (*func)(<span class="hljs-type">void</span> *) __noreturn = f;<br>    <span class="hljs-comment">//如果没有启用CONFIG_RELOCATE_INIT选项，则直接调用传入的函数。</span><br>    <span class="hljs-keyword">if</span> (!CONFIG_RELOCATE_INIT)<br>        func(arg);<br><br>    <span class="hljs-comment">// Allocate space for init code.</span><br>    <span class="hljs-comment">//计算位于init section的代码的大小和对齐方式，并为其分配一块临时内存，用于存储重定位后的代码。</span><br>    u32 initsize = SYMBOL(code32init_end) - SYMBOL(code32init_start);<br>    u32 codealign = SYMBOL(_reloc_min_align);<br>    <span class="hljs-type">void</span> *codedest = memalign_tmp(codealign, initsize);<br>    <span class="hljs-type">void</span> *codesrc = VSYMBOL(code32init_start);<br>    <span class="hljs-keyword">if</span> (!codedest)<br>        panic(<span class="hljs-string">&quot;No space for init relocation.\n&quot;</span>);<br><br>    <span class="hljs-comment">// Copy code and update relocs (init absolute, init relative, and runtime)</span><br>    dprintf(<span class="hljs-number">1</span>, <span class="hljs-string">&quot;Relocating init from %p to %p (size %d)\n&quot;</span><br>            , codesrc, codedest, initsize);<br>    s32 delta = codedest - codesrc;<br>    <span class="hljs-comment">//将init section的代码从代码段（codesrc）复制到临时内存（codedest）中，并更新其中的重定位信息（包括绝对重定位、相对重定位和运行时重定位）。</span><br>    <span class="hljs-built_in">memcpy</span>(codedest, codesrc, initsize);<br>    updateRelocs(codedest, VSYMBOL(_reloc_abs_start), VSYMBOL(_reloc_abs_end)<br>                 , delta);<br>    updateRelocs(codedest, VSYMBOL(_reloc_rel_start), VSYMBOL(_reloc_rel_end)<br>                 , -delta);<br>    updateRelocs(VSYMBOL(code32flat_start), VSYMBOL(_reloc_init_start)<br>                 , VSYMBOL(_reloc_init_end), delta);<br>    <span class="hljs-comment">//更新函数指针</span><br>    <span class="hljs-keyword">if</span> (f &gt;= codesrc &amp;&amp; f &lt; VSYMBOL(code32init_end))<br>        func = f + delta;<br><br>    <span class="hljs-comment">// Call function in relocated code.</span><br>    barrier();<br>    <span class="hljs-comment">//调用函数</span><br>    func(arg);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>该函数用于在SeaBIOS初始化之前对一些特殊的代码进行重定位和处理，可以看到接下来dopost就是调用了mainint方法进行初始化。</p>
+<h3 id="maininit"><a href="#maininit" class="headerlink" title="maininit"></a>maininit</h3><p>直接上代码，该函数完成了大量的初始化工作，做了一些注释。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">// Main setup code.</span><br><span class="hljs-type">static</span> <span class="hljs-type">void</span><br><span class="hljs-title function_">maininit</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span><br>&#123;<br>    <span class="hljs-comment">// Initialize internal interfaces.</span><br>    <span class="hljs-comment">//初始化内部接口，包括中断向量表、BIOS数据区等</span><br>    interface_init();<br><br>    <span class="hljs-comment">// Setup platform devices.</span><br>    <span class="hljs-comment">//包括设置SMBIOS表，初始化TPM设备，度量SMBIOS使用了1，2号寄存器</span><br>    platform_hardware_setup();<br><br>    <span class="hljs-comment">// Start hardware initialization (if threads allowed during optionroms)</span><br>    <span class="hljs-keyword">if</span> (threads_during_optionroms())<br>        device_hardware_setup();<br><br>    <span class="hljs-comment">// Run vga option rom</span><br>    <span class="hljs-comment">//初始化VGA、串口、启用VGA等，这时候会打开屏幕，输出对应的SeaBIOS版本等</span><br>    vgarom_setup();<br>    sercon_setup();<br>    enable_vga_console();<br><br>    <span class="hljs-comment">// Do hardware initialization (if running synchronously)</span><br>    <span class="hljs-keyword">if</span> (!threads_during_optionroms()) &#123;<br>        device_hardware_setup();<br>        wait_threads();<br>    &#125;<br><br>    <span class="hljs-comment">// Run option roms</span><br>    <span class="hljs-comment">//不是VGA的opention rom初始化，发现所有的PCI rom、CBFS ROM（Coreboot Filesystem（CBFS）ROM）以及构建BEV/BCV向量等。</span><br>    <span class="hljs-comment">//包含可选ROM的TPM度量值 扩展进入PCR2</span><br>    optionrom_setup();<br><br>    <span class="hljs-comment">// Allow user to modify overall boot order.</span><br>    <span class="hljs-comment">//进入BIOS菜单可以选择启动设备，通过修改DEFAULT_BOOTMENU_WAIT参数可以修改默认等待时间</span><br>    <span class="hljs-comment">//这里面还可以改变TPM的菜单，包含clear TPM和改变active PCR banks</span><br>    interactive_bootmenu();<br>    wait_threads();<br><br>    <span class="hljs-comment">// Prepare for boot.</span><br>    <span class="hljs-comment">//准备进入boot阶段</span><br>    prepareboot();<br><br>    <span class="hljs-comment">// Write protect bios memory.</span><br>    <span class="hljs-comment">//自检工作完成，设置bios只读，准备开始boot阶段</span><br>    make_bios_readonly();<br><br>    <span class="hljs-comment">// Invoke int 19 to start boot process.</span><br>    startBoot();<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h4 id="interface-init"><a href="#interface-init" class="headerlink" title="interface_init"></a>interface_init</h4><p>我们关注一下interface_init();干了些什么？</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">void</span><br><span class="hljs-title function_">interface_init</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span><br>&#123;<br>    <span class="hljs-comment">// Running at new code address - do code relocation fixups</span><br>    <span class="hljs-comment">//进行内存分配器的初始化工作，以便后续的接口和模块能够正确地使用系统内存。</span><br>    malloc_init();<br><br>    <span class="hljs-comment">// Setup romfile items.</span><br>    <span class="hljs-comment">//读取qemu通过fw_cfg设备传过来的配置信息</span><br>    qemu_cfg_init();<br>    <span class="hljs-comment">//初始化Coreboot文件系统（CBFS）的相关接口。</span><br>    coreboot_cbfs_init();<br>    <span class="hljs-comment">//初始化多重引导（multiboot）的相关接口。</span><br>    multiboot_init();<br><br>    <span class="hljs-comment">// Setup ivt/bda/ebda</span><br>    <span class="hljs-comment">//中断向量表相关接口初始化</span><br>    ivt_init();<br>    <span class="hljs-comment">//BIOS—数据区域相关接口初始化</span><br>    bda_init();<br><br>    <span class="hljs-comment">// Other interfaces</span><br>    <span class="hljs-comment">//初始化启动设备的相关接口。</span><br>    boot_init();<br>    <span class="hljs-comment">//初始化BIOS 32位调用的相关接口。</span><br>    bios32_init();<br>    <span class="hljs-comment">//初始化物理内存管理（PMM）的相关接口。</span><br>    pmm_init();<br>    <span class="hljs-comment">//初始化即插即用（Plug and Play）的相关接口。</span><br>    pnp_init();<br>    <span class="hljs-comment">//键盘数据区</span><br>    kbd_init();<br>    <span class="hljs-comment">//鼠标数据区</span><br>    mouse_init();<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>我们在看一下中断向量表初始化内容ivt_init：</p>
+<blockquote>
+<p>中断向量表（Interrupt Vector Table）是一张在实模式下使用的表，这个表将中断号映射到中断处理程序的一个列表。中断向量表必须存储在低地址区域（也就是从0x00000000）开始，大小一般是0x400字节。是一块由很多个项组成的连续的内存空间。</p>
+</blockquote>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> <span class="hljs-type">void</span><br><span class="hljs-title function_">ivt_init</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span><br>&#123;<br>    dprintf(<span class="hljs-number">3</span>, <span class="hljs-string">&quot;init ivt\n&quot;</span>);<br><br>    <span class="hljs-comment">// Initialize all vectors to the default handler.</span><br>    <span class="hljs-type">int</span> i;<br>    <span class="hljs-comment">//首先将所有的中断向量都初始化为默认的中断处理程序（entry_iret_official）。</span><br>    <span class="hljs-keyword">for</span> (i=<span class="hljs-number">0</span>; i&lt;<span class="hljs-number">256</span>; i++)<br>        SET_IVT(i, FUNC16(entry_iret_official));<br><br>    <span class="hljs-comment">// Initialize all hw vectors to a default hw handler.</span><br>    <span class="hljs-comment">// 初始化硬件中断</span><br>    <span class="hljs-keyword">for</span> (i=BIOS_HWIRQ0_VECTOR; i&lt;BIOS_HWIRQ0_VECTOR+<span class="hljs-number">8</span>; i++)<br>        SET_IVT(i, FUNC16(entry_hwpic1));<br>    <span class="hljs-keyword">for</span> (i=BIOS_HWIRQ8_VECTOR; i&lt;BIOS_HWIRQ8_VECTOR+<span class="hljs-number">8</span>; i++)<br>        SET_IVT(i, FUNC16(entry_hwpic2));<br><br>    <span class="hljs-comment">// Initialize software handlers.</span><br>    <span class="hljs-comment">//初始化常见的软件中断，包括</span><br>    SET_IVT(<span class="hljs-number">0x02</span>, FUNC16(entry_02));<br>    SET_IVT(<span class="hljs-number">0x05</span>, FUNC16(entry_05));<br>    SET_IVT(<span class="hljs-number">0x10</span>, FUNC16(entry_10));<br>    SET_IVT(<span class="hljs-number">0x11</span>, FUNC16(entry_11));<br>    SET_IVT(<span class="hljs-number">0x12</span>, FUNC16(entry_12));<br>    SET_IVT(<span class="hljs-number">0x13</span>, FUNC16(entry_13_official));<br>    SET_IVT(<span class="hljs-number">0x14</span>, FUNC16(entry_14));<br>    SET_IVT(<span class="hljs-number">0x15</span>, FUNC16(entry_15_official));<br>    SET_IVT(<span class="hljs-number">0x16</span>, FUNC16(entry_16));<br>    SET_IVT(<span class="hljs-number">0x17</span>, FUNC16(entry_17));<br>    SET_IVT(<span class="hljs-number">0x18</span>, FUNC16(entry_18));<br>    SET_IVT(<span class="hljs-number">0x19</span>, FUNC16(entry_19_official));<br>    SET_IVT(<span class="hljs-number">0x1a</span>, FUNC16(entry_1a_official));<br>    SET_IVT(<span class="hljs-number">0x40</span>, FUNC16(entry_40));<br><br>    <span class="hljs-comment">// INT 60h-66h reserved for user interrupt</span><br>    <span class="hljs-comment">//用户保留中断</span><br>    <span class="hljs-keyword">for</span> (i=<span class="hljs-number">0x60</span>; i&lt;=<span class="hljs-number">0x66</span>; i++)<br>        SET_IVT(i, SEGOFF(<span class="hljs-number">0</span>, <span class="hljs-number">0</span>));<br><br>    <span class="hljs-comment">// set vector 0x79 to zero</span><br>    <span class="hljs-comment">// this is used by &#x27;gardian angel&#x27; protection system</span><br>    <span class="hljs-comment">//用于保护系统</span><br>    SET_IVT(<span class="hljs-number">0x79</span>, SEGOFF(<span class="hljs-number">0</span>, <span class="hljs-number">0</span>));<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>可以看到，这些定义了硬件中断、软件中断、用户保留中断以及保护中断，大多数中断处理程序有在对应的romlayout.S中的入口。</p>
+<h4 id="platform-hardware-setup"><a href="#platform-hardware-setup" class="headerlink" title="platform_hardware_setup"></a>platform_hardware_setup</h4><p>直接看代码：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> <span class="hljs-type">void</span><br><span class="hljs-title function_">platform_hardware_setup</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span><br>&#123;<br>    <span class="hljs-comment">// Make sure legacy DMA isn&#x27;t running.</span><br>    <span class="hljs-comment">//确保不会运行传统的DMA（直接内存访问），因为它可能会与其他硬件组件冲突</span><br>    dma_setup();<br><br>    <span class="hljs-comment">// Init base pc hardware.</span><br>    pic_setup();<br>    thread_setup();<br>    mathcp_setup();<br><br>    <span class="hljs-comment">// Platform specific setup</span><br>    qemu_platform_setup();<br>    coreboot_platform_setup();<br><br>    <span class="hljs-comment">// Setup timers and periodic clock interrupt</span><br>    <span class="hljs-comment">//设置定时器和周期性时钟中断，</span><br>    timer_setup();<br>    clock_setup();<br><br>    <span class="hljs-comment">// Initialize TPM</span><br>    <span class="hljs-comment">//初始化可信计算模块</span><br>    tpm_setup();<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>其中有两个函数我们关注一下，qemu_platform_setup和tpm_setup。</p>
+<p>对于qemu_platform_setup，在这个函数中会进行PCI设备的探测，然后SeaBIOS会得到所有设备需要的MMIO和I&#x2F;O端口资源，然后统一在虚拟机的物理地址空间进行分配。接着完成smm、mtrr寄存器、smp等初始化，然后建立各种表，如PCI interrupt routing表。值得注意的是，早期QEMU ACPI表是SeaBIOS构建的，但是后来QEMU自己创建acpi表就不再依赖SeaBIOS的构建的，也就是if (CONFIG_FW_ROMFILE_LOAD)，如果为真，则直接调用find_acpi_rsdp，如果获取到了就直接返回了。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">void</span><br><span class="hljs-title function_">qemu_platform_setup</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span><br>&#123;<br>    <span class="hljs-keyword">if</span> (!CONFIG_QEMU)<br>        <span class="hljs-keyword">return</span>;<br><br>    <span class="hljs-keyword">if</span> (runningOnXen()) &#123;<br>        pci_probe_devices();<br>        xen_hypercall_setup();<br>        xen_biostable_setup();<br>        <span class="hljs-keyword">return</span>;<br>    &#125;<br><br>    <span class="hljs-comment">// Initialize pci</span><br>    pci_setup();<br>    smm_device_setup();<br>    smm_setup();<br><br>    <span class="hljs-comment">// Initialize mtrr, msr_feature_control and smp</span><br>    mtrr_setup();<br>    msr_feature_control_setup();<br>    smp_setup();<br><br>    <span class="hljs-comment">// Create bios tables</span><br>    <span class="hljs-keyword">if</span> (MaxCountCPUs &lt;= <span class="hljs-number">255</span>) &#123;<br>        pirtable_setup();<br>        mptable_setup();<br>    &#125;<br>    smbios_setup();<br><br>    <span class="hljs-keyword">if</span> (CONFIG_FW_ROMFILE_LOAD) &#123;<br>        <span class="hljs-type">int</span> loader_err;<br><br>        dprintf(<span class="hljs-number">3</span>, <span class="hljs-string">&quot;load ACPI tables\n&quot;</span>);<br><br>        loader_err = romfile_loader_execute(<span class="hljs-string">&quot;etc/table-loader&quot;</span>);<br><br>        RsdpAddr = find_acpi_rsdp();<br><br>        <span class="hljs-keyword">if</span> (RsdpAddr)<br>            <span class="hljs-keyword">return</span>;<br><br>        <span class="hljs-comment">/* If present, loader should have installed an RSDP.</span><br><span class="hljs-comment">         * Not installed? We might still be able to continue</span><br><span class="hljs-comment">         * using the builtin RSDP.</span><br><span class="hljs-comment">         */</span><br>        <span class="hljs-keyword">if</span> (!loader_err)<br>            warn_internalerror();<br>    &#125;<br><br>    acpi_setup();<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>对于tpm_setup，用于初始化可信计算模块。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">void</span><br><span class="hljs-title function_">tpm_setup</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span><br>&#123;<br>    <span class="hljs-keyword">if</span> (!CONFIG_TCGBIOS)<br>        <span class="hljs-keyword">return</span>;<br><br>    <span class="hljs-comment">//探测tpm2设备</span><br>    <span class="hljs-type">int</span> ret = tpm_tpm2_probe();<br>    <span class="hljs-keyword">if</span> (ret) &#123;<br>        <span class="hljs-comment">//探测tpm1.2设备</span><br>        ret = tpm_tcpa_probe();<br>        <span class="hljs-keyword">if</span> (ret)<br>            <span class="hljs-keyword">return</span>;<br>    &#125;<br><br>    <span class="hljs-comment">//获取TPM版本 u8 TPM_version</span><br>    TPM_version = tpmhw_probe();<br>    <span class="hljs-keyword">if</span> (TPM_version == TPM_VERSION_NONE)<br>        <span class="hljs-keyword">return</span>;<br><br>    dprintf(DEBUG_tcg,<br>            <span class="hljs-string">&quot;TCGBIOS: Detected a TPM %s.\n&quot;</span>,<br>             (TPM_version == TPM_VERSION_1_2) ? <span class="hljs-string">&quot;1.2&quot;</span> : <span class="hljs-string">&quot;2&quot;</span>);<br><br>    TPM_working = <span class="hljs-number">1</span>;<br><br>    <span class="hljs-keyword">if</span> (runningOnXen())<br>        <span class="hljs-keyword">return</span>;<br><br>    <span class="hljs-comment">//初始化TPM</span><br>    ret = tpm_startup();<br>    <span class="hljs-keyword">if</span> (ret)<br>        <span class="hljs-keyword">return</span>;<br><br>    <span class="hljs-comment">//度量smbios</span><br>    tpm_smbios_measure();<br>    <span class="hljs-comment">//添加度量日志</span><br>    tpm_add_action(<span class="hljs-number">2</span>, <span class="hljs-string">&quot;Start Option ROM Scan&quot;</span>);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h4 id="optionrom-setup"><a href="#optionrom-setup" class="headerlink" title="optionrom_setup"></a>optionrom_setup</h4><p>optionrom_setup(void) -&gt; init_pcirom(pci, 0, sources); -&gt; init_optionrom-&gt;tpm_option_rom</p>
+<p>会将所有option rom进行度量并扩展进入PCR2中。</p>
+<h4 id="interactive-bootmenu"><a href="#interactive-bootmenu" class="headerlink" title="interactive_bootmenu"></a>interactive_bootmenu</h4><p>BIOS引导菜单，可以按ESC键进入，但是由于默认等待时间只有2.5s，可能来不及点击，可以修改默认等待时间DEFAULT_BOOTMENU_WAIT参数。</p>
+<p>进入菜单后，会让你选择引导设备，TPM设置（如果有TPM设备的话）等。</p>
+<h4 id="prepareboot"><a href="#prepareboot" class="headerlink" title="prepareboot();"></a>prepareboot();</h4><p>引导前准备阶段：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><code class="hljs C"><span class="hljs-type">void</span><br><span class="hljs-title function_">prepareboot</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span><br>&#123;<br>    <span class="hljs-comment">// Change TPM phys. presence state befor leaving BIOS</span><br>    <span class="hljs-comment">//获取TPM授权密钥，并且接着调用了方法，</span><br>    <span class="hljs-comment">//tpm_add_action(4, &quot;Calling INT 19h&quot;);添加了Calling INT 19h度量事件并扩展到了PCR4中</span><br>    <span class="hljs-comment">//tpm_add_event_separators(); 从PCR0-7分别添加事件分隔符</span><br>    tpm_prepboot();<br><br>    <span class="hljs-comment">// Run BCVs</span><br>    bcv_prepboot();<br><br>    <span class="hljs-comment">// Finalize data structures before boot</span><br>    <span class="hljs-comment">//一系列的最终数据结构准备，为boot阶段做准备，内存收回等等</span><br>    cdrom_prepboot();<br>    pmm_prepboot();<br>    malloc_prepboot();<br>    e820_prepboot();<br><br>    HaveRunPost = <span class="hljs-number">2</span>;<br><br>    <span class="hljs-comment">// Setup bios checksum.</span><br>    BiosChecksum -= checksum((u8*)BUILD_BIOS_ADDR, BUILD_BIOS_SIZE);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h4 id="make-bios-readonly"><a href="#make-bios-readonly" class="headerlink" title="make_bios_readonly"></a>make_bios_readonly</h4><p>自检结束，要开始启动了，设置0xF0000-0x100000内存段只读。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs C"><span class="hljs-comment">// Make the BIOS code segment area (0xf0000) read-only.</span><br><span class="hljs-type">void</span><br><span class="hljs-title function_">make_bios_readonly</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span><br>&#123;<br>    <span class="hljs-keyword">if</span> (!CONFIG_QEMU  runningOnXen())<br>        <span class="hljs-keyword">return</span>;<br>    dprintf(<span class="hljs-number">3</span>, <span class="hljs-string">&quot;locking shadow ram\n&quot;</span>);<br><br>    <span class="hljs-keyword">if</span> (ShadowBDF &lt; <span class="hljs-number">0</span>) &#123;<br>        dprintf(<span class="hljs-number">1</span>, <span class="hljs-string">&quot;Unable to lock ram - bridge not found\n&quot;</span>);<br>        <span class="hljs-keyword">return</span>;<br>    &#125;<br><br>    u16 device = pci_config_readw(ShadowBDF, PCI_DEVICE_ID);<br>    <span class="hljs-keyword">if</span> (device == PCI_DEVICE_ID_INTEL_82441)<br>        make_bios_readonly_intel(ShadowBDF, I440FX_PAM0);<br>    <span class="hljs-keyword">else</span><br>        make_bios_readonly_intel(ShadowBDF, Q35_HOST_BRIDGE_PAM0);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h4 id="startBoot"><a href="#startBoot" class="headerlink" title="startBoot"></a>startBoot</h4><p>startBoot函数最终是调用INT 19H中断来，进入BOOT阶段。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs C"><span class="hljs-comment">// Begin the boot process by invoking an int0x19 in 16bit mode.</span><br><span class="hljs-type">void</span> VISIBLE32FLAT<br><span class="hljs-title function_">startBoot</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span><br>&#123;<br>    <span class="hljs-comment">// Clear low-memory allocations (required by PMM spec).</span><br>    <span class="hljs-built_in">memset</span>((<span class="hljs-type">void</span>*)BUILD_STACK_ADDR, <span class="hljs-number">0</span>, BUILD_EBDA_MINIMUM - BUILD_STACK_ADDR);<br><br>    dprintf(<span class="hljs-number">3</span>, <span class="hljs-string">&quot;Jump to int19\n&quot;</span>);<br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">bregs</span> <span class="hljs-title">br</span>;</span><br>    <span class="hljs-built_in">memset</span>(&amp;br, <span class="hljs-number">0</span>, <span class="hljs-keyword">sizeof</span>(br));<br>    br.flags = F_IF;<br>    call16_int(<span class="hljs-number">0x19</span>, &amp;br); <span class="hljs-comment">//回到实模式，进入Boot状态</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h2 id="2-boot阶段"><a href="#2-boot阶段" class="headerlink" title="2 boot阶段"></a>2 boot阶段</h2><p>0x19中断的入口，也是在layoutrom.S文件中，为entry_19，直接跳转到了handle_19，后者主要作用就是do_boot开始引导。</p>
+<h3 id="handle-19"><a href="#handle-19" class="headerlink" title="handle_19"></a>handle_19</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs C"><span class="hljs-comment">// INT 19h Boot Load Service Entry Point</span><br><span class="hljs-type">void</span> VISIBLE32FLAT<br><span class="hljs-title function_">handle_19</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span><br>&#123;<br>    debug_enter(<span class="hljs-literal">NULL</span>, DEBUG_HDL_19);<br>    BootSequence = <span class="hljs-number">0</span>;<br>    do_boot(<span class="hljs-number">0</span>);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="do-boot"><a href="#do-boot" class="headerlink" title="do_boot"></a>do_boot</h3><p>主要的引导函数</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><code class="hljs C"><span class="hljs-comment">// Determine next boot method and attempt a boot using it.</span><br><span class="hljs-type">static</span> <span class="hljs-type">void</span><br><span class="hljs-title function_">do_boot</span><span class="hljs-params">(<span class="hljs-type">int</span> seq_nr)</span><br>&#123;<br>    <span class="hljs-keyword">if</span> (! CONFIG_BOOT)<br>        panic(<span class="hljs-string">&quot;Boot support not compiled in.\n&quot;</span>);<br><br>    <span class="hljs-keyword">if</span> (seq_nr &gt;= BEVCount)<br>        boot_fail();<br><br>    <span class="hljs-comment">// Boot the given BEV type.</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">bev_s</span> *<span class="hljs-title">ie</span> =</span> &amp;BEV[seq_nr];<br>    <span class="hljs-keyword">switch</span> (ie-&gt;type) &#123;<br>    <span class="hljs-keyword">case</span> IPL_TYPE_FLOPPY:<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;Booting from Floppy...\n&quot;</span>);<br>        boot_disk(<span class="hljs-number">0x00</span>, CheckFloppySig);<br>        <span class="hljs-keyword">break</span>;<br>    <span class="hljs-keyword">case</span> IPL_TYPE_HARDDISK:<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;Booting from Hard Disk...\n&quot;</span>);<br>        boot_disk(<span class="hljs-number">0x80</span>, <span class="hljs-number">1</span>);<br>        <span class="hljs-keyword">break</span>;<br>    <span class="hljs-keyword">case</span> IPL_TYPE_CDROM:<br>        boot_cdrom((<span class="hljs-type">void</span>*)ie-&gt;<span class="hljs-built_in">vector</span>);<br>        <span class="hljs-keyword">break</span>;<br>    <span class="hljs-keyword">case</span> IPL_TYPE_CBFS:<br>        boot_cbfs((<span class="hljs-type">void</span>*)ie-&gt;<span class="hljs-built_in">vector</span>);<br>        <span class="hljs-keyword">break</span>;<br>    <span class="hljs-keyword">case</span> IPL_TYPE_BEV:<br>        boot_rom(ie-&gt;<span class="hljs-built_in">vector</span>);<br>        <span class="hljs-keyword">break</span>;<br>    <span class="hljs-keyword">case</span> IPL_TYPE_HALT:<br>        boot_fail();<br>        <span class="hljs-keyword">break</span>;<br>    &#125;<br><br>    <span class="hljs-comment">// Boot failed: invoke the boot recovery function</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">bregs</span> <span class="hljs-title">br</span>;</span><br>    <span class="hljs-built_in">memset</span>(&amp;br, <span class="hljs-number">0</span>, <span class="hljs-keyword">sizeof</span>(br));<br>    br.flags = F_IF;<br>    call16_int(<span class="hljs-number">0x18</span>, &amp;br);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>可以看到，在boot之前SeaBIOS已经准备好了各个启动设备并放入了BEV数组中，可以看到，可引导设备，为软盘、硬盘、CDROM等一系列设备中引导都提供了支持，如果尝试启动失败，那么就会调用0x18中断，0x18中断实质上是添加BootSequence，然后继续执行do_boot，当没有一个设备可以启动就会调用boot_fail()，可看到最后一项IPL_TYPE_HALT，最后就会打印”No bootable device”。</p>
+<p>我们主要看一下虚拟机从硬盘disk启动的场景，因为这是使用最多的。</p>
+<h3 id="boot-disk-从硬盘启动"><a href="#boot-disk-从硬盘启动" class="headerlink" title="boot_disk 从硬盘启动"></a>boot_disk 从硬盘启动</h3><p>boot_disk(0x80, 1);</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><code class="hljs C"><span class="hljs-comment">//MBR结构</span><br><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">mbr_s</span> &#123;</span><br>    u8 code[<span class="hljs-number">440</span>];<br>    <span class="hljs-comment">// 0x01b8</span><br>    u32 diskseg;<br>    <span class="hljs-comment">// 0x01bc</span><br>    u16 null;<br>    <span class="hljs-comment">// 0x01be</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">partition_s</span> <span class="hljs-title">partitions</span>[4];</span><br>    <span class="hljs-comment">// 0x01fe</span><br>    u16 signature;<br>&#125; PACKED; <br><br><span class="hljs-comment">// Boot from a disk (either floppy or harddrive)</span><br><span class="hljs-type">static</span> <span class="hljs-type">void</span><br><span class="hljs-title function_">boot_disk</span><span class="hljs-params">(u8 bootdrv, <span class="hljs-type">int</span> checksig)</span><br>&#123;<br>    u16 bootseg = <span class="hljs-number">0x07c0</span>;<br><br>    <span class="hljs-comment">// Read sector</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">bregs</span> <span class="hljs-title">br</span>;</span><br>    <span class="hljs-built_in">memset</span>(&amp;br, <span class="hljs-number">0</span>, <span class="hljs-keyword">sizeof</span>(br));<br>    br.flags = F_IF;<br>    br.dl = bootdrv;<br>    br.es = bootseg;<br>    br.ah = <span class="hljs-number">2</span>;<br>    br.al = <span class="hljs-number">1</span>;<br>    br.cl = <span class="hljs-number">1</span>;<br>    <span class="hljs-comment">//调用0x13中断读取磁盘数据到内存</span><br>    call16_int(<span class="hljs-number">0x13</span>, &amp;br);<br><br>    <span class="hljs-keyword">if</span> (br.flags &amp; F_CF) &#123;<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;Boot failed: could not read the boot disk\n\n&quot;</span>);<br>        <span class="hljs-keyword">return</span>;<br>    &#125;<br><br>    <span class="hljs-keyword">if</span> (checksig) &#123;<br>        <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">mbr_s</span> *<span class="hljs-title">mbr</span> =</span> (<span class="hljs-type">void</span>*)<span class="hljs-number">0</span>;<br>        <span class="hljs-comment">//判断是不是以0xaa55结尾，是否是可引导设备MBR</span><br>        <span class="hljs-keyword">if</span> (GET_FARVAR(bootseg, mbr-&gt;signature) != MBR_SIGNATURE) &#123;<br>            <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;Boot failed: not a bootable disk\n\n&quot;</span>);<br>            <span class="hljs-keyword">return</span>;<br>        &#125;<br>    &#125;<br><br>    <span class="hljs-comment">//TPM度量可引导设备</span><br>    tpm_add_bcv(bootdrv, MAKE_FLATPTR(bootseg, <span class="hljs-number">0</span>), <span class="hljs-number">512</span>);<br><br>    <span class="hljs-comment">/* Canonicalize bootseg:bootip */</span><br>    u16 bootip = (bootseg &amp; <span class="hljs-number">0x0fff</span>) &lt;&lt; <span class="hljs-number">4</span>;<br>    bootseg &amp;= <span class="hljs-number">0xf000</span>;<br><br>    <span class="hljs-comment">//跳转到 0x7c00执行MBR，并准备寄存器</span><br>    call_boot_entry(SEGOFF(bootseg, bootip), bootdrv);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>首先，调用BIOS 0x13中断读取磁盘数据到内存，这里读取的是第一个扇区，放到内存0x7c00的位置，也就是MBR开始运行的地方，然后调用TPM进行度量MBR，最后调用call_boot_entry跳转到0x7c00，这样MBR就开始运行了，控制权就转移了，之后MBR就会加载操作系统内核。。</p>
+<h2 id="3-main和runtime阶段"><a href="#3-main和runtime阶段" class="headerlink" title="3 main和runtime阶段"></a>3 main和runtime阶段</h2><p>BIOS移交控制权以后，可能以后的程序，包括操作系统，他们有可能会调用SeaBIOS的一些信息，如访问ACPI表或者调用BIOS的中断，就是中断向量表中的内容，定义在layoutrom.S中，形如entry_xxx函数，xxx代表中断号。</p>
+<h2 id="4-Resume-and-reboot阶段"><a href="#4-Resume-and-reboot阶段" class="headerlink" title="4 Resume and reboot阶段"></a>4 Resume and reboot阶段</h2><p>当虚拟机发生错误或者操作系统发出重启请求时，就会进入这个阶段。SeaBIOS处理重启的入口也在entry_post，但是这次会调用entry_resume，从而进入到handle_resume函数里面。</p>
+<h2 id="备注"><a href="#备注" class="headerlink" title="备注"></a>备注</h2><p>后续还会介绍重点关注，与vtpm设备的交互情况。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E8%99%9A%E6%8B%9F%E5%8C%96/" class="category-chain-item">虚拟化</a>
+  
+  
+
+      </span>
+    
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/SeaBIOS/" class="category-chain-item">SeaBIOS</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/BIOS/" class="print-no-link">#BIOS</a>
+      
+        <a href="/tags/MBR/" class="print-no-link">#MBR</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>SeaBIOS源码分析-虚拟机启动过程分析</div>
+      <div>http://example.com/050.html</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>landery</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2023年6月9日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/0031.html" title="home目录过大，根目录空间却很小，根目录扩容">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">home目录过大，根目录空间却很小，根目录扩容</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/048.html" title="QEMU的事件循环-01 glib事件循环机制">
+                        <span class="hidden-mobile">QEMU的事件循环-01 glib事件循环机制</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"GK4nuH8jdXDcw4IJIVShjMtA-gzGzoHsz","appKey":"7P0B0kJFdaLY6eDQ93Lhcv8J","path":"window.location.pathname","placeholder":"建议使用QQ邮箱，评论头像采用QQ头像","avatar":"retro","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":true,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":true,"bg":null,"count":true},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+    <!-- 备案信息 ICP for China -->
+    <div class="beian">
+  <span>
+    <a href="http://beian.miit.gov.cn/" target="_blank" rel="nofollow noopener">
+      蜀ICP备2022011502号
+    </a>
+  </span>
+  
+    
+      <span>
+        <a
+          href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=51012202001227"
+          rel="nofollow noopener"
+          class="beian-police"
+          target="_blank"
+        >
+          
+            <span style="visibility: hidden; width: 0">|</span>
+            <img src="/img/police_beian.png" srcset="/img/loading.gif" lazyload alt="police-icon"/>
+          
+          <span>川公网安备51012202001227号</span>
+        </a>
+      </span>
+    
+  
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/DynamicRibbon.min.js"></script>
+<script src="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/love.min.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

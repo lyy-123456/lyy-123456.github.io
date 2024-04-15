@@ -1,0 +1,976 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="landery">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="计算机加电后BIOS启动的内存布局计算机启动流程这张图可以清晰的看出来启动流程：  内存映射图和布局 区域起始地址 区域结束地址 大小 描述 0000h 03FFh 1 KB 中断向量表 0400h 04FFh 256 B BIOS 数据区 0500h 7BFFh 30 KB 自定义区域 7C00h 7DFFh 512 B MBR 被 BIOS 加载到的内存区域 7E00h 9FBFFh 608">
+<meta property="og:type" content="article">
+<meta property="og:title" content="计算机加电后启动后的内存布局-BIOS-bootloader-OS">
+<meta property="og:url" content="http://example.com/005.html">
+<meta property="og:site_name" content="landery小站">
+<meta property="og:description" content="计算机加电后BIOS启动的内存布局计算机启动流程这张图可以清晰的看出来启动流程：  内存映射图和布局 区域起始地址 区域结束地址 大小 描述 0000h 03FFh 1 KB 中断向量表 0400h 04FFh 256 B BIOS 数据区 0500h 7BFFh 30 KB 自定义区域 7C00h 7DFFh 512 B MBR 被 BIOS 加载到的内存区域 7E00h 9FBFFh 608">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/wp-content/uploads/2023/06/image-1686189888942.png">
+<meta property="og:image" content="http://example.com/wp-content/uploads/2023/06/image-1686189898456.png">
+<meta property="og:image" content="http://example.com/wp-content/uploads/2023/06/image-1686189898456.png">
+<meta property="og:image" content="http://example.com/wp-content/uploads/2023/06/image-1686189959775.png">
+<meta property="og:image" content="http://example.com/wp-content/uploads/2023/06/image-1686189942478.png">
+<meta property="og:image" content="http://example.com/wp-content/uploads/2023/06/image-1686189981734.png">
+<meta property="og:image" content="http://example.com/wp-content/uploads/2023/06/image-1686190035119.png">
+<meta property="og:image" content="http://example.com/wp-content/uploads/2023/06/image-1686190090706.png">
+<meta property="article:published_time" content="2023-06-08T02:13:27.000Z">
+<meta property="article:modified_time" content="2024-04-15T09:58:35.149Z">
+<meta property="article:author" content="landery">
+<meta property="article:tag" content="linux">
+<meta property="article:tag" content="BIOS">
+<meta property="article:tag" content="计算机启动">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://example.com/wp-content/uploads/2023/06/image-1686189888942.png">
+  
+  
+  
+  <title>计算机加电后启动后的内存布局-BIOS-bootloader-OS - landery小站</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/scroll.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"GK4nuH8jdXDcw4IJIVShjMtA-gzGzoHsz","app_key":"7P0B0kJFdaLY6eDQ93Lhcv8J","server_url":"https://api.landery.cn","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>landery 小站</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/links/" target="_self">
+                <i class="iconfont icon-link-fill"></i>
+                <span>友链</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/remark/" target="_self">
+                <i class="iconfont icon-twitch-fill"></i>
+                <span>留言板</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/image/bg/001.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="计算机加电后启动后的内存布局-BIOS-bootloader-OS"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2023-06-08 10:13" pubdate>
+          2023年6月8日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          5.2k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          44 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">计算机加电后启动后的内存布局-BIOS-bootloader-OS</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="计算机加电后BIOS启动的内存布局"><a href="#计算机加电后BIOS启动的内存布局" class="headerlink" title="计算机加电后BIOS启动的内存布局"></a>计算机加电后BIOS启动的内存布局</h1><h2 id="计算机启动流程"><a href="#计算机启动流程" class="headerlink" title="计算机启动流程"></a>计算机启动流程</h2><p>这张图可以清晰的看出来启动流程：</p>
+<p><img src="/wp-content/uploads/2023/06/image-1686189888942.png" srcset="/img/loading.gif" lazyload alt="file"></p>
+<h2 id="内存映射图和布局"><a href="#内存映射图和布局" class="headerlink" title="内存映射图和布局"></a>内存映射图和布局</h2><p><img src="/wp-content/uploads/2023/06/image-1686189898456.png" srcset="/img/loading.gif" lazyload alt="file"></p>
+<p>区域起始地址</p>
+<p>区域结束地址</p>
+<p>大小</p>
+<p>描述</p>
+<p>0000h</p>
+<p>03FFh</p>
+<p>1 KB</p>
+<p>中断向量表</p>
+<p>0400h</p>
+<p>04FFh</p>
+<p>256 B</p>
+<p>BIOS 数据区</p>
+<p>0500h</p>
+<p>7BFFh</p>
+<p>30 KB</p>
+<p>自定义区域</p>
+<p>7C00h</p>
+<p>7DFFh</p>
+<p>512 B</p>
+<p>MBR 被 BIOS 加载到的内存区域</p>
+<p>7E00h</p>
+<p>9FBFFh</p>
+<p>608 KB</p>
+<p>自定义区域</p>
+<p>9FC00h</p>
+<p>9FFFFh</p>
+<p>1 KB</p>
+<p>扩展 BIOS 数据区</p>
+<p>A0000h</p>
+<p>AFFFFh</p>
+<p>64 KB</p>
+<p>彩色显示适配器</p>
+<p>B0000h</p>
+<p>B7FFFh</p>
+<p>32 KB</p>
+<p>黑白显示适配器</p>
+<p>B8000h</p>
+<p>BFFFFh</p>
+<p>32 KB</p>
+<p>文本显示适配器</p>
+<p>C0000h</p>
+<p>C7FFFh</p>
+<p>32 KB</p>
+<p>显示适配器 BIOS</p>
+<p>C8000h</p>
+<p>EFFFFh</p>
+<p>160 KB</p>
+<p>映射硬件适配器的 ROM 或内存映射 I&#x2F;O</p>
+<p>F0000h</p>
+<p>FFFEFh</p>
+<p>64 KB-16</p>
+<p>真正的入口</p>
+<p>FFFF0h</p>
+<p>FFFFFh</p>
+<p>16 B</p>
+<p>BIOS 入口地址（跳转使用，因为空间有限）</p>
+<h2 id="上电，按下开机键"><a href="#上电，按下开机键" class="headerlink" title="上电，按下开机键"></a>上电，按下开机键</h2><p>按下主机的电源键后，计算机开始启动，主板上电后开始初始化其固件（firmware）。固件是一些固化在芯片组上的程序，它会试图去启动 CPU。如果启动失败（例如 CPU 坏了或没插好），计算机就会死机并给出错误提示（如某些版本的主板固件会发出蜂鸣警告）。这种状态称为“zoombie-with-fans”。</p>
+<p>如果前一个阶段未出错，就开始加电工作，在多 CPU 或多核 CPU 情况下，某一个 CPU 会被随机选取作为启动 CPU（bootstrap processor，BSP）运行 BIOS 内部的程序。其余的 CPU（application processor，AP）保持停机直到操作系统内核显式地使用它们。</p>
+<blockquote>
+<p>2000 年以前的计算机主板上均使用 <a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/BIOS">BIOS</a>，如今绝大多数计算机采用的是 <a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/%E7%B5%B1%E4%B8%80%E5%8F%AF%E5%BB%B6%E4%BC%B8%E9%9F%8C%E9%AB%94%E4%BB%8B%E9%9D%A2">EFI</a>（Mac 用的就是 EFI）或 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Unified_Extensible_Firmware_Interface">UEFI</a>，BIOS 正在逐步被淘汰。基于 EFI、UEFI 的开机过程与传统的BIOS不尽相同，本文将以传统的 BIOS，Intel CPU 为例介绍开机过程。</p>
+</blockquote>
+<p>此时 CPU 工作模式为实模式，该模式下地址总线是 20 位，寻址范围是 <code>0x00000</code>~&#96;0xFFFFF&#96; 的 1M 范围。这也就解释了为什么 BIOS 的容量只有 1MB。</p>
+<blockquote>
+<p>CPU的工作模式是指CPU的寻址方式、寄存器大小等用来反应CPU在该环境下如何工作的概念。</p>
+<p>Intel CPU 用三种运行模式: 实模式、32 位保护模式、64 位保护模式。</p>
+<ul>
+<li><strong>实模式</strong>：实模式出现于早期8088CPU时期，当时由于CPU的性能有限，一共只有20位地址线（所以地址空间只有1MB）。实模式下地址计算为：<code>物理地址 = 段基址&lt;&lt;4+段内偏移</code>，这样就可以使用16位寄存器，表示20位地址。该模式下，CPU的得到的地址就是物理地址，可以直接访问，没有区分系统程序或者应用程序。没有虚拟地址的概念，实模式下没有分段或是分页机制，逻辑地址和物理地址相等。<ul>
+<li>在实模式下最大寻址空间时1M，1M以上的内存空间在实模式下不会被使用。</li>
+<li>在实模式所有的内存数据都可以被访问。不存在用户态、内核态之分。</li>
+<li>在BIOS加载、MBR、ntdlr启动阶段都处在实模式下。</li>
+</ul>
+</li>
+<li><strong>保护模式</strong>：随着CPU、内存的发展，CPU的地址线的个数也从原来的20根变为现在的32根，所以可以访问的内存空间也从1MB变为现在4GB，寄存器的位数也变为32位。实模式下的内存地址计算方式就已经不再适合了，因此引入了保护模式，实现内存的安全访问。但是由于<strong>兼容性问题</strong>，操作系统启动前的启动过程依旧是实模式，操作系统内核启动后，切换为保护模式，该模式下，进程访问的都是虚拟地址，需要操作系统实现地址转换，这阶段才有的页表，权限控制等。保护模式的寻址方式是通过逻辑地址 (Logical Address) 的 <code>segment:offset</code> 中的 <code>segment</code> 作为 <code>selector</code> 来索引到 <code>GDT/LDT</code> 中的一项，然后通过 <code>flags</code> 判断当前程序是否可以访问这段内存，可以访问的话提取 <code>base</code>与 <code>offset</code> 相加得到线性地址 (Linear Address)，最后将线性地址通过分页表得到物理地址 (Physical Address) 。<ul>
+<li>现在应用程序运行的模式均处于保护模式。</li>
+<li>横向保护，又叫任务间保护，多任务操作系统中，一个任务不能破坏另一个任务的代码，这是通过内存分页以及不同任务的内存页映射到不同物理内存上来实现的。</li>
+<li>纵向保护，又叫任务内保护，系统代码与应用程序代码虽处于同一地址空间，但系统代码具有高优先级，应用程序代码处于低优先级，规定只能高优先级代码访问低优先级代码，这样杜绝用户代码破坏系统代码。</li>
+</ul>
+</li>
+</ul>
+</blockquote>
+<p>1981年IBM PC机刚推出时系统只带有640KB的RAM。由于所采用的8088&#x2F;8086 CPU只有20根地址线，因此内存寻址范围最高为1024KB(1MB)。现如今，CPU的物理内存寻址范围已经可以到4GB。但是为了与原来的PC兼容，系统1MB以下物理内存使用分配上任然保持与原来的PC机基本一致。ROM BIOS 都在物理内存能寻址的最高端位置处，所以在大于 1M 内存的新计算机上，ROM BIOS 最后会被映射到 1M 末尾的区域中（也就是ROM BIOS映射区域）。内存映射图如下图所示:</p>
+<p><img src="/wp-content/uploads/2023/06/image-1686189898456.png" srcset="/img/loading.gif" lazyload alt="file"></p>
+<p>计算机上电初始化时，物理内存被设置成从地址 0 开始的连续区域。除了地址从 <code>0xA0000 ~ 0xFFFFF</code>（640K<del>1M）存放显存和 ROM BIOS 和 &#96;0xFFFE0000</del>0xFFFFFFFF&#96;（4G 的最后 64K）存放 ROM BIOS 以外，其他部分都可以用作主要内存。</p>
+<p>我们可以通过<code>cat /pro/iomem</code>查看系统物理内存映射信息。 <img src="/wp-content/uploads/2023/06/image-1686189959775.png" srcset="/img/loading.gif" lazyload alt="file"></p>
+<p>对照上图，可以看到<code>0xF0000 ~ 0xFFFFF</code>（最靠近1M的64KB这个区间是ROM BIOS的映射区域），<code>0xA0000 ~ 0xBFFFF</code>这段是显示缓冲区，<code>0xC0000 ~ 0xC7FFF</code>这段是VGA的ROM BIOS区域。</p>
+<p><img src="/wp-content/uploads/2023/06/image-1686189942478.png" srcset="/img/loading.gif" lazyload alt="file"></p>
+<h3 id="问题汇总"><a href="#问题汇总" class="headerlink" title="问题汇总"></a>问题汇总</h3><h4 id="问题1-CPU到底是怎么加载BIOS的？"><a href="#问题1-CPU到底是怎么加载BIOS的？" class="headerlink" title="问题1 CPU到底是怎么加载BIOS的？"></a>问题1 CPU到底是怎么加载BIOS的？</h4><p>现在我们知道了大致的内存分布，也知道一般存放BIOS的ROM硬件会被映射到最靠近4GB（0xFFFFFFF0）的那个地址空间，然后因为该地址空间在实模式下无法被寻址，只能将数据映射到1M以内的空间，那么这个CPU到底是怎么找到存放在ROM里的BIOS代码呢？</p>
+<p>这就需要提到一个概念：<strong>重置向量</strong>，又叫<strong>复位向量</strong></p>
+<p>重置向量的设计是CPU标准，为了统一标准，方便CPU找到相应的固件代码执行，并且由于兼容性考虑，依旧是采用1M一下内存空间运行BIOS代码，所以在32位甚至64位系统中需要重置向量，将CPU执行的寄存器设置到1M以内。</p>
+<p>具体的，在CPU上电后，大部分寄存器都被初始化，包括指令指针寄存器（EIP）、CS代码段寄存器，它记录了下一条即将被CPU执行的指令所在的内存地址。其中EIP会被初始化为<code>0xFFF0</code>,CS会被初始化为<code>0xF000</code>，但是CS的基址会被初始化为<code>0xFFFF0000</code>，通常情况下此模式下CPU寻址方式位<code>cs &lt;&lt; 6 + EIP</code>，但是CS还包含了隐藏的基址部分，此时 CPU 会有一个特殊行为，其会对 EIP 的初始值加上一个CS基址寄存器的值，生成一个 32 位的地址 <code>CS基址+EIP</code> &#x3D;<code>0xFFFF0000</code>+<code>0xFFF0</code> &#x3D; <code>0xFFFFFFF0</code> 。之所以称为特殊行为，是因为实模式下 CPU 只能寻址 1MB 地址空间，而这个 32 位地址已经大于 1MB 的内存限制。因此，<code>0xFFFFFFF0</code> 也被称为重置向量（reset vector）.</p>
+<p>于是，CPU 开始执行 <code>0xFFFFFFF0</code> 地址处的指令，该地址处是一条 <code>JUMP</code> 指令，这条指令清空了基址寄存器的值，并让指令跳回到 BIOS 开始处（物理地址为 <code>0xF0000</code>，参考上图 <code>0xF0000</code> 处的标识）以执行 BIOS。</p>
+<blockquote>
+<p>ps: 完整的CS段寄存器由两部分组成，分别是可见部分和隐藏部分，可见部分就是能偶被程序设置和读取的部分，隐藏的部分就是基址部分。</p>
+</blockquote>
+<p>如下图，0xFFFFFFF0处是一个跳转指令， 为了和以前的 BIOS 代码兼容，故地址 0xFFFFFFF0 处的指令还是一条长跳转指令<code>jmp F000:E05B</code>。</p>
+<p><img src="/wp-content/uploads/2023/06/image-1686189981734.png" srcset="/img/loading.gif" lazyload alt="file"></p>
+<p>将要跳转的地址：F000:E05B，其中F000代表CS寄存器的值，E05B代表EIP的值。当执行完重置向量之后，其实CS段寄存器的值已经被修改了，CPU此时寻址，不再是特殊方式（CS基址+EIP），而是实模式通用寻址：<code>CS &lt;&lt; 4+EIP</code>，也就是说F000:E05B，将会跳转到0xFE05B执行，刚好位于1M的空间内。</p>
+<p>于是 Intel 设计了一种映射机制，<strong>将内存高端的 BIOS ROM 映射到 1MB 以内的 RAM 空间里，并且可以使这一段被映射的 RAM 空间具有与 ROM 类似的只读属性</strong>。所以 PC 机启动时将开启这种映射机制，让 4GB 地址空间的最高一个 64KB 的内容等同于 1MB 地址空间的最高一个 64K 的内容，从而使得执行了长跳转指令后，其实是回到了早期的 8086 CPU 初始化控制流，保证了向下兼容。</p>
+<h4 id="问题2-cpu加电执行的第一句代码，究竟是从BIOS的ROM中执行，还是从内存中执行？"><a href="#问题2-cpu加电执行的第一句代码，究竟是从BIOS的ROM中执行，还是从内存中执行？" class="headerlink" title="问题2 cpu加电执行的第一句代码，究竟是从BIOS的ROM中执行，还是从内存中执行？"></a>问题2 cpu加电执行的第一句代码，究竟是从BIOS的ROM中执行，还是从内存中执行？</h4><p>cpu加电执行的第一句代码，究竟是从ROM中执行？还是从内存RAM中执行？<a target="_blank" rel="noopener" href="https://bbs.csdn.net/topics/90489738">请教，cpu加电执行的第一句代码，究竟是从bios中执行，还是从内存中执行？-CSDN社区</a></p>
+<p>这个问题，网上大家讨论的很激烈，大致的意思就是ROM和RAM是统一编址，ROM不需要载入内存，CPU也能寻址到指令进行执行，就像前面分析的，执行的第一条重置向量跳转指令，就是在ROM BIOS之中。</p>
+<h4 id="问题3-ROM-BIOS是什么时候映射到RAM中的"><a href="#问题3-ROM-BIOS是什么时候映射到RAM中的" class="headerlink" title="问题3 ROM BIOS是什么时候映射到RAM中的"></a>问题3 ROM BIOS是什么时候映射到RAM中的</h4><p>ROM具有掉电不会丢失数据的特性，RAM具有访问速度快的特性。因此，在真正执行BIOS代码前，ROM中的一部分boot block已经被映射或者拷贝到了RAM中，执行复位向量后，跳转到RAM中执行。</p>
+<p>那ROM BIOS是如何映射到RAM中的？这是在执行复位向量之前，CPU还有一些过程，还有内存控制器等，就已经将ROM BIOS映射过去了，过去是映射，现在大多是拷贝。具体的细节，我这里就不继续寻找了。</p>
+<h4 id="问题4-RAM中留给system-bios的地址空间是64K，可是现在主板bios动辄2M，甚至4M，那么整个real-mode内存才1M，它怎么来寻址？"><a href="#问题4-RAM中留给system-bios的地址空间是64K，可是现在主板bios动辄2M，甚至4M，那么整个real-mode内存才1M，它怎么来寻址？" class="headerlink" title="问题4 RAM中留给system bios的地址空间是64K，可是现在主板bios动辄2M，甚至4M，那么整个real mode内存才1M，它怎么来寻址？"></a>问题4 RAM中留给system bios的地址空间是64K，可是现在主板bios动辄2M，甚至4M，那么整个real mode内存才1M，它怎么来寻址？</h4><p>BIOS起关键作用的只是一个block而已, 即boot block, 其他的块通过接近4G的高端地址访问就可以了。boot block是BIOS中一段特定区域，包含用于引导的最小指令集。</p>
+<h2 id="MBR-bootloader"><a href="#MBR-bootloader" class="headerlink" title="MBR bootloader"></a>MBR bootloader</h2><p>由内存分布可知7C00h -7DFFh是MBR加载的区域，大小为512字节。</p>
+<p>x86 体系的 PC 启动之后由 BIOS 完成自检，然后开始搜索外存上的引导信息，查找设备进行系统启动。</p>
+<p>BIOS 会按照设定扫描不同的设备（硬盘，CD-ROM，Flash Drive，等等）并判断设备中是否可引导 (Bootable)。这个判断的方式通常是去 **查看设备的第一个 Sector 的最后两字节（即 511 和 512 字节）是否为<code>0x55 和 0xaa</code>（注意是低字节序 Little-Endian 还是高字节序 Big-Endian），是的话该设备就是可引导的。</p>
+<p>当 BIOS 发现了可引导设备后，他就会把该可引导设备的 <strong>第一个 Sector 拷贝到 RAM 中的 <code>0x7c00</code></strong> （从 <code>0x7c00</code> 开始的 512 字节），并跳到 <code>0x7c00</code> 开始执行拷贝的程序。这一段程序通常被叫做 Bootloader。常见的 Boot Loader 有 grub、lilo、spfdisk。下图可以帮助大家理解 MBR 的结构。</p>
+<p><img src="/wp-content/uploads/2023/06/image-1686190035119.png" srcset="/img/loading.gif" lazyload alt="file"></p>
+<h2 id="以GRUB为例MBR-bootloader"><a href="#以GRUB为例MBR-bootloader" class="headerlink" title="以GRUB为例MBR bootloader"></a>以GRUB为例MBR bootloader</h2><p>可以说GRUB 是bootloader中比较常用的，它本身可以看作一个小型操作系统，内置了简单的文件系统，可以读取分区， grub 启动之后首先就是加载它自己的一个简单的文件系统，然后读取自己的相关配置文件。</p>
+<p>总体上GRUB更像是一个mini os，只不过这个mini os的作用只是加载其他的操作系统，在GRUB中包括stage1、stage1.5（可选）和stage2，其中stage1和stage1.5属于boot loader，stage2属于mini os的内核部分。</p>
+<p>GRUB中stage1过程主要位于MBR的前446字节中（对于支持GPT分区的磁盘，同样有最开始的512字节作为保护MBR，保护MBR与正常的MBR区别不大，主要是分区表上的不同，在保护MBR中只要一个表示为0xEE的分区，以此来表示这块硬盘使用GPT分区表，不能识别GPT硬盘的操作系统通常会识别出一个未知类型的分区，并且拒绝对硬盘进行操作），之后的64字节为硬盘的分区表，最后两个字节为MBR结束标志位（0xAA55）。</p>
+<h3 id="grub-stage-1"><a href="#grub-stage-1" class="headerlink" title="grub stage 1"></a>grub stage 1</h3><p>主要作用：加载下一阶段代码。因为该扇区只有512B，功能单一。</p>
+<p>其中stage1要被安装（也就是写入）某个硬盘的主引导记录，或者某个活动分区（这个分区要用fdisk标记成可启动的）的启动扇区。 stage1的主要的也是唯一的作用就是找到你存放在硬盘上某个地方的stage2文件，来完成后续的工作。</p>
+<p>MBR中前 446个字节，如果把这里面的内容损坏，那么系统会认为当前磁盘没有启动引导功能,会尝试从光盘或者网络启动系统。</p>
+<p>stage1部分占用了446字节，其代码文件是源码目录下stage1&#x2F;stage1.S文件，汇编后生成一个512字节的boot.img，被写在硬盘的0面0道1扇区中，作为硬盘的MBR。stage1的工作很简单，就是加载<strong>0面0道2扇区</strong>上的512字节到0x8000，然后跳转到0x8000执行。在0面0道2扇区上的512字节内容为<code>stage1/start.S</code>文件汇编后生成。该扇区上的内容的作用是加载stage1.5或是stage2过程，并将控制权转交。</p>
+<h3 id="问题汇总-1"><a href="#问题汇总-1" class="headerlink" title="问题汇总"></a>问题汇总</h3><h4 id="1-为什么需要grub-1-5"><a href="#1-为什么需要grub-1-5" class="headerlink" title="1 为什么需要grub 1.5"></a>1 为什么需要grub 1.5</h4><p>因为stage1的容量有限（主引导记录MBR和启动扇区的大小只能够是512字节），所以它对文件系统是无法识别的，那如果你把 stage2存放在ext2或者fat格式的文件系统上，它如何来找到这个文件呢？这就要用到上面提到的那些stage1_5的文件了，它们负责解释文件系统。你的stage2放在什么格式的文件系统上，就要调用对应的那个stage1_5文件。比如，你把stage2存放在ext2格式的文件系统上，就 需要e2fs_stage1_5；stage2存放在fat格式的文件系统上，就需要fat_stage1_5了。</p>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>grub被分为三个阶段</p>
+<ul>
+<li><p>stage1：由于只有512字节，它的功能就是加载stage1.5然后转移控制权</p>
+</li>
+<li><p>stage1.5：stage1.5通常是之后的n个扇区，大小通常是10几k到几十k这么大。当然这样也只能装一种类型的文件系统，所以stage1.5就很多种，分别对应不同的文件系统，在grub安装时按需装入。识别出文件系统后，找到文件系统中的stage2的core.img加载，并移交控制权。</p>
+</li>
+<li><p>stage2：真正干活的，读取配置文件grub.cfg并生成启动菜单，根据用户选择的操作系统，加载内核并转移权限。</p>
+<h3 id="grub-stage-1-5"><a href="#grub-stage-1-5" class="headerlink" title="grub stage 1.5"></a>grub stage 1.5</h3></li>
+</ul>
+<p>主要作用：加载文件系统。</p>
+<p>在stage1过程将控制权转交后，接下来就是GRUB的核心过程了。该过程之所以区分stage1.5和stage2，主要原因是GRUB和GRUB2的区别。在GRUB2中，将stage1.5过程集成到了stage2的过程中，所以stage1.5过程仅仅是针对GRUB的。下面将介绍GRUB。</p>
+<p>Stage1.5过程很无辜，它的作用很单一，但是非常关键。<strong>它的主要功用就是构造一个boot分区系统对应的文件系统</strong>，这样可以通过文件系统的路径（&#x2F;boot&#x2F;grub&#x2F;）寻找stage2过程需要的core.img，进而加载到内存中开始执行。</p>
+<p>Stage1.5存在于<strong>0面0道3扇区开始的地方</strong>，并一直延续十几k字节的区域，具体的大小与相应的文件系统的大小有关（文中涉及到了0面0道1-3+x扇区，这部分扇区为保留扇区，BIOS不会放置任何数据。正因为如此如果转换到GPT分区形式，系统将不能被正确引导，MBR后面的扇区都被其他内容所占据）。e2fs_stage1_5（针对ext2fs，可引导ext2和ext3文件系统）、fat_stage1_5（针对fat文件系统，可引导fat32和fat16）、ffs_stage1_5、jfs_stage1_5、minix_stage1_5、reiserfs_stage1_5、vstafs_stage1_5和xfs_stage1_5，这些文件被称为stage1.5过程，这些文件每个至少都在11k以上。除此之外还有两个比较特殊的文件，分别为nbgrub和pxegrub，这两个文件主要是在网络引导时使用，只是格式不同而已，他们很类似与stage2，只是需要建立网络来获取配置文件。</p>
+<h3 id="grub-stage-2"><a href="#grub-stage-2" class="headerlink" title="grub stage 2"></a>grub stage 2</h3><p>主要作用：bootloader核心，在文件系统建立以后选择合适的操作系统进行加载并转交控制权，达到最后引导操作系统的目标。</p>
+<p>由于GRUB属于multi boot loader，因此在引导的时候要进行选择，选择哪种操作系统来运行。在GRUB内部主要包括两种方式，首先是从grub. cfg中读取显示到屏幕让用户选择，其次是通过grub-shell中定义的命令手动进行启动。通常，只要我们看到内核的启动菜单,表示已经成功的进入了grub的stage 2阶段,因为启动菜单是在stage 2 生成的。</p>
+<h2 id="OS-Kernel加载"><a href="#OS-Kernel加载" class="headerlink" title="OS Kernel加载"></a>OS Kernel加载</h2><p>Bootloader 会寻找操作系统内核所在分区，找到将其加载进入内存RAM，然后跳转到开始的程序开始的位置。至于拷贝多少扇区，跳转到哪里执行？这个就不像 <code>0x7c00</code> 这个数那么经典了，<strong>不同的操作系统肯定也不一样</strong>，也不用事先规定好，反正写操作系统的人给自己定一个就好了，别覆盖其他关键设备用到的区域就好。</p>
+<blockquote>
+<p>以grub为例，加载哪个操作系统，到哪个位置，不是明文规定的。</p>
+</blockquote>
+<p>在一些早期的PC系统中，操作系统内核确实是被加载到物理内存地址 <code>0x100000</code>（也称为1MB）开始启动的。这是因为在这些系统中，BIOS中断13h的读取扇区的函数所支持的最大扇区数是256个，每个扇区的大小为512字节，因此最大支持的读取大小为128KB（256 * 512）。因此，为了尽可能地利用可用的内存空间，并避免与其他系统组件冲突，操作系统内核通常被加载到物理内存 <code>0x100000</code> 开始的位置上。</p>
+<p>一个从0x100000加载的系统内存图如下：</p>
+<p>开始从 RAM 中的 <code>0x100000</code> 加载系统内核。在这个过程中，Bootloader 或者是操作系统本身会把 CPU 的运行模式从 <strong>实模式</strong> 切换到 <strong>保护模式</strong> 。于是我们的操作系统就被启动了。</p>
+<blockquote>
+<p>当然，这里省略了很多细节</p>
+</blockquote>
+<p><img src="/wp-content/uploads/2023/06/image-1686190090706.png" srcset="/img/loading.gif" lazyload alt="file"></p>
+<p>但是，随着计算机硬件的不断发展，现代计算机通常有更大的物理内存和更高的处理能力，因此操作系统内核的加载和启动方式也随之发生了变化。例如，在64位x86架构的计算机上，操作系统内核通常是被加载到更高的物理内存地址上，例如 <code>0x1000000</code>（也称为16MB）或更高的位置，放在哪儿，取决于内核开发人员。</p>
+<h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/liuzhenbo/p/10806119.html">GRUB&amp;MBR引导 - 心田居士 - 博客园 (cnblogs.com)</a></li>
+<li><a target="_blank" rel="noopener" href="http://chuquan.me/2016/12/14/computer-boot-process/">计算机那些事(2)——开机启动过程 楚权的世界 (chuquan.me)</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.longtao.fun/metaverse/bootofcomputer/">计算机启动到操作系统运行 LongTao</a></li>
+<li><a target="_blank" rel="noopener" href="https://learningos.github.io/ucore_os_webdocs/lab1/lab1_3_1_bios_booting.html">BIOS 启动过程 · GitBook (learningos.github.io)</a></li>
+<li><a target="_blank" rel="noopener" href="https://soptq.me/2020/07/22/os-boot/">“当按下电源后，x86 CPU 的 OS 是如何被启动的？” - Soptlog Soptq’s Blog</a></li>
+<li><a target="_blank" rel="noopener" href="https://jcf94.com/2015/08/19/2015-08-19-biosinit/">BIOS 内核载入的方式（引导实验） Chenfan Blog (jcf94.com)</a></li>
+<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/324210723">x86段寄存器和分段机制 - 知乎 (zhihu.com)</a></li>
+<li><a target="_blank" rel="noopener" href="https://bbs.csdn.net/topics/90489738">请教，cpu加电执行的第一句代码，究竟是从bios中执行，还是从内存中执行？-CSDN社区</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/mshxuyi/article/details/100610074">(32条消息) CentOS 7 编译安装 nbd 模块_modprobe nbd_tom.ma的博客-CSDN博客</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/zerfew/article/details/86981408">(32条消息) *** No rule to make target ‘tools&#x2F;objtool&#x2F;objtool’_zerfew的博客-CSDN博客</a></li>
+<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/100746398#:~:text=Stage2%EF%BC%9AG,ernel%E7%A8%8B%E5%BA%8F%E3%80%82">详解Linux开机流程：BIOS-&gt;MBR-&gt;GRUB-&gt;等等。。。 - 知乎 (zhihu.com)</a></li>
+<li><a target="_blank" rel="noopener" href="https://wiki.osdev.org/Memory_Map_(x86)">Memory Map (x86) - OSDev Wiki</a></li>
+</ul>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/" class="category-chain-item">操作系统</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/linux/" class="print-no-link">#linux</a>
+      
+        <a href="/tags/BIOS/" class="print-no-link">#BIOS</a>
+      
+        <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%90%AF%E5%8A%A8/" class="print-no-link">#计算机启动</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>计算机加电后启动后的内存布局-BIOS-bootloader-OS</div>
+      <div>http://example.com/005.html</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>landery</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2023年6月8日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/0037.html" title="openstack报错：nova.compute.manager nova.exception.PortBindingFailed">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">openstack报错：nova.compute.manager nova.exception.PortBindingFailed</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/0025.html" title="wordpress出现致命错误，如何调试找到原因">
+                        <span class="hidden-mobile">wordpress出现致命错误，如何调试找到原因</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"GK4nuH8jdXDcw4IJIVShjMtA-gzGzoHsz","appKey":"7P0B0kJFdaLY6eDQ93Lhcv8J","path":"window.location.pathname","placeholder":"建议使用QQ邮箱，评论头像采用QQ头像","avatar":"retro","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":true,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":true,"bg":null,"count":true},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+    <!-- 备案信息 ICP for China -->
+    <div class="beian">
+  <span>
+    <a href="http://beian.miit.gov.cn/" target="_blank" rel="nofollow noopener">
+      蜀ICP备2022011502号
+    </a>
+  </span>
+  
+    
+      <span>
+        <a
+          href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=51012202001227"
+          rel="nofollow noopener"
+          class="beian-police"
+          target="_blank"
+        >
+          
+            <span style="visibility: hidden; width: 0">|</span>
+            <img src="/img/police_beian.png" srcset="/img/loading.gif" lazyload alt="police-icon"/>
+          
+          <span>川公网安备51012202001227号</span>
+        </a>
+      </span>
+    
+  
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/DynamicRibbon.min.js"></script>
+<script src="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/love.min.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

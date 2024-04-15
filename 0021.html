@@ -1,0 +1,883 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="landery">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="title: 操作系统_07_Linux 虚拟网络基础知识Tap、tun等 date: 2022-05-20 09:36:11.729 updated: 2022-05-20 17:05:45.152 url: &#x2F;archives&#x2F;os07 categories:  操作系统 tags: 操作系统   1 tapTap是操作系统内核中的虚拟网络设备，位于第二层（数据链路层）。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="操作系统_07_Linux 虚拟网络基础知识Tap、tun等">
+<meta property="og:url" content="http://example.com/0021.html">
+<meta property="og:site_name" content="landery小站">
+<meta property="og:description" content="title: 操作系统_07_Linux 虚拟网络基础知识Tap、tun等 date: 2022-05-20 09:36:11.729 updated: 2022-05-20 17:05:45.152 url: &#x2F;archives&#x2F;os07 categories:  操作系统 tags: 操作系统   1 tapTap是操作系统内核中的虚拟网络设备，位于第二层（数据链路层）。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653036252195.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653036353681.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653036435262.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653036458388.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653036473559.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653036521785.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653036576551.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653036662321.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653036723508.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653036914018.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653037192333.png">
+<meta property="article:published_time" content="2023-03-07T13:33:17.000Z">
+<meta property="article:modified_time" content="2024-04-15T10:17:53.225Z">
+<meta property="article:author" content="landery">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653036252195.png">
+  
+  
+  
+  <title>操作系统_07_Linux 虚拟网络基础知识Tap、tun等 - landery小站</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/scroll.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"GK4nuH8jdXDcw4IJIVShjMtA-gzGzoHsz","app_key":"7P0B0kJFdaLY6eDQ93Lhcv8J","server_url":"https://api.landery.cn","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>landery 小站</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/links/" target="_self">
+                <i class="iconfont icon-link-fill"></i>
+                <span>友链</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/remark/" target="_self">
+                <i class="iconfont icon-twitch-fill"></i>
+                <span>留言板</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/image/bg/001.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="操作系统_07_Linux 虚拟网络基础知识Tap、tun等"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2023-03-07 21:33" pubdate>
+          2023年3月7日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.5k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          13 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">操作系统_07_Linux 虚拟网络基础知识Tap、tun等</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <hr>
+<p>title: 操作系统_07_Linux 虚拟网络基础知识Tap、tun等 date: 2022-05-20 09:36:11.729 updated: 2022-05-20 17:05:45.152 url: &#x2F;archives&#x2F;os07 categories:</p>
+<ul>
+<li>操作系统 tags:</li>
+<li>操作系统</li>
+</ul>
+<hr>
+<h1 id="1-tap"><a href="#1-tap" class="headerlink" title="1 tap"></a><strong>1 tap</strong></h1><p>Tap是操作系统内核中的虚拟网络设备，位于第二层（数据链路层）。Linux使用tun模块实现了tun&#x2F;tap，在Linux定义中，tap和tun的数据结构是同一个，只是使用了一个Flag来区分。<img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653036252195.png" srcset="/img/loading.gif" lazyload alt="image-1653036252195"></p>
+<ol>
+<li><p>检查是否具有tun模块 <code>modinfo tun</code></p>
+</li>
+<li><p>如果存在，查看是否加载： <code>lsmod grep tun</code> 如果已经加载，会出现tun ***</p>
+</li>
+<li><p>未加载tun模块，使用如下命令加载 <code>modprobe tun</code></p>
+</li>
+<li><p>安装tunctl工具操作tun&#x2F;tap (这一步容易找不到包，可以按网上教程添加源) <code>yum install tunctl -y</code></p>
+</li>
+<li><p>创建tap设备： <code>tunctl -t tap_test</code></p>
+</li>
+<li><p>查看tap设备：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta prompt_"># </span><span class="language-bash">ip <span class="hljs-built_in">link</span> list</span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">ifconfig -a</span><br></code></pre></td></tr></table></figure>
+
+<p><img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653036353681.png" srcset="/img/loading.gif" lazyload alt="image-1653036353681"></p>
+</li>
+<li><p>此时还没给设备绑定ip地址，执行如下命令： <code>ip addr add local 192.168.100.1/24 dev tap_test</code> 至此，一个tap设备就创建完毕了。</p>
+</li>
+</ol>
+<h1 id="2-namespace"><a href="#2-namespace" class="headerlink" title="2 namespace"></a><strong>2 namespace</strong></h1><p>namespace是Linux虚拟网络的一个重要概念。传统的Linux的许多资源是全局的，比如进程ID资源。而namespace的目的首先就是将这些资源做<strong>资源隔离</strong>。Linux可以在一个Host内创建许多namespace,于是那些原本是Linux全局的资源，就变成了namespace范围内的“全局”资源,而且不同namespace的资源互相不可见、彼此透明。 Linux具体将哪些全局资源做了隔离呢?看Linux相应的代码最直接、最直观：<img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653036435262.png" srcset="/img/loading.gif" lazyload alt="image-1653036435262">以上6个资源，就是Linux namespace所隔离的资源。其基本含义如下：<img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653036458388.png" srcset="/img/loading.gif" lazyload alt="image-1653036458388">从资源隔离的角度，linux namespace的示意图如下图所示：<img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653036473559.png" srcset="/img/loading.gif" lazyload alt="image-1653036473559">可以看出，每个namespace里面，将原本是全局资源的进行了隔离，彼此互相不可见，同时在Linux的Host或者VM中，也会有一套相应的资源。 从网络的角度来看，一个namespace提供了一份独立的网络协议栈（网络设备接口、IPv4、IPv6、IP路由、防火墙规则等）。一个设备（Linux Device）只能位于一个namespace之中，不同namespace中的设备可以利用veth pair进行桥接。</p>
+<h1 id="3-veth-pair"><a href="#3-veth-pair" class="headerlink" title="3 veth pair"></a><strong>3 veth pair</strong></h1><p>Veth pair不是一个设备，是一对设备，以连接两个虚拟以太网端口，操作veth pair需要与namespace一起配合。<img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653036521785.png" srcset="/img/loading.gif" lazyload alt="image-1653036521785"> <code>ip link add tap1 type veth peer name tap2</code> 这一条命令不仅创建tap1、tap2还创建了两个相连的veth pair，之后再把tap1、tap2分别放入ns1、ns2之中，并且给他们绑定ip地址，同一网段，就可以访问了。 但是这个也只能连接两个namespace，如果是3个以上的namespace需要互通，就需要使用到Bridge&#x2F;Switch。</p>
+<h1 id="4-Bridge-Switch"><a href="#4-Bridge-Switch" class="headerlink" title="4 Bridge&#x2F;Switch"></a><strong>4 Bridge&#x2F;Switch</strong></h1><p>在Linux概念之中，Bridge（网桥）与Switch（交换机）是一个概念。 Linux实现Bridge功能的是brctl模块，如果没有安装，<code>yum install bridge-utils -y</code>。 <img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653036576551.png" srcset="/img/loading.gif" lazyload alt="image-1653036576551">如上图，中间创建一个交换机，创建四对veth pair，分别对应四个命名空间，就可以互通了。</p>
+<h1 id="5-Router"><a href="#5-Router" class="headerlink" title="5 Router"></a><strong>5 Router</strong></h1><p>Linux创建路由器，并没有像创建虚拟Bridge那样有个直接的命令brctl，它连间接的命令也没有，不能创建虚拟路由器，<strong>因为Linux本身就是路由器（Router）</strong>。 不过Linux默认没有打开路由转发功能，打开路由转发功能：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;1&quot;</span> &gt; /proc/sys/net/ipv4/ip_forward<br></code></pre></td></tr></table></figure>
+
+<p>上述方法修改后重启失效，一劳永逸的方法是需要修改配置文件<code>/etc/sysctl.conf</code>。将<code>net.ipv4.ip_forward=0</code>修改为1，保存后退出即可。 <img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653036662321.png" srcset="/img/loading.gif" lazyload alt="image-1653036662321"> 在上图中，ns1&#x2F;tap1与ns2&#x2F;tap2不在同一个网段，中间需要经过一个路由器进行转发才能互通。图中的Router是一个示意，其实就是Linux开通了路由转发功能。 当我们添加了tap并给其绑定IP地址时，Linux会自动生成直连路由，通过命令<code>route -n</code>查看路由表。 <img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653036723508.png" srcset="/img/loading.gif" lazyload alt="image-1653036723508"> 如果<code>ip netns exec ns1 ping 192.168.200.2</code> 不通的话，就意味着需要设置静态路由。</p>
+<figure class="highlight dns"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs dns"># ip netns  exec ns1 route add -net <span class="hljs-number">192.168.200.0</span> netmask <span class="hljs-number">255.255.255.0</span> gw <span class="hljs-number">192.168.100.1</span><br># ip netns  exec ns2 route add -net <span class="hljs-number">192.168.100.0</span> netmask <span class="hljs-number">255.255.255.0</span> gw <span class="hljs-number">192.168.200.1</span><br></code></pre></td></tr></table></figure>
+
+<p>为ns1和ns2设置静态路由，分别可达对方的网段。这样就可以访问通了。但是这样的网络<strong>并不能访问外网</strong>。</p>
+<h1 id="6-tun"><a href="#6-tun" class="headerlink" title="6 tun"></a><strong>6 tun</strong></h1><p>Tun是一个网络层的点对点设备，它启用了IP层隧道功能。Linux原生支持的三层隧道，可以通过ip tunnel help查看。 Linux一共原生支持5种三层隧道（tunnel），如下表所示：</p>
+<p><strong>隧道</strong></p>
+<p><strong>简述</strong></p>
+<p>ipip</p>
+<p>IP in IP，在IPv4报文的基础上再封装一个IPv4报文头，属于IPv4 in IPv4</p>
+<p>Gre</p>
+<p>通用路由封装(Generic Routing Encapsulation),定义了在任意一种网络层协议上封装任意一个其他网络层协议的协议，属于IPv4&#x2F;IPv6 over IPv4</p>
+<p>Sit</p>
+<p>这个跟ipip类似,只不过是用一个IPv4的报文头封装IPv6的报文，属于IPv6 over lPv4</p>
+<p>Isatap</p>
+<p>站内自动隧道寻址协议，一般用于IPv4网络中的IPv6&#x2F;IPv4 节点间的通信</p>
+<p>Vti</p>
+<p>全称是Virtual Tunnel Interface，为 IPsec隧道提供了一个可路由的接口类型</p>
+<p><img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653036914018.png" srcset="/img/loading.gif" lazyload alt="image-1653036914018"> 配置如上网络，这里以ipip tunnel为例。</p>
+<ol>
+<li><p>首先加载ipip模块，Linux默认没有加载</p>
+<figure class="highlight armasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs armasm"><span class="hljs-symbol">modprobe</span> ipip<br><span class="hljs-symbol">lsmod</span> grep <span class="hljs-built_in">ip</span><br></code></pre></td></tr></table></figure>
+</li>
+<li><p>在ns1上创建tun1和ip tunnel</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs routeros">ip netns exec ns1<span class="hljs-built_in"> ip </span>tunnel <span class="hljs-built_in">add</span> tun1 mode ipip remote 192.168.200.2 local 192.168.100.2 ttl 255<span class="hljs-built_in"></span><br><span class="hljs-built_in">ip </span>netns exec ns1<span class="hljs-built_in"> ip </span>link <span class="hljs-built_in">set</span> tun1 up<span class="hljs-built_in"></span><br><span class="hljs-built_in">ip </span>netns exec ns1<span class="hljs-built_in"> ip </span>addr <span class="hljs-built_in">add</span> 192.168.50.10<span class="hljs-built_in"> peer </span>192.168.60.10 dev tun1<br></code></pre></td></tr></table></figure>
+
+<p>解释：</p>
+<ul>
+<li><code>ip tunnel add tun1 mode ipip</code>：创建一个tun类型的设备tun1，并且隧道模式是ipip；</li>
+<li><code>remote 192.168.200.2 local 192.168.100.2</code>：这个隧道的外层IP地址是远端192.168.200.2，近端（本地）是192.168.100.2，就是两个namespace中对应的两个tap。</li>
+<li><code>ip netns exec ns1 ip addr add 192.168.50.10 peer 192.168.60.10 dev tun1</code> ：设备tun1是个点对点的设备，他自己的ip地址是192.168.50.10，它的对端的ip是192.168.60.10。这两个IP地址就是ipip隧道的内层IP。</li>
+</ul>
+</li>
+<li><p>在ns2上创建tun2和ipip tunnel</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs routeros">ip netns exec ns2<span class="hljs-built_in"> ip </span>tunnel <span class="hljs-built_in">add</span> tun2 mode ipip remote 192.168.100.2 local 192.168.200.2 ttl 255<span class="hljs-built_in"></span><br><span class="hljs-built_in">ip </span>netns exec ns2<span class="hljs-built_in"> ip </span>link <span class="hljs-built_in">set</span> tun2 up<span class="hljs-built_in"></span><br><span class="hljs-built_in">ip </span>netns exec ns2<span class="hljs-built_in"> ip </span>addr <span class="hljs-built_in">add</span> 192.168.60.10<span class="hljs-built_in"> peer </span>192.168.50.10 dev tun2<br></code></pre></td></tr></table></figure>
+</li>
+<li><p>测试ping得通不。 <code>ip netns exec ns1 ping 192.168.60.10</code> 如果ping不通，那么就关闭主机防火墙，<code>iptables -F</code></p>
+</li>
+</ol>
+<p>查看路由表<code>route -n</code>，可以看到到192.168.60.10有一条直连路由。 <img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1653037192333.png" srcset="/img/loading.gif" lazyload alt="image-1653037192333"></p>
+<h1 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a><strong>参考文献</strong></h1><blockquote>
+<p>本文基本按照这本书中的操作进行</p>
+</blockquote>
+<ul>
+<li>《深入理解OpenStack Neutron》，2018年1月1日，机械工业出版社，作者李宗标</li>
+</ul>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/" class="category-chain-item">操作系统</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>操作系统_07_Linux 虚拟网络基础知识Tap、tun等</div>
+      <div>http://example.com/0021.html</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>landery</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2023年3月7日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/0001.html" title="远程证明_01_云数据中心的大规模虚拟机的远程证明">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">远程证明_01_云数据中心的大规模虚拟机的远程证明</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/0020.html" title="操作系统_06_Linux查看CPU架构、指令集">
+                        <span class="hidden-mobile">操作系统_06_Linux查看CPU架构、指令集</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"GK4nuH8jdXDcw4IJIVShjMtA-gzGzoHsz","appKey":"7P0B0kJFdaLY6eDQ93Lhcv8J","path":"window.location.pathname","placeholder":"建议使用QQ邮箱，评论头像采用QQ头像","avatar":"retro","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":true,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":true,"bg":null,"count":true},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+    <!-- 备案信息 ICP for China -->
+    <div class="beian">
+  <span>
+    <a href="http://beian.miit.gov.cn/" target="_blank" rel="nofollow noopener">
+      蜀ICP备2022011502号
+    </a>
+  </span>
+  
+    
+      <span>
+        <a
+          href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=51012202001227"
+          rel="nofollow noopener"
+          class="beian-police"
+          target="_blank"
+        >
+          
+            <span style="visibility: hidden; width: 0">|</span>
+            <img src="/img/police_beian.png" srcset="/img/loading.gif" lazyload alt="police-icon"/>
+          
+          <span>川公网安备51012202001227号</span>
+        </a>
+      </span>
+    
+  
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/DynamicRibbon.min.js"></script>
+<script src="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/love.min.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

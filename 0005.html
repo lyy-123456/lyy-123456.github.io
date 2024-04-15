@@ -1,0 +1,959 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="landery">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="title: 远程证明_05_物联网远程认证技术综述:攻击、对策与展望 date: 2022-06-05 19:44:21.133 updated: 2022-06-06 00:54:01.347 url: &#x2F;archives&#x2F;yczm05 categories:  远程证明 tags: 可信计算 远程证明   原文信息 文章标题：A survey of remote att">
+<meta property="og:type" content="article">
+<meta property="og:title" content="远程证明_05_物联网远程认证技术综述:攻击、对策与展望">
+<meta property="og:url" content="http://example.com/0005.html">
+<meta property="og:site_name" content="landery小站">
+<meta property="og:description" content="title: 远程证明_05_物联网远程认证技术综述:攻击、对策与展望 date: 2022-06-05 19:44:21.133 updated: 2022-06-06 00:54:01.347 url: &#x2F;archives&#x2F;yczm05 categories:  远程证明 tags: 可信计算 远程证明   原文信息 文章标题：A survey of remote att">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1654430348772.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1654433634080.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1654435182722.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1654435992594.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1654436179061.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1654436539343.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1654436611648.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1654439589584.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1654439785979.png">
+<meta property="og:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1654442223448.png">
+<meta property="article:published_time" content="2023-03-07T13:37:21.000Z">
+<meta property="article:modified_time" content="2024-04-15T10:15:52.805Z">
+<meta property="article:author" content="landery">
+<meta property="article:tag" content="远程证明">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1654430348772.png">
+  
+  
+  
+  <title>远程证明_05_物联网远程认证技术综述:攻击、对策与展望 - landery小站</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/scroll.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.7","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"GK4nuH8jdXDcw4IJIVShjMtA-gzGzoHsz","app_key":"7P0B0kJFdaLY6eDQ93Lhcv8J","server_url":"https://api.landery.cn","path":"window.location.pathname","ignore_local":true}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>landery 小站</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/links/" target="_self">
+                <i class="iconfont icon-link-fill"></i>
+                <span>友链</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/remark/" target="_self">
+                <i class="iconfont icon-twitch-fill"></i>
+                <span>留言板</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/image/bg/001.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="远程证明_05_物联网远程认证技术综述:攻击、对策与展望"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2023-03-07 21:37" pubdate>
+          2023年3月7日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          14k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          114 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">远程证明_05_物联网远程认证技术综述:攻击、对策与展望</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <hr>
+<p>title: 远程证明_05_物联网远程认证技术综述:攻击、对策与展望 date: 2022-06-05 19:44:21.133 updated: 2022-06-06 00:54:01.347 url: &#x2F;archives&#x2F;yczm05 categories:</p>
+<ul>
+<li>远程证明 tags:</li>
+<li>可信计算</li>
+<li>远程证明</li>
+</ul>
+<hr>
+<h1 id="原文信息"><a href="#原文信息" class="headerlink" title="原文信息"></a><strong>原文信息</strong></h1><ol>
+<li>文章标题：A survey of remote attestation in Internet of Things: Attacks, countermeasures, and prospects</li>
+<li>文章中文翻译：物联网远程认证技术综述:攻击、对策与展望</li>
+<li>文章等级：CCF B</li>
+<li>文章发表时间：2022</li>
+<li>文章作者：Kuang B, Fu A, Susilo W, et al.</li>
+<li>完整引用：Kuang B, Fu A, Susilo W, et al. A survey of remote attestation in Internet of Things: Attacks, countermeasures, and prospects[J]. Computers &amp; Security, 2022, 112: 102498.</li>
+<li>全文请查看：<a target="_blank" rel="noopener" href="https://www.sciencedirect.com/science/article/pii/S0167404821003229">全文链接</a></li>
+</ol>
+<h1 id="1-介绍"><a href="#1-介绍" class="headerlink" title="1 介绍"></a><strong>1 介绍</strong></h1><p>针对近年来的IoT方面提出的远程证明进行了比较全面总结，然后指出：<strong>现有的调查都没有对攻击进行深入的研究，也没有全面和精细的对抗模型作为分类的指导</strong>。随着新的攻击的提出（如运行时攻击），攻击的类型变得更加多样化、精确和隐蔽。RA方案也更加多样化和复杂。此外，RA的应用范围也在扩大（例如，可验证的更新、重置和内存清除）。一些新技术在RA中的应用和结合（例如，机器学习），给RA带来了更多的可能性。此外，一些新的RA架构（例如，形式上验证的架构）被提出来，以实现更丰富的安全功能。 在这种情况下，我们的目标是<strong>提出一个通用的对抗模型来支持RA分类</strong>。在设计RA方案时，对抗性模型是一个普遍的要求。然而，<strong>几乎每一种方案都有一个特定的对抗性模型，这使得它们之间的关系和组合极其复杂</strong>。 主要贡献：</p>
+<ul>
+<li>提出了一个基本的RA模型，并进一步通过抽象现有攻击特征建立了一个针对物联网设备的精密对抗模型。</li>
+<li>从保护能力、性能、网络适应性和认证质量等方面提出了评价标准。</li>
+<li>基于对抗性模型，将现有的RA方案分为5类，并对每一类方案进行分析，并比较了其优缺点。</li>
+<li>在此基础上，总结了研究中存在的问题和挑战，并展望了今后的研究方向</li>
+</ul>
+<h1 id="2-远程证明"><a href="#2-远程证明" class="headerlink" title="2 远程证明"></a><strong>2 远程证明</strong></h1><h2 id="2-1-基本的远程证明"><a href="#2-1-基本的远程证明" class="headerlink" title="2.1 基本的远程证明"></a><strong>2.1 基本的远程证明</strong></h2><p>基本的RA模型是单认证模型，即一个verifier对应一个prover，但是随着网络规模的增加，变了一个verifier需要对应多个prover，也就是群认证方案。</p>
+<h2 id="2-2-安全属性"><a href="#2-2-安全属性" class="headerlink" title="2.2 安全属性"></a><strong>2.2 安全属性</strong></h2><p>安全健壮的RA服务需要包含如下属性：</p>
+<ol>
+<li><strong>真实性</strong>。验证方必须保证挑战是由授权的verifier生成的，从而防止验证方冒充拒绝服务(DoS)。此外，验证者还需要确保被验证者的回应是忠实可信的。这意味着攻击者不能伪造一个被验证者接受的响应。</li>
+<li><strong>原子性</strong>。认证方案必须防止攻击者阻碍认证过程的执行。因此，认证过程不能被中断，以防止攻击者修改当前内存，在执行期间移动恶意软件。</li>
+<li><strong>时效性</strong>。验证响应必须反映prover的当前状态，以防止重复攻击。换句话说，当收到来自verifier的挑战时，prover必须执行一个新的过程来产生一个新的验证响应。此外，挑战必须刷新。</li>
+<li><strong>确定性</strong>。对于每一个挑战，相应的响应是确定的。这使得verifier能够准确地预测prover的响应内容。</li>
+</ol>
+<p>此外，随着新兴的应用，更多的认证方案被提出，更多的目标被要求。下面我们列出了最常见的几种。请注意，这些要求是特定于特定的认证协议，为不同的应用程序定制，而不是任何认证协议。</p>
+<ol>
+<li>可伸缩性。针对大规模网络，提出了一些认证方案。因此，认证协议需要对大量设备具有可扩展性。</li>
+<li>非均质性。一些复杂的网络由许多异构设备组成。因此，认证方案需要适应不同的软件和硬件。</li>
+<li>动态性。设备的移动和网络拓扑结构的变化是一个值得注意的问题。因此，认证方案必须适应网络的动态特性。</li>
+</ol>
+<h2 id="2-3-敌手模型"><a href="#2-3-敌手模型" class="headerlink" title="2.3 敌手模型"></a><strong>2.3 敌手模型</strong></h2><p>对手的主要目标是破坏物联网设备(证明者)执行一些恶意操作或阻碍其正常执行。对RA的不同攻击类型的概述见图2。 考虑两种攻击者：</p>
+<ul>
+<li><strong>普通攻击者</strong></li>
+<li><strong>知识攻击者</strong></li>
+</ul>
+<p><img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1654430348772.png" srcset="/img/loading.gif" lazyload alt="image-1654430348772"> <strong>普通攻击者</strong>主要是缺乏对RA认证机制缺乏足够了解的攻击者，他们可以在任意时间去攻击设备，常见的攻击方式包括软件攻击、运行时攻击和物理攻击。</p>
+<ol>
+<li>软件攻击：攻击者替换或者添加恶意代码，并根据需要执行他们。这种攻击通过软件入侵来篡改设备的内部内存，从而危及设备</li>
+<li>运行时攻击：攻击者通过操作数据变量、循环计数器或代码指针，（如图2中的①，②，③）来改变设备的行为。代码重用攻击(CRA)是一种典型的运行时攻击，主要包括面向返回编程(ROP)攻击和面向跳跃编程(JOP)攻击。这种攻击可能导致恶意执行流或非法执行特权路径。</li>
+<li>物理攻击：这是通过物理访问的方式对设备进行攻击。物理攻击可以分为非侵入式、半侵入式和侵入式物理攻击。半侵入式和侵入式物理方法都需要物理地捕获设备，以便在受保护的内存中提取敏感信息或修改硬件组件。非侵入性攻击，如侧通道攻击，可以在正常操作期间偷偷地推断设备的私人数据。非侵入性攻击通常通过一些物理手段来抵抗，例如屏蔽电路，而远程证明并不能防止这些攻击。因此，本文提到的物理攻击都是半侵入式和侵入式攻击。</li>
+</ol>
+<p>相比之下，如果<strong>利用RA机制</strong>，<strong>知识攻击者</strong>可能会利用这些机制的一些弱点来达到目的。最常见的方法是verifier-impersonation DOS攻击和transient &amp; self-relocating malware。</p>
+<ul>
+<li>Verifier-impersonation DoS攻击。研究人员发现，攻击者可能会伪装成verifier，通过频繁发送伪造请求，迫使prover执行验证程序。不受限制的认证过程可能妨碍正常任务的执行，导致DoS攻击。</li>
+<li>瞬态和自定位恶意软件。对手在验证过程中移动恶意软件的位置，并将它们放入已验证或未验证的区域。请注意，这种攻击与远程认证的原子性属性相冲突，我们将在第8节详细说明原因和缓解方法。</li>
+</ul>
+<p>此外，对手也试图通过一些传统的方法来绕过RA机制，如预计算、重放、共谋等。对于这些攻击，大多数RA方案都采用了加密技术来抵抗。</p>
+<h1 id="3-远程证明协议评价指标"><a href="#3-远程证明协议评价指标" class="headerlink" title="3 远程证明协议评价指标"></a><strong>3 远程证明协议评价指标</strong></h1><p>评估一个给定的认证协议有不同的关注点。接下来，我们从<strong>防护能力、精度、成本、网络拓扑和群认证质量(QoSA)</strong> 等方面讨论了如何评估群认证方案，是否可行，是否能被广泛采用和部署。特别对保护进行了分类总结。在查阅文献的过程中总结了精度和网络拓扑结构。成本是大多数文献常用的重要评价标准。QoSA的概念最初由Carpent et al.(2017)提出，我们在总结现有文献的基础上对其进行了进一步的扩展。</p>
+<h2 id="3-1-防护能力"><a href="#3-1-防护能力" class="headerlink" title="3.1 防护能力"></a><strong>3.1 防护能力</strong></h2><p>其防护能力取决于所采用的防护策略和设计目标。通常，<strong>我们根据RA能够检测或阻止的攻击来评估RA方案，就像我们在对抗性模型中描述的那样</strong>。</p>
+<h2 id="3-2-准确性"><a href="#3-2-准确性" class="headerlink" title="3.2 准确性"></a><strong>3.2 准确性</strong></h2><p><strong>对于大多数RA协议不考虑验证准确率</strong>。即使只有一个prover，大多数RA方案针对的都是单一类型的攻击，因此在严格的认证过程中出错也在所难免。因此，在不考虑网络不稳定性的情况下，这些方案的准确率几乎为1。 <strong>对于某些具有共同特征（即概率或不确定性）的特殊RA方案，准确率是至关重要的</strong>。主要包括两类：验证区域的随机化和验证设备在验证场景下的概率。对于这些方案，准确性在很大程度上指的是假阴性，因为RA会输出一个决定性的结果，几乎不会出现假阳性。</p>
+<blockquote>
+<p>当你真的没有的时候，别人却说你有—假阳性(false positive) 当你真的有的时候，别人却说你没有—假阴性(false negative)<img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1654433634080.png" srcset="/img/loading.gif" lazyload alt="image-1654433634080"></p>
+</blockquote>
+<h2 id="3-3-代价、成本"><a href="#3-3-代价、成本" class="headerlink" title="3.3 代价、成本"></a><strong>3.3 代价、成本</strong></h2><ul>
+<li>内存开销：RA方案的内存开销主要来自密钥的存储、认证过程和一些协议参数。虽然内存成本仍然是一个评价因素，但随着存储成本的降低，它已不再是一个关键因素时间成本。</li>
+<li>时间成本：时间成本是评估RA方案的一个重要因素。RA机制的原子性会在认证过程中影响设备的正常工作，这在群认证方案中表现得更为突出。在大多数群体认证方案中，只有当所有节点都完成认证后，整个群体才能正常运行。但是，每个节点的通信时间和计算时间的叠加导致了显著的总时间开销。</li>
+<li>能源成本。RA机制的最初目的之一是节约资源受限设备的成本，因此能源成本是一个必不可少的评价因素。能源成本<strong>主要包括计算开销和通信开销</strong>。其中，由于提出了群认证方案，单个设备需要与相邻节点进行交互，通信开销受到关注。此外，现有方案的计算结果表明，计算开销占能量消耗的比例较大。这是因为计算开销包括一些沉重的加密操作的成本，如MAC或签名，特别是对于物联网设备。</li>
+<li>硬件成本：研究人员发现纯软件RA方案不能再提供足够的安全能力时，他们开始寻求硬件的支持。在相同的安全级别下，研究人员总是希望将硬件成本降到最低。硬件成本主要包括两个方面。<strong>一个是对现有硬件单元的利用</strong>，如可信平台模块(TPM) (Arbaugh等人，1997年)，物理不可克隆函数(PUFs) (Gao等人，2020年)，软件保护扩展(SGX) (Costan和Devadas, 2016年)，以及任何可信硬件组件。<strong>二是采用现场可编程门阵列(FPGA)对系统结构进行了重新设计</strong>，这种RA方案通常通过额外需要的查找表(LUT)、寄存器和逻辑门的数量来评估其硬件成本。</li>
+</ul>
+<p>注意RA方案的时间和能量成本通常高度依赖于设备的硬件架构(例如，带有TPM的设备通常计算更快)。 因此，只有在相同的硬件架构设置下比较时间和能量成本才有意义。 以下两个评价标准是群认证所特有的。</p>
+<h2 id="3-4-网络拓扑结构"><a href="#3-4-网络拓扑结构" class="headerlink" title="3.4 网络拓扑结构"></a><strong>3.4 网络拓扑结构</strong></h2><p>群认证特有的评价指标。 设备的移动性是一种固有的群体特性。然而，<strong>许多群RA方案要求群网络拓扑保持静态，在认证过程中设备不能移动</strong>。由于RA是通过挑战-响应方式完成的，因此它需要一个固定的通信信道。一些RA方案放宽了这一限制，设备只需要在自己的认证过程中保持静态，而无需等待整个认证过程的结束。</p>
+<h2 id="3-5-QoSA"><a href="#3-5-QoSA" class="headerlink" title="3.5 QoSA"></a><strong>3.5 QoSA</strong></h2><p>Carpent等人(2017)提出了<strong>群认证质量(Quality of Swarm authentication, QoSA)</strong> 的概念。在前人工作的基础上，我们进行了进一步的总结，并将群体认证分为五类，以评估verifier接收到的群体信息的粒度。</p>
+<ul>
+<li>B-QoSA(Binary QoSA)。verifier可以得到一个布尔值来表示整个群体的可信度。对于这种认证结果，验证者不需要对群体中的每个设备进行详尽的验证。一旦检测到被入侵的节点，它可以立即确定群的最终结果，并终止对其他设备的认证。</li>
+<li>C-QoSA (Count QoSA)。verifier可以获得群体中正常&#x2F;恶意设备的数量，但不知道被攻击的具体设备。</li>
+<li>L-QoSA (List QoSA)。verifier可以得到正常设备的标识符列表。这是目前<strong>群认证方案中最常见的QoSA</strong>。</li>
+<li>F-QoSA (Full QoSA)。verifier可以知道群中每个设备的确切认证结果和它们的连通性，即群拓扑。</li>
+<li>N-QoSA (None QoSA)。被验证群体有能力自动排除受损设备。也就是说，verifier不需要知道群中所有被入侵设备的标识符。</li>
+</ul>
+<p>对于B-QoSA和C-QoSA，verifier只能将被验证群体作为一个整体来判断其安全性，无法对特定受损设备进行检查和采取行动来维护群体的安全性。 <strong>对于F-QoSA和L-QoSA，验证者可以移除或修复被泄露的设备，以保证安全性。但是对于F-QoSA和L-QoSA，通常需要更详细的汇总报告，这意味着通过网络传输更大的消息大小</strong>。 N-QoSA结合了自我修复和群算法。因此，支持N-QoSA认证的群认证对攻击具有较强的鲁棒性。代价就是群中的单个设备为了协同监视其相邻设备的安全性会产生额外的开销。</p>
+<h1 id="4-软件攻击的认证"><a href="#4-软件攻击的认证" class="headerlink" title="4 软件攻击的认证"></a><strong>4 软件攻击的认证</strong></h1><p>之前提到了普通攻击者的3中攻击方式中的软件攻击。</p>
+<h2 id="4-1-单prover认证"><a href="#4-1-单prover认证" class="headerlink" title="4.1 单prover认证"></a><strong>4.1 单prover认证</strong></h2><p>单prover认证方案关注verifier和prover之间严格的交互过程，以及设备上的认证过程。根据RA方案体系结构，主要有三种方法:基于软件的、基于硬件的和混合的。表1列出了不同的单证明者认证方案的体系结构，硬件成本的评估标准，以及它们是否基于正式验证的RA体系结构，分类如下。注意，非特定的硬件组件(如随机访问存储器(RAM)和闪存)不在表中列出。 <img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1654435182722.png" srcset="/img/loading.gif" lazyload alt="image-1654435182722"></p>
+<ul>
+<li>基于软件的RA方案(Choi等人，2007;Seshadri等人，2005;2004;Steiner and Lupu, 2019)通常不需要精致的硬件安全组件，这有更广泛的应用，特别是对于资源受限的物联网设备。伪随机内存遍历(PMT)、严格响应时间和空内存空间填充是实现基于软件的认证的常用方法。</li>
+<li>尽管基于软件的解决方案可以降低成本并被广泛采用，因为它依赖于非特定的硬件支持，但大多数解决方案都建立在强大的假设基础上。假设和对手的能力之间存在差距。例如，SWATT假设对手不能伪造比认证原型更快的有效认证响应，但是在实践中很难被接受。在这种情况下，需要基于硬件的认证，以更合理的假设来增强安全性。基于硬件的认证方案需要一些抗篡改的硬件模块，如TPM、puf、SGX。</li>
+<li>基于硬件的认证可以提供比基于软件的建议更高的安全性，因为抗篡改的硬件可以确保认证响应的正确性。但是，对于在生产阶段没有提供定制硬件组件的物联网设备，基于硬件的解决方案是不适用的。混合认证方案同时利用了基于硬件和基于软件的认证方案的优点。</li>
+</ul>
+<h2 id="4-2-群认证-（swarm-认证）"><a href="#4-2-群认证-（swarm-认证）" class="headerlink" title="4.2 群认证 （swarm 认证）"></a><strong>4.2 群认证 （swarm 认证）</strong></h2><p>在5G技术引领下的大规模物联网设备中，<strong>单prover认证方案效率低下</strong>，因此，群认证方案近年来引起了广泛关注。<strong>群指的是一组具有潜在异构硬件和软件配置的物联网设备</strong>。在拓扑结构和成员关系方面，群可能是动态的。在群体认证协议中，验证者希望通过一次交互来验证整个群体。 与单prover认证不同，<strong>群认证结构专注于聚合群中所有设备的认证响应</strong>。在群体认证中，由于网络的复杂性(网络拓扑结构、消息传递方式、认证模式、聚合模式等)，需要对一个方案进行多角度的分析，从而产生不同的分类。接着，我们从聚合模式和认证模式两个方面分析了经典群认证方案的特点，并对这两类方案的其他特点进行了讨论。最后，我们按照时间顺序对不同的群认证方案进行了比较，如表2所示。我们采用了下面讨论的分类法以及第3节中提到的QoSA、网络拓扑和硬件成本的评估标准。<img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1654435992594.png" srcset="/img/loading.gif" lazyload alt="image-1654435992594"></p>
+<h3 id="4-2-1-聚合模式-Aggregate-pattern"><a href="#4-2-1-聚合模式-Aggregate-pattern" class="headerlink" title="4.2.1 聚合模式 Aggregate pattern"></a><strong>4.2.1 聚合模式 Aggregate pattern</strong></h3><p>在群体认证中，每个设备都会产生一个响应，需要verifier进行有效的聚合。主要有三种聚合模式:生成树(spanning tree)、广播(broadcasting)和层次结构(hierarchy)。</p>
+<ol>
+<li>生成树。<strong>最常见的聚合模式是基于生成树结构的</strong>。我们以第一种群体认证方案SEDA (Asokan et al.， 2015)为研究案例，如图5所示。verifier随机选择一个设备作为启动设备(图5中的d1)，发送认证挑战启动群认证。初始设备将挑战传递给相邻设备，相邻设备再将挑战转发给其他节点，最终生成树型结构网络(如图5中的绿线所示)。然后，父设备等待子设备的响应。下层节点不断地将当前的计数数和自己的测试结果返回给上层节点。最后，作为生成树的根，初始设备可以获取整个群体的状态并发送给verifier。<strong>但是，这种聚合模式通常要求在验证期间拓扑是静态的。此外，多跳通信所带来的不可预测的网络延迟也给认证时间的估计带来了挑战</strong>。因此，它不适用于严格的响应时间策略。在这种情况下，确定性通信路径(Kumar et al.， 2021)利用IEEE 802.15.4时间槽跳(TSCH)链路层协议来解决这个问题。<img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1654436179061.png" srcset="/img/loading.gif" lazyload alt="image-1654436179061"></li>
+<li>广播。<strong>通过广播聚合认证报告适用于在认证过程中设备可以移动的高动态网络</strong>。当一台设备收到其他设备的认证报告时，它会将这些报告与自己的认证报告聚合在一起，然后广播给通信范围内的所有设备。最后，任意一个设备可以聚合群中所有设备的认证报告。我们选择了SALAD(Kohnhäuser et al.， 2018)作为代表，它是第一种用于高动态网络的群体认证方案，如图6所示。verifier通过向其通信范围内的设备(即图6中的d5)发送起始消息来验证该验证。然后，接收设备传播发起消息并检查其软件完整性，以确定它们是否处于健康状态(即，由下一小节中的邻居验证的模式)。然后接收到的设备将向邻近设备(如d5和d2之间的通信)广泛传播认证报告。经过一段时间后，verifier可以连接到任意一台设备，获得包含所有健康设备列表的认证结果。几种高动态网络的RA方案都采用了广义铸造模式(Ambrosin等人，2017;2018年)或选择一个设备子集进行认证(Ammar等人，2018a)(而不是群体中的所有设备)。然而，它带来了<strong>巨大的通信开销</strong>。<img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1654436539343.png" srcset="/img/loading.gif" lazyload alt="image-1654436539343"></li>
+<li>层次结构。<strong>这种层次结构适用于设备具有不同资源能力的网络</strong>，如图7所示。在这样的网络中，可以选择计算能力更强或安全特性级别更高的设备作为簇头节点(即图7中的Ci)。这样簇头节点就可以与簇内的设备(即图7中的Di)进行通信。不同的方案会选择不同的设备特性作为分类标准，如设备的安全性或性能。我们选择了三个代表性方案(Ammar et al.， 2021;Gong等人，2018;Tan等人，2019)来演示层次结构。根据职责，Gong等(2018)将设备分为三类:普通设备、簇头设备和数据聚合设备。普通设备向簇头设备上报认证响应，簇头设备向数据聚合设备上报认证响应。根据硬件资源，MART (Tan et al.， 2019)将设备分为三种类型：完全信任的设备(如基站)、配备TPM的设备和资源有限的设备。前两种设备用于验证最后一种设备的状态。DA(委托认证)(Ammar等人，2021年)使网关连接到认证代理(基于PoX体系结构Nunes等人，2020年)，然后在图6中充当集群头。<img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1654436611648.png" srcset="/img/loading.gif" lazyload alt="image-1654436611648"></li>
+</ol>
+<p>值得注意的是，<strong>层次结构也适用于高度动态的网络</strong>(例如，SHeLA Rabbani等人，2019年)。移动prover的验证响应可以通过一些静态边缘设备转移到原始注册的边缘verifier上。 然而，层次结构可能会带来一些冗余设备(例如，SHeLA需要在群中引入一些边缘设备)，或者导致更高的硬件要求只在高级设备中可用。此外，层次结构模式通常假设相邻层的节点可以在一跳内通信，这可能不是实际情况。</p>
+<h3 id="4-2-2-认证模式-Attestation-modes"><a href="#4-2-2-认证模式-Attestation-modes" class="headerlink" title="4.2.2 认证模式 Attestation modes"></a><strong>4.2.2 认证模式 Attestation modes</strong></h3><p>当认证从个体设备扩展到群体设备时，提出了不同的认证模式。根据哪一方评估目标prover的状态，模式可以分为三类:<strong>邻居验证、验证者验证和设备本身验证</strong>。</p>
+<ol>
+<li>由邻居验证。邻居是设备的直接观察者。因此，一个设备的状态可以被它的相邻设备证明。<strong>这种认证模式广泛应用于生成树结构中</strong>(Asokan et al.， 2015;Carpent等人，2017)。一个设备的直接认证结果由其生成树中的父设备给出。由于邻居设备只提供认证结果，不需要传递详细的信息(如二进制码的哈希值)，因此认证报告很小，大大降低了通信开销。 此外，该认证模式也适用于某些有特殊目的、有兴趣的方案。US-AID (Ibrahim等人，2018)利用这种模式进行物理攻击检测，详见第6.1节。healing (Ibrahim et al.， 2019)是一种修复协议，可以恢复被入侵设备的恶意软件块，确保整个网络的安全。ESDRA (Kuang et al.， 2019)提出了一种分布式认证方案，使用<strong>多个邻居同时验证一个节点</strong>，然后通过基于权重的计算计算出最终的认证结果。其基本原理是，基于单个邻居的认证结果来确定验证方的状态太粗糙了，特别是考虑到这样的邻居设备不是完全可信的设备。</li>
+<li>由verifier验证。为了减少认证报告的规模，集群认证大多采用邻居认证的方式。但这种方式存在安全漏洞，可能会影响邻居。因此，只有验证者给出的评估才被认为是可信的。这种认证方式的难点在于每台设备都需要详细的认证报告，使得认证报告的尺寸非常大。需要一种精确的聚合算法来克服上述问题。 在这种情况下，乐观聚合签名(OAS) (Ambrosin等人，2016)协议通过生成树结构保证聚合认证报告的安全性。父设备聚合子设备的认证响应，在最小化报告大小的同时增加了认证结果的可信度。相比之下，发布&#x2F;订阅协议(Dushku et al.， 2020)按照发布者和订阅者的顺序不断积累认证响应，既可以检测物联网设备的软件完整性，也可以检测与恶意设备的非预期交互。但是这种机制不能减少报告的大小。</li>
+<li>由设备本身验证。在一些群体认证方案中(Ambrosin等人，2017;2018;Kohnhäuser等，2018;Nunes等人，2019a)，评估由证明者自己完成。在这些方案中，被证明者需要额外的硬件(例如，可信执行环境(TEE))来确保评估的可信性。因此，他们可以通过将测量值与期望状态进行比较来判断自己的可靠性。预期状态可以是verifier发送的有效软件配置(Kohnhäuser等，2018)，或预存储在设备内的一个(Ambrosin等，2017;2018;Nunes等人，2019a)。然后prover将评估结果转发给verifier。这种认证方式减少了设备迁移对RA进程的影响，适用于动态程度较高的网络。 在此基础上，进一步提出了自测量(Carpent et al.， 2018d)。prover不是直接将结果转发给verifier，而是验证他们自己，并在本地临时存储结果。经过几轮验证后，verifier会向prover发送请求，收集所有的验证结果。自我测量可以限制verifier-impersonation DOS攻击者的能力(在第7.2节中讨论)，也可以减少瞬态和自我重新定位恶意软件逃避认证(在第8.3节中讨论)的概率。</li>
+</ol>
+<h2 id="4-3-讨论"><a href="#4-3-讨论" class="headerlink" title="4.3 讨论"></a><strong>4.3 讨论</strong></h2><p>单prover认证方案通常采用移动verifier或多verifier来确保verifier在prover的通信范围内。不幸的是，当需要对多台设备进行认证时，单prover在认证方案中通常表现出较低的效率。随着物联网设备数量的爆炸式增长，对群认证方案提出了更高的要求。与单认证相比，群认证具有以下优点。(1)verifier可以验证群体作为一个整体的完整性。(2)群体认证在群体中效率更高。但是，在集群场景中需要考虑：</p>
+<ul>
+<li>如何从不同的设备安全有效地聚合认证报告?根据网络拓扑结构的不同特点，应采用不同的聚合模式和验证模式。</li>
+<li>如何有效识别特定的受损设备?一些群认证方案只能确定群的完整性，而不能指出特定的被承诺的设备。然而，其他L-QoSA群体认证方案可以识别受损设备，使得认证报告非常大。</li>
+<li>如何在一次认证迭代中测量具有不同软件配置的设备的完整性?让verifier知道每个对应设备的预期软件配置是不切实际的，因此解决方案应该与软件配置无关。</li>
+</ul>
+<h1 id="5-运行时攻击的认证"><a href="#5-运行时攻击的认证" class="headerlink" title="5 运行时攻击的认证"></a><strong>5 运行时攻击的认证</strong></h1><p>运行时攻击通常利用编程语言中的漏洞来改变设备的行为或窃取私人信息。运行时漏洞可以分为两类：控制流漏洞(Checkoway et al.， 2010;Snow et al.， 2013)和非控制性数据漏洞(Chen et al.， 2005)。运行时攻击会修改设备内存中的动态部分，如动态数据变量或栈中的值，这给验证这些动态数据的可信性带来了很大的挑战。已经提出了一些缓解运行时利用技术的方法，例如数据执行预防(DEP)(2007)、静态cookie (Cowan等人，1998)、地址空间布局随机化(ASLR) (PaX-Team, 2001)、控制流完整性(CFI) (Abadi等人，2005)、代码指针完整性(CPI)等。然而，由于保护机制在本地执行，它们的实现需要改变语言、编译器或二进制代码。这通常超出了资源受限的物联网设备的能力。因此，提出了动态RA方案。在本节中，我们分析了这种认证响应可以是程序的动态完整性证据或控制流路径的方案。</p>
+<h2 id="5-1-动态完整性的证据"><a href="#5-1-动态完整性的证据" class="headerlink" title="5.1 动态完整性的证据"></a><strong>5.1 动态完整性的证据</strong></h2><p>虽然内存中的动态数据是不可预测的，但它们往往满足一些动态特性。verifier可以通过这些动态属性检测运行时的完整性(例如，ReDAS Kil等人，2009)。ReDAS确定了两种类型的动态属性：<strong>结构完整性和全局数据完整性</strong>。一个具有结构完整性的应用程序意味着它在运行时满足所有的结构约束。结构约束是应用程序二进制代码必须满足的属性，例如堆栈约束和返回地址约束。同样，全局数据完整性指的是满足所有的数据不变量。数据不变量是指数据变量的值或它们之间的关系。完整性度量组件在运行时检查各种应用程序中的这些动态特性，并提供完整性证据。 然而，识别和收集所有的动态属性并不容易。此外，寻找动态属性与各种运行时攻击之间的相关性，以及检测所有类型的攻击，是一项艰巨的任务。</p>
+<h2 id="5-2-控制流路径"><a href="#5-2-控制流路径" class="headerlink" title="5.2 控制流路径"></a><strong>5.2 控制流路径</strong></h2><p>目前，针对运行时攻击，最常用的RA方法是基于控制流图(Control Flow Graph, CFG)，又称控制流认证。CFG是程序流程的抽象。在CFG中，节点表示代码块，边表示控制流转换。运行时攻击的主要目的是滥用现有代码来改变设备的行为，从而从本质上改变控制流。 我们以C-FLAT (Abera et al.， 2016)为例，介绍控制流认证的基本原理，这是第一种针对运行时攻击的控制流认证方案。如图8所示，运行时攻击者可以在第3行更改控制流，(i)将控制流更改为恶意代码，或(ii)将非特权路径更改为特权路径(即控制流攻击)。他还可以(iii)修改一些关键数据以影响控制流(即非控制数据攻击)。C-FLAT的关键洞察是验证verifier的控制流路径。verifier首先进行离线预处理，通过静态分析生成应用模块的CFG。然后，verifier测量每个可能的控制流路径，并通过测量函数-累积哈希函数存储它们，如图9所示。累积哈希函数H以节点id Ni和之前的哈希结果Hprev为输入输出一个新的哈希值，即Hi &#x3D; H(Hprev;Ni)。最后，它输出一个Auth，它可以被视为执行路径的标识。 在认证过程中，prover也使用相同的方法计算当前的控制流路径值。因此，verifier可以确定prover是否按预期执行。 <img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1654439589584.png" srcset="/img/loading.gif" lazyload alt="image-1654439589584"></p>
+<h2 id="5-3-讨论"><a href="#5-3-讨论" class="headerlink" title="5.3 讨论"></a><strong>5.3 讨论</strong></h2><p>如何收集一套完整的动态特性来精确测量运行装置是一个挑战。<strong>现有的动态完整性证据只能检测到部分运行时攻击</strong>。因此，控制流认证似乎是一个更好的选择。然而，(1)目前大多数控制流认证方法只能检测到控制流攻击，仍然存在非控制数据漏洞。在这种情况下，LiteHAX (Dessouky等人，2018)、OAT (Sun等人，2020)和不(Nunes等人，2021c)提出了数据流验证(DFA)来检测仅数据攻击，而它们不能保证数据机密性。(2)目前的控制流认证方法主要基于程序分段，这是一项非常复杂的操作，特别是对一些复杂的结构。如果没有适当的程序分割，verifier就无法得到设计良好的检测CFG。表3按时间顺序总结并比较了不同认证方案对抗运行时攻击的硬件成本和认证方法。<img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1654439785979.png" srcset="/img/loading.gif" lazyload alt="image-1654439785979"></p>
+<h1 id="6-物理攻击的认证"><a href="#6-物理攻击的认证" class="headerlink" title="6 物理攻击的认证"></a><strong>6 物理攻击的认证</strong></h1><p>无论是半侵入式的还是侵入式的物理攻击，都需要在一段特定的时间内(从几小时到几周)捕获设备。群认证方案中采用的捕获检测方法主要有<strong>心跳技术和会话密钥更新技术</strong>两种。 可以通过检测方式防止物理攻击（离线），检测时间需要小于攻击成功时间。</p>
+<h2 id="6-1-心跳技术"><a href="#6-1-心跳技术" class="headerlink" title="6.1 心跳技术"></a><strong>6.1 心跳技术</strong></h2><p>心跳技术的核心思想是，<strong>设备定期发出心跳信息，以证明自己在线</strong>。每台设备在收到来自邻居的新的心跳消息时都会发出一个心跳消息，或者时间已经过去了。心跳消息包括时间戳、计数器和设备标识符。然后，心跳消息可以由其他群中设备(Ibrahim et al.， 2016)或邻居设备(Ibrahim et al.， 2018)验证。 与其他攻击相比，物理攻击的认证可能需要更高的认证频率来检测设备的持续存在。因此，在评估认证方案时，时间开销是一个重要的因素。例如，DARPA (Ibrahim et al.， 2016)，第一个使用心跳技术的物理攻击认证方案，利用广播交换任意两个节点的心跳信息。因此，其时间成本较高，认证时间复杂度为O(n2)，其中n为群中设备数量。相比之下，US-AID (Ibrahim et al.， 2018)只与相邻节点交换心跳消息，因此其认证时间复杂度降低到O(1)。</p>
+<h2 id="6-2-会话密钥更新技术"><a href="#6-2-会话密钥更新技术" class="headerlink" title="6.2 会话密钥更新技术"></a><strong>6.2 会话密钥更新技术</strong></h2><p>会话密钥更新技术可以很自然地排除离线设备(被视为物理攻击)。我们以第一个采用会话密钥更新技术的群认证方案SCAPI (Kohnhäuser et al.， 2017)为研究案例。它通过会话密钥sk和通道密钥ck之间的异或操作在两个设备之间设置一个对称加密密钥。 通道密钥建立后，通道密钥ck是静态的。会话密钥sk是动态的，由群中所谓的leader设备每隔的△T时间更新一次。将当前的sk记为skcur，然后将新生成的sk记为sknext。然后，领导设备对使用skcur加密sknext，并将密文传输给其他设备。然后，只有拥有正确skcur的设备才能正确地检索到最新的sknext。由于受到物理攻击的设备将在Tcap时间内离线，它不能再使用错误的会话密钥与网络中的其他设备通信。由于群中的所有设备都需要更新会话密钥，SCAPI的认证时间复杂度为O(n)，其中n为群中的设备数量。基于类似的思想，slimIoT (Ammar et al.， 2018b)提出了另一种针对物理攻击的基于高效广播认证方法的认证方案，其认证时间复杂度也是O(n)。EAPA (Yan et al.， 2019)将心跳技术与会话密钥更新技术相结合，使得交互仅限于邻居节点，认证时间复杂度为O(1)。</p>
+<h2 id="6-3-讨论"><a href="#6-3-讨论" class="headerlink" title="6.3 讨论"></a><strong>6.3 讨论</strong></h2><p>与心跳技术相比，<strong>定期更新会话密钥可以自然地排除离线设备</strong>。然而，会话密钥更新技术会导致更高的计算开销，因为它依赖于更多的加密操作。从本质上讲，定期心跳消息和会话密钥更新策略在检测物理攻击方面有着相同的概念。<strong>它们都利用周期性信息来确定目标设备的存在，以反映物理攻击的发生</strong>。因此，周期性消息的校验和传输需要耗费大量的计算量和时间，可能会影响设备的正常运行。另外，会话密钥更新技术容易受到去同步攻击。如果攻击者阻止(通过，例如通道模糊或假中继)包含sknext的消息，由于不同的会话密钥，设备将在接下来的回合中无法与其他设备通信。表4比较了评估标准的能源成本、时间成本、网络拓扑、和不同QoSA——证人计划按时间顺序对物理攻击,在美国国防部高级研究计划局(Ibrahim et al ., 2016), SCAPI (Kohnhauser et al ., 2017),和silmIoT (Ammar et al ., 2018 b)利用广播提供的消息,他们的能源成本是不可估量的。此外，这些方案对硬件成本的评价标准都是相同的，即主控板、ROM和安全时钟。 <img src="https://datamanage-1301168767.cos.ap-chengdu.myqcloud.com/halo/image-1654442223448.png" srcset="/img/loading.gif" lazyload alt="image-1654442223448"></p>
+<blockquote>
+<p>N表示群中设备的数量，g表示邻居的数量。Ei、Emac、Esend、Erecv、Eenc、Edec分别表示一个设备、计算或校验一个mac、发送一个字节、接收一个字节、加密和解密的能量消耗。</p>
+</blockquote>
+<h1 id="7-verifier-impersonation-DoS-attack（验证者模拟DoS）的认证"><a href="#7-verifier-impersonation-DoS-attack（验证者模拟DoS）的认证" class="headerlink" title="7 verifier-impersonation DoS attack（验证者模拟DoS）的认证"></a><strong>7 verifier-impersonation DoS attack（验证者模拟DoS）的认证</strong></h1><p>在大多数传统的认证方案中，verifier总是可信的。然而，攻击者确实可以模拟verifier，然后发送一些虚假的验证请求，这些请求可能会触发prover中潜在的昂贵的验证过程，从而发起一种DoS攻击。我们将这种攻击称为验证者模拟DoS攻击。<strong>现有的认证方案通常检查认证请求的有效性，以防止verifier模拟DoS攻击</strong>。此外，<strong>非交互式认证方法</strong>被认为对验证者模拟DoS攻击具有天然的弹性。此外，<strong>自我测量</strong>可以通过减少挑战的数量来减轻验证者模拟DoS在关键时刻的影响。本节分别介绍上述三种策略的代表性认证方案。</p>
+<h2 id="7-1-检查认证请求"><a href="#7-1-检查认证请求" class="headerlink" title="7.1 检查认证请求"></a><strong>7.1 检查认证请求</strong></h2><p>在对抗<strong>验证者模拟DoS攻击</strong>时，<strong>验证认证请求的真实性是一种直接的方法</strong>。最常见的方法是使用一些密码学方法，如公钥或对称密码学。其中，PUF已被多个RA方案聘用(Aman and Sikdar, 2018;Feng et al.， 2018)，因为它的随机性、独特性和易用性。它利用半导体制造过程中不可克隆的物理变化，生成“数字指纹”作为设备的唯一身份。 另一种方法是利用单向哈希链(Tan et al.， 2019)来验证认证请求。单向哈希链是一组哈希值，例如(V0, V1，…， Vi，…， Vk)，其中Vi &#x3D; hash (Vi−1)。每个请求包含一个散列值Vi。verifier在本地存储一个值Vj。只有当i &lt; j时，prover接受请求并将Vj替换为Vi。因此，恶意验证者很难找到或伪造有效的挑战码。 然而，<strong>仅仅验证请求的真实性并不总是足够的。攻击者可以通过转发被窃听的请求或重放之前的请求来通过真实性验证</strong>。因此，可以考虑Brasser等人(2016)采用挑战刷新机制来如下加强验证者模拟DoS攻击：</p>
+<ul>
+<li>Nonces。prover记录了所有nonces的历史。但是这种方法需要大量的存储空间，只能识别之前收到的挑战，无法识别其他设备转发的挑战。</li>
+<li>Counters。verifier设置一个单调递增的计数器。每个验证请求必须包含计数器的当前值。只有当新请求的值大于上一个请求的值时，验证方才会接受新请求。</li>
+<li>TimeStamp。将当前时间戳添加到请求中以提供新鲜度。但是它需要在verifier和prover上部署同步的时钟，这将导致额外的硬件开销。</li>
+</ul>
+<h2 id="7-2-非交互式认证"><a href="#7-2-非交互式认证" class="headerlink" title="7.2 非交互式认证"></a><strong>7.2 非交互式认证</strong></h2><p>另一种抵制验证者模拟DoS的选择是非交互认证模式(Ibrahim等人，2017)，它消除了在认证方案中发送挑战的过程。换句话说，<strong>prover的认证过程不再由verifier触发，而是由prover的计时程序自动触发</strong>。通过这种方式，它对验证者模拟DoS攻击具有固有的弹性。作为非交互认证方案的前提，<strong>verifier和prover都有一个松散同步的时钟</strong>。</p>
+<h2 id="7-3-Self-measurement-自我度量"><a href="#7-3-Self-measurement-自我度量" class="headerlink" title="7.3 Self-measurement 自我度量"></a><strong>7.3 Self-measurement 自我度量</strong></h2><p>与非交互式认证类似，ERASMUS (Carpent等人，2018d)利用自我度量来减少挑战过程的数量，这迫使每个prover基于预先建立的时间表来验证自己。证明程序将结果存储在本地。然后verifier偶尔联系自我测量，收集所有存储的结果，验证设备在此期间的状态。因此，它可以在很大程度上防止验证者模拟DoS攻击。</p>
+<h2 id="7-4-讨论"><a href="#7-4-讨论" class="headerlink" title="7.4 讨论"></a><strong>7.4 讨论</strong></h2><p><strong>防止来自未经授权的verifier的虚假验证请求</strong>是避免<strong>验证者模拟DoS攻击</strong>的主要策略。虽然检查认证请求的验证可以有效地抵抗这种类型的攻击，但对prover施加的开销可能很高。同时，大量的认证请求也会迫使prover持续地执行验证，这是另一种DoS攻击。相比之下，非交互式应答对验证者模拟DoS攻击具有固有的弹性。然而，prover的软件配置的测量应该与它的生成时间绑定，以确保新鲜度。因此，需要实时写保护时钟来提供verifier和prover之间的时间同步。此外，自我度量可以缓解验证者模拟DoS攻击，但不能完全抵抗它，因为验证者仍然需要使用挑战-响应机制收集信息。</p>
+<h1 id="8-瞬态和自定位恶意软件的认证"><a href="#8-瞬态和自定位恶意软件的认证" class="headerlink" title="8 瞬态和自定位恶意软件的认证"></a><strong>8 瞬态和自定位恶意软件的认证</strong></h1><p>在现实场景中，认证过程的原子性和紧急操作之间存在重大冲突。一些安全关键的物联网设备必须严格更新数据，以确保一些关键功能的正确性和及时性，如火灾报警应用。正如Carpent等人(2018a)所报道的那样，给定1gb的认证内存，认证过程将花费大约7秒。对于火灾报警，7s的认证过程可能会造成灾难性的后果。然而，大多数现有的RA机制通常需要一个耗时的原子认证过程，以满足安全性要求。一旦原子性被放松，并且允许中断认证过程，瞬态和自我重新定位的恶意软件可能会逃避认证。恶意软件滥用中断在认证过程中战术地重新安置自己，转移自己到未被发现的区域或已被认证的区域。为了减轻<strong>瞬态和自定位恶意软件</strong>，<strong>内存滑动锁定、打乱式度量、自我度量和分布式度量都可以使用</strong>。</p>
+<h2 id="8-1-内存滑动锁定-Memory-sliding-locking"><a href="#8-1-内存滑动锁定-Memory-sliding-locking" class="headerlink" title="8.1 内存滑动锁定 Memory sliding locking"></a><strong>8.1 内存滑动锁定 Memory sliding locking</strong></h2><p>Carpent等人(2018b)从各个方面讨论了“内存锁定”。其中，滑动锁是比较实用的一种思路。 它有两种方式:递减锁和递增锁。递减锁在开始时锁定所有内存模块(即暂时使它们只读)。然后，随着认证过程的执行，它会解锁每个被认证的模组。相反，增加锁不会在一开始锁定任何内存，而在认证期间锁定每个被认证的模块。</p>
+<h2 id="8-2-打乱式度量-Shuffled-measurements"><a href="#8-2-打乱式度量-Shuffled-measurements" class="headerlink" title="8.2 打乱式度量 Shuffled measurements"></a><strong>8.2 打乱式度量 Shuffled measurements</strong></h2><p>打乱的测量方法利用了随机性。SMARM (Carpent等人，2018c)是一个具有代表性的例子。在认证过程中，SMARM采用shuffle测量方式，由prover在无序内存块上计算MAC。这样，攻击者就无法确定哪个内存块是“安全的”，从而无法以目标方式移动恶意软件。</p>
+<h2 id="8-3-自我度量-Self-measurements"><a href="#8-3-自我度量-Self-measurements" class="headerlink" title="8.3 自我度量 Self-measurements"></a><strong>8.3 自我度量 Self-measurements</strong></h2><p>我们已经在第4.2节(证明)讨论过这种方法。由于交互过程复杂且耗时，自我测量可以显著减少认证时间，从而最大限度地减少认证过程对设备常规任务的负面影响。</p>
+<h2 id="8-4-分布式度量-Distributed-attestation"><a href="#8-4-分布式度量-Distributed-attestation" class="headerlink" title="8.4 分布式度量 Distributed attestation"></a><strong>8.4 分布式度量 Distributed attestation</strong></h2><p><strong>一种针对群认证的分布式认证模式</strong>。在集群环境中，由于网络延迟和节点认证时间的叠加，中断和原子性之间的冲突变得更加激烈。因此，分布式认证模式的目标是减少群中每个设备的认证时间。最常见的分布式认证方案是ESDRA (Kuang等人，2019年)和SARA (Dushku等人，2020年)。两者都可以使设备在完成本地的认证任务后立即启动正常操作，而无需等待群中其他设备的认证结果。</p>
+<h2 id="8-5-讨论"><a href="#8-5-讨论" class="headerlink" title="8.5 讨论"></a><strong>8.5 讨论</strong></h2><p>内存滑动锁本质上是在中断和RA原子性之间的一种权衡。它不能完全缓解中断引起的问题。如果紧急任务的代码准确地存储在锁定区域中，则冲突仍然存在。 打乱测量是一种概率方法，需要考虑准确度的评价标准，尤其是假阴性，如3.2节所述。任何试图最小化假阴性的做法都将不可避免地增加时间成本的评价标准。此外，打乱后的测量值需要额外的内存来存储内存块的排列情况。 自我度量和分布式认证都<strong>从减少设备认证时间的角度</strong>来缓解原子性带来的冲突。</p>
+<h1 id="9-未来的研究"><a href="#9-未来的研究" class="headerlink" title="9 未来的研究"></a><strong>9 未来的研究</strong></h1><p>我们讨论了针对不同目标的各种RA方案。同时，分析比较了相应方案的优缺点。根据评价标准在3.1节中,我们总结和比较保护功能(软件攻击,控制流攻击,物理攻击,verifier-impersonation DoS攻击,和瞬态&amp; self-relocating恶意软件)认证计划从2015年开始按时间顺序如表5所示。 对于<strong>软件攻击</strong>，验证方必须生成针对其当前软件配置的测量结果。度量可以是目标内存内容的散列。对于<strong>运行时攻击</strong>，度量必须反映验证者的运行时行为。因此，可以对控制流路径进行哈希测量。<strong>物理攻击</strong>认证的基本观察结果是，受到物理攻击的设备会离线一段时间。此外，攻击者可以利用RA的缺陷来启动恶意操作，包括<strong>验证者模拟DoS和瞬态和自定位恶意软件</strong>。值得注意的是，认证提议可以组合在一起，一个方案可以有效地对抗多种类型的攻击</p>
+<h2 id="9-1-如何检测自删除恶意软件"><a href="#9-1-如何检测自删除恶意软件" class="headerlink" title="9.1 如何检测自删除恶意软件?"></a><strong>9.1 如何检测自删除恶意软件?</strong></h2><p>虽然瞬态和自定位恶意软件已经有了一些解决方案，但它们仍然不能完美地解决这个问题。 更重要的是，它揭示了攻击者有能力知道认证的时间。在这种情况下，自删除恶意软件成为一种更难以检测的攻击方法。远程认证是一个周期性的过程，两次认证之间存在较长的“真空”期。 因此，在此期间，攻击者可以进行恶意操作，然后删除自己的痕迹，<strong>形成所谓的TOCTOU攻击</strong>。现有的方案很难检测到这种自删除恶意软件。RATA (Nunes等人，2021b)利用安全的日志记录机制来记录最新的内存修改。然而，RATA不适合自修改代码和即时(JIT)编译(jp, 2003)。因此，需要建立更可靠、更自动化、更智能的日志认证机制来区分异常修改和正常修改。</p>
+<h2 id="9-2-如何针对高动态网络拓扑设计高效的RA方案"><a href="#9-2-如何针对高动态网络拓扑设计高效的RA方案" class="headerlink" title="9.2 如何针对高动态网络拓扑设计高效的RA方案?"></a><strong>9.2 如何针对高动态网络拓扑设计高效的RA方案?</strong></h2><p>现有的高动态网络拓扑的群认证方案通常采用广播的方式聚合认证报告。然而，这种广播方式大大增加了通信开销。 此外，转发到网络上的认证报告越多，攻击者成功窃取和分析认证报告的几率就越高。如果收到同一台设备的不同认证报告，如何区分正确的认证报告就成为一个难题。因此，需要设计一种更高效、更安全的高动态网络群认证方案。我们认为这个问题在移动通信网络中已经得到了解决。引入一些冗余和固定的“基站”可能是一个很好的选择，但有必要衡量开销是否可以接受。SHeLA (Rabbani et al.， 2019)似乎已经做出了第一次尝试，但仍有一些未解决的挑战，协议可以优化。</p>
+<h2 id="9-3-如何检测非控制数据攻击"><a href="#9-3-如何检测非控制数据攻击" class="headerlink" title="9.3 如何检测非控制数据攻击?"></a><strong>9.3 如何检测非控制数据攻击?</strong></h2><p>攻击者可以操纵一些数据来改变设备的行为，获得高权限，或窃取敏感信息。被篡改的数据变量可以是直接影响控制流的控制数据，例如函数的返回或其他不直接改变控制流的非控制数据。 <strong>大多数运行时认证方案都局限于对控制流的评估</strong>。换句话说，<strong>它们无法检测非控制性数据漏洞</strong>。LiteHAX (Dessouky等人，2018)和DI- ALED (Nunes等人，2021c)建议记录所有经过修改的数据。但这可能会导致认证反应特别大。因此，正如OAT (Sun et al.， 2020)所做的那样，识别关键的非控制数据并在本地保证关键数据的完整性可能是一个更现实的选择。只有这样，成本才能得到控制，解决方案才能在实践中得到落实。 此外，从我们的角度来看，还有另一种可能的解决方案。尽管非控制数据攻击微妙地使程序执行偏离CFG，但它们使程序遍历不同于合法路径的控制流路径。因此，一个有趣的方向是看看是否有可能检测这种偏差，机器学习可以是一个有用的工具。</p>
+<h2 id="9-4-如何针对物理攻击设计有效的RA方案"><a href="#9-4-如何针对物理攻击设计有效的RA方案" class="headerlink" title="9.4 如何针对物理攻击设计有效的RA方案?"></a><strong>9.4 如何针对物理攻击设计有效的RA方案?</strong></h2><p>现有的针对物理攻击的认证方案都是基于这样的假设：<strong>物理攻击需要使目标设备离线一段不可忽略的时间</strong>。然而，它们对网络延迟和包丢失的容忍度几乎为零，因为它们可能错误地认为暂时不可达的设备受到了物理攻击。此外，现有的心跳和会话密钥更新机制会带来显著的开销，因为心跳周期需要小于最小物理攻击时间，而这需要更高的认证频率。因此，从检查和验证设备的硬件配置等新的角度来检测物理攻击是值得考虑的。</p>
+<h2 id="9-5-如何设计智能认证方案"><a href="#9-5-如何设计智能认证方案" class="headerlink" title="9.5 如何设计智能认证方案?"></a><strong>9.5 如何设计智能认证方案?</strong></h2><p>人工智能技术，如机器学习，在广泛的应用中表现出惊人的性能。值得将AI整合到RA服务中。假设验证者可以利用机器学习模型，通过任意的程序验证来判断设备的状态，而不是一个有固定起点和终点的程序。在这种情况下，它可以使攻击者能够预测、伪造或重放验证响应。此外，在运行时攻击检测中实现这种测试时方法更可取。因为这意味着认证程序可以直接对当前正在执行的程序进行验证，不会影响设备的正常运行。 此外，verifier还可以利用机器学习来收集prover的行为来预测prover的状态。这种智能认证方式可以减少prover的开销，降低对prover正常运行的影响。需要注意的是，考虑到各种攻击的复杂性，机器学习方法在确定设备状态方面的准确性需要进一步研究。</p>
+<h2 id="9-6-如何选择群体认证机制"><a href="#9-6-如何选择群体认证机制" class="headerlink" title="9.6 如何选择群体认证机制?"></a><strong>9.6 如何选择群体认证机制?</strong></h2><p>大多数的群认证方案都采用集体认证机制，将整个群的信息收集到verifier那里。这是因为verifier必须确定每个设备的安全状态。虽然详细的报告是可取的，但当必须传输每个设备的详细报告时，它会引起大量的通信开销。另一种认证机制是交流机制(Kuang等人，2019)。它不聚合每个节点的所有状态信息，而是利用邻居节点充当监督者。检举制只要求检举人举报受损节点，而不需要传递良性节点的信息，大大降低了通信成本。然而，<strong>挑战是确保受损设备将被报告和区分恶意报告</strong>。</p>
+<h1 id="10-总结"><a href="#10-总结" class="headerlink" title="10 总结"></a><strong>10 总结</strong></h1><p>本文综述了国内外RA方案的研究现状，提供了一个全面的综述。在对所有对抗性模型进行分析的基础上，我们设计了一个复杂的对抗性模型，将攻击者分为两类:<strong>普通攻击者(包括软件攻击、运行时攻击和物理攻击)和知识攻击者(包括验证者模拟DOS攻击、瞬态和自定位恶意软件)<strong>。然后，在建立对抗模型和评估标准的基础上，从</strong>攻击类型的角度</strong>对各种RA方案进行了分析和比较。</p>
+<ol>
+<li>具体来说，针对<strong>软件攻击的RA包括单prover认证和群认证</strong>。单prover认证时专注于生成一个可信的、可验证的验证响应，而群认证则利用并行计算和设备间交互来检查网络中所有设备的安全状态。</li>
+<li>另外，<strong>大多数针对运行时攻击的RA方案都是基于CFG来记录程序的执行路径</strong>。</li>
+<li>此外，<strong>所有针对物理攻击的RA方案都依赖于捕获检测来验证设备的在线状态</strong>。</li>
+<li>此外，抵御<strong>验证者模拟DOS攻击和瞬态及自我重新定位恶意软件</strong>的策略是对现有RA方案的增强，但它们可能会招致一些额外的开销，如安全时钟。</li>
+</ol>
+<p>最后，我们确定并讨论了当前RA方案面临的多个挑战，这些挑战值得在未来的研究中加以考虑。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%8F%AF%E4%BF%A1%E8%AE%A1%E7%AE%97/" class="category-chain-item">可信计算</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E8%BF%9C%E7%A8%8B%E8%AF%81%E6%98%8E/" class="print-no-link">#远程证明</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>远程证明_05_物联网远程认证技术综述:攻击、对策与展望</div>
+      <div>http://example.com/0005.html</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>landery</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2023年3月7日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/0006.html" title="远程证明_06_论远程证明中的TOCTOU问题">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">远程证明_06_论远程证明中的TOCTOU问题</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/0004.html" title="远程证明_04_虚拟化环境的安全认证">
+                        <span class="hidden-mobile">远程证明_04_虚拟化环境的安全认证</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"GK4nuH8jdXDcw4IJIVShjMtA-gzGzoHsz","appKey":"7P0B0kJFdaLY6eDQ93Lhcv8J","path":"window.location.pathname","placeholder":"建议使用QQ邮箱，评论头像采用QQ头像","avatar":"retro","meta":["nick","mail","link"],"requiredFields":["nick","mail"],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":true,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":true,"bg":null,"count":true},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+    <!-- 备案信息 ICP for China -->
+    <div class="beian">
+  <span>
+    <a href="http://beian.miit.gov.cn/" target="_blank" rel="nofollow noopener">
+      蜀ICP备2022011502号
+    </a>
+  </span>
+  
+    
+      <span>
+        <a
+          href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=51012202001227"
+          rel="nofollow noopener"
+          class="beian-police"
+          target="_blank"
+        >
+          
+            <span style="visibility: hidden; width: 0">|</span>
+            <img src="/img/police_beian.png" srcset="/img/loading.gif" lazyload alt="police-icon"/>
+          
+          <span>川公网安备51012202001227号</span>
+        </a>
+      </span>
+    
+  
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/DynamicRibbon.min.js"></script>
+<script src="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/love.min.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
